@@ -61,10 +61,10 @@ namespace Native.Csharp.App.Core
 			Common.AppVersion = Version.Parse ("1.0.0");		
 
 			//
-			// 当前项目名称: Native.Csharp
+			// 当前项目名称: com.lovedream.top
 			// Api版本: 9
 
-			return string.Format ("{0},{1}", 9, "Native.Csharp");
+			return string.Format ("{0},{1}", 9, "com.lovedream.top");
 		}
 
 		/// <summary>

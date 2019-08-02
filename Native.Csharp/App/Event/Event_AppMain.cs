@@ -7,6 +7,8 @@ using Unity;
 using Native.Csharp.App.Interface;
 using Native.Csharp.App.EventArgs;
 using Native.Csharp.Sdk.Cqp;
+using Native.Csharp.App.Event.Event_Me;
+using SQLBuilder.Repositories;
 
 namespace Native.Csharp.App.Event
 {
@@ -36,6 +38,17 @@ namespace Native.Csharp.App.Event
             container.RegisterType<ICqAppEnable, Event_CqAppEnable> ("应用已被启用");
             // 注入 Type=1004 的回调
             container.RegisterType<ICqAppDisable, Event_CqAppDisable> ("应用将被停用");
+
+            //注册【私聊回复】
+            container.RegisterType<IReceiveFriendMessage, Event_ReceiveFriendMessage>("私聊消息处理");
+
+            //注册【群聊回复】
+            container.RegisterType<IReceiveGroupMessage, Event_ReceiveGroupMessage>("群消息处理");
+
+            //注册【数据库仓储】
+            container.RegisterInstance<IRepository>(new SqlRepository(Config.Config.SQLConnectStr));
+
+
         }
 
 		/// <summary>
