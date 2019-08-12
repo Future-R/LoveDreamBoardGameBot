@@ -1,18 +1,14 @@
 ﻿using Native.Csharp.App.Entity;
 using Native.Csharp.App.EventArgs;
 using Native.Csharp.App.Interface;
-using SQLBuilder.Repositories;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Unity;
 
 namespace Native.Csharp.App.Event.Event_Me
 {
