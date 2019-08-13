@@ -1,5 +1,4 @@
-﻿using Native.Csharp.App.Entity;
-using Native.Csharp.App.EventArgs;
+﻿using Native.Csharp.App.EventArgs;
 using Native.Csharp.App.Interface;
 using System;
 using System.Collections;
@@ -25,6 +24,14 @@ namespace Native.Csharp.App.Event.Event_Me
         {
             get; set;
         }
+        //public static int DiceValue
+        //{
+        //    get; set;
+        //}
+        //public static int CountValue
+        //{
+        //    get; set;
+        //}
         public static float Values;
         public static float GetValue()
         {
@@ -35,8 +42,7 @@ namespace Native.Csharp.App.Event.Event_Me
         {
             Number = number;
         }
-        private int ret;
-
+        
         public void ReceiveGroupMessage(object sender, CqGroupMessageEventArgs e)
         {
             string input = e.Message;
@@ -101,7 +107,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
 .定义 [添加/删除] [新指令 甲 乙 丙]#[指令 甲 乙]#[指令 甲 丙]：自定义1个新指令，新指令会执行后面每条指令。
 
-.如果 [>/</=/!] [数值]?[指令 甲 乙]?[指令 甲 丙*]：如果上一次掷骰的结果大于/小于/等于/不等于指定值，执行后面每条指令。
+.如果 [表达式] [>/</=/!] [数值]?[指令 甲 乙]?[指令 甲 丙*]：如果表达式的结果大于/小于/等于/不等于指定值，执行后面每条指令。表达式格式：'骰子+清点*2'。
 
 注：可以在区域名开头加入'私密'，如'私密牌库'。非私密区域在某些卡牌变化场景会打印内容。
 牌名可以写成'假名【真名】'的形式，伪装的牌在离开非私密区域时会显露原形。");
@@ -242,6 +248,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 case "清点":
                     CountNum(input, out string num);
+                    //CountValue = int.Parse(num);
                     Common.CqApi.SendGroupMessage(e.FromGroup, $@"{input.Substring(3).Trim()}有{num}张牌");
                     return;
 
@@ -340,9 +347,10 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 case "日志":
                     Common.CqApi.SendGroupMessage(e.FromGroup, @"更新日志：
-Ver1.0.3：新增了如果指令；新增了清理指令；现在计算指令支持mod、e、π了；现在能自定义无参指令了；指令集中的指令忘记加点现在会自动补全；检索结果现在会换行显示；修复了单枚骰子的潜在BUG。
-Ver1.0.2：删除了报错指令；新增了转化指令；降低了误触几率。
-Ver1.0.1：修复了骰子过大触发的BUG；去除了一个不必要的提示；增加查看更新日志的功能。
+Ver1.0.4：现在开放群私聊操作；新增开关指令；新增退群指令；如果指令现在能获取到计数指令的返回值。
+Ver1.0.3：新增如果指令；新增清理指令；现在计算指令支持mod、e、π；现在能自定义无参指令；指令集中的指令忘记加点现在会自动补全；检索结果现在会换行显示；修复单枚骰子的潜在BUG。
+Ver1.0.2：删除报错指令；新增转化指令；降低误触几率。
+Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增加查看更新日志的功能。
 ");
                     return;
 
@@ -571,7 +579,7 @@ Ver1.0.1：修复了骰子过大触发的BUG；去除了一个不必要的提示
             }
             leave = String.Join(" ", fromListFake.ToArray()) + "离开了区域！";
             if (leave.Length < 7) leave = "";
-            ret = DelInfo(name);
+            int ret = DelInfo(name);
             if (ret == 2)
             {
                 return $@"找不到{name}！";
