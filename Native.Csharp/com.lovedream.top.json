@@ -5,8 +5,8 @@
     "ret": 1,                                           // 返回码，固定为1
     "apiver": 9,                                        // Api版本，本SDK为9
     "name": "恋梦桌游姬",                        // 应用名称
-    "version": "1.0.3",                                 // 应用版本
-    "version_id": 1,                                    // 应用顺序版本（每次发布时至少+1）
+    "version": "1.1.0",                                 // 应用版本
+    "version_id": 2,                                    // 应用顺序版本（每次发布时至少+1）
     "author": "未来菌",                                  // 应用作者
     "description": "发牌、掷骰子、记录信息。",
     "event": [                                          // 事件列表，同一事件类型可重复定义（发布前请删除无用事件）
@@ -138,11 +138,11 @@
         //124, //置匿名群员禁言		setGroupAnonymousBan
         //125, //置群匿名设置		setGroupAnonymous
         //126, //置群成员名片		setGroupCard
-        //127, //[敏感]置群退出		setGroupLeave
+        127, //[敏感]置群退出		setGroupLeave
         //128, //置群成员专属头衔	setGroupSpecialTitle
         130, //取群成员信息		getGroupMemberInfoV2 / getGroupMemberInfo
         131, //取陌生人信息		getStrangerInfo
-        //140, //置讨论组退出		setDiscussLeave
+        140, //置讨论组退出		setDiscussLeave
         //150, //置好友添加请求		setFriendAddRequest
         //151, //置群添加请求		setGroupAddRequest
         //160, //取群成员列表		getGroupMemberList

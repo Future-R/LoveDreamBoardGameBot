@@ -175,6 +175,7 @@
     <Compile Include="App\Event\Event_AppMain.cs" />
     <Compile Include="App\Event\Event_CqExit.cs" />
     <Compile Include="App\Event\Event_CqStartup.cs" />
+    <Compile Include="App\Event\Event_Me\Event_ReceiveGroupPrivateMessage.cs" />
     <Compile Include="App\Event\Event_Me\Event_ReceiveGroupMessage.cs" />
     <Compile Include="App\Event\Event_Me\Event_ReceiveFriendMessage.cs" />
     <Compile Include="App\Interface\ICqAppDisable.cs" />

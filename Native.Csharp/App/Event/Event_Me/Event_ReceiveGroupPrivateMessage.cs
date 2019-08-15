@@ -12,9 +12,12 @@ using System.Text.RegularExpressions;
 namespace Native.Csharp.App.Event.Event_Me
 {
     /// <summary>
-    /// 私聊回复
+    /// 群聊回复
+    /// CqPrivateMessageEventArgs→CqGroupMessageEventArgs
+    /// SendPrivateMessage→ReceiveGroupMessage
+    /// e.FromQQ→e.FromQQ
     /// </summary>
-    public class Event_ReceiveFriendMessage : IReceiveFriendMessage
+    public class Event_ReceiveGroupPrivateMessage : IReceiveGroupPrivateMessage
     {
         //静态全局变量与函数
         public static int Number
@@ -45,7 +48,7 @@ namespace Native.Csharp.App.Event.Event_Me
         public static List<string> vKey = new List<string>();
         public static List<string> vValue = new List<string>();
 
-        public void ReceiveFriendMessage(object sender, CqPrivateMessageEventArgs e)
+        public void ReceiveGroupPrivateMessage(object sender, CqPrivateMessageEventArgs e)
         {
             string input = e.Message;
             input = new Regex("[\\s]+").Replace(input, " ");//合并复数空格

@@ -1,5 +1,7 @@
 ﻿using Native.Csharp.App.EventArgs;
 using Native.Csharp.App.Interface;
+using Native.Csharp.Sdk.Cqp;
+using Native.Csharp.Sdk.Cqp.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,15 +26,15 @@ namespace Native.Csharp.App.Event.Event_Me
         {
             get; set;
         }
-        //public static int DiceValue
-        //{
-        //    get; set;
-        //}
-        //public static int CountValue
-        //{
-        //    get; set;
-        //}
+        public static int CountValue
+        {
+            get; set;
+        }
+        public static List<long> botCloseList = new List<long>();
         public static float Values;
+        private static long groupId;
+        private static long qqId;
+
         public static float GetValue()
         {
             return Values;
@@ -42,21 +44,45 @@ namespace Native.Csharp.App.Event.Event_Me
         {
             Number = number;
         }
-        
+        //固有指令合集
+        string commandList = ".计算 .骰子 .创建 .清空 .销毁 .添加 .删除 .移动 .插入 .移除 .抽牌 .查看 .洗牌 .清点 .检索 .发现 .翻转 .导入 .属性 .定义 .报错 .去重 .复制 .棋盘 .日志 .转化 .如果 .清理 .开启 .关闭 .退群 .变量";
+        //变量的键名和键值
+        public static List<string> vKey = new List<string>();
+        public static List<string> vValue = new List<string>();
+
         public void ReceiveGroupMessage(object sender, CqGroupMessageEventArgs e)
         {
             string input = e.Message;
             input = new Regex("[\\s]+").Replace(input, " ");//合并复数空格
             input = input.Trim().Replace("色子","骰子");//去除前后空格，统一一些措辞
-            //把用户输入的第一个中文句号替换为英文
-            if (input.Substring(0, 1) == "。")
+            try
             {
-                input = "." + input.Remove(0, 1);
+                if (input.Substring(0, 1) != "." && (input.Substring(0, 1) != "。" ))//没有扳机就不触发
+                {
+                    return;
+                }
+                //把用户输入的第一个中文句号替换为英文
+                if (input.Substring(0, 1) == "。")
+                {
+                    input = "." + input.Remove(0, 1);
+                }
+            }
+            catch (Exception)
+            {
+                Common.CqApi.SendGroupMessage(e.FromGroup, "天杀的错误！");
+            }
+            if (input.Length < 3)//没有3字就不触发
+            {
+                return;
+            }
+            if (input.Substring(1,1) == ".")//第二个字符也是扳机可能是误触
+            {
+                return;
             }
 
             if (input == ".帮助")
             {
-                Common.CqApi.SendGroupMessage(e.FromGroup, @"恋梦桌游姬V1.0.3 By未来菌
+                Common.CqApi.SendGroupMessage(e.FromGroup, @"恋梦桌游姬V1.1.0 By未来菌
 方括号内为参数，带*的为选填参数：
 
 .计算 [算式]：进行四则运算
@@ -105,18 +131,88 @@ namespace Native.Csharp.App.Event.Event_Me
 
 .棋盘 [房间号]：打开对应房间号的棋盘，房间号约束在0~9
 
-.定义 [添加/删除] [新指令 甲 乙 丙]#[指令 甲 乙]#[指令 甲 丙]：自定义1个新指令，新指令会执行后面每条指令。
+.变量 [变量名] [表达式/【区域】/删除]：设定一个变量，内容为表达式结果，或是某区域的内容，或是删除这个变量。在任意指令中'[变量名]'将会替换为变量的内容
 
-.如果 [表达式] [>/</=/!] [数值]?[指令 甲 乙]?[指令 甲 丙*]：如果表达式的结果大于/小于/等于/不等于指定值，执行后面每条指令。表达式格式：'骰子+清点*2'。
+.定义 [添加/删除] [新指令 甲 乙 丙]#[指令 甲 乙]#[指令 甲 丙]：自定义1个新指令，新指令会执行后面每条指令
+
+.如果 [表达式] [>/</=/!] [数值]?[指令 甲 乙]?[指令 甲 丙*]：如果表达式的结果大于/小于/等于/不等于指定值，执行后面每条指令
+
+.清理 [天数]：[群管]清理X天前创建的所有数据
+
+.退群 [QQ号*]：[群管]将机器人踢出群可能导致封号，请使用这个指令使机器人退群。输入QQ号使对应的1个机器人退群
+
+.开启/关闭 [QQ号*]：将机器人禁言可能导致账号数据异常，请使用这个指令开关机器人。输入QQ号开关群内对应的1个机器人。关闭期间不会处理其它指令
 
 注：可以在区域名开头加入'私密'，如'私密牌库'。非私密区域在某些卡牌变化场景会打印内容。
-牌名可以写成'假名【真名】'的形式，伪装的牌在离开非私密区域时会显露原形。");
+牌名可以写成'假名【真名】'的形式，伪装的牌在离开非私密区域时会显露原形。
+表达式格式：'骰子+清点*2'，当前支持的环境变量：骰子、清点");
                 return;
             }
+            
+            try
+            {
+                if (input.Substring(0,3) == ".开启")
+                {
+                    if (input.Length > 8)
+                    {
+                        if (input.Substring(3).Trim() == Convert.ToString(Common.CqApi.GetLoginQQ()))
+                        {
+                            botCloseList.Remove(e.FromGroup);
+                            Common.CqApi.SendGroupMessage(e.FromGroup, $"{Convert.ToString(Common.CqApi.GetLoginQQ())}已开启！");
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        botCloseList.Remove(e.FromGroup);
+                        Common.CqApi.SendGroupMessage(e.FromGroup, "已开启！");
+                    }
+                }
+                if (input.Substring(0, 3) == ".关闭")
+                {
+                    if (input.Length > 8)
+                    {
+                        if (input.Substring(3).Trim() == Convert.ToString(Common.CqApi.GetLoginQQ()))
+                        {
+                            botCloseList.Add(e.FromGroup);
+                            botCloseList = botCloseList.Distinct().ToList();
+                            Common.CqApi.SendGroupMessage(e.FromGroup, $"{Convert.ToString(Common.CqApi.GetLoginQQ())}已关闭！");
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        botCloseList.Add(e.FromGroup);
+                        botCloseList = botCloseList.Distinct().ToList();
+                        Common.CqApi.SendGroupMessage(e.FromGroup, "已关闭！");
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Common.CqApi.SendGroupMessage(e.FromGroup, "意外的错误！");
+            }
+            
 
             //用户输入指令
-            if (input.Substring(0, 1) == "." && input.Length != 1)
+            if (input.Length > 2 && !botCloseList.Exists((long f) => f == e.FromGroup))
             {
+                int vvc = 0;
+                foreach (var item in vValue)
+                {
+                    input = input.Replace(vKey[vvc], item);
+                    vvc++;
+                }
+                groupId = e.FromGroup;
+                qqId = e.FromQQ;
+                GroupMember member = Common.CqApi.GetMemberInfo(groupId, qqId, true);//获取群成员
+                string pt = Convert.ToString(member.PermitType);//获取权限：Holder群主，Manage管理，None群员
 
                 //判断路径是否存在
                 if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Command\"))
@@ -155,14 +251,14 @@ namespace Native.Csharp.App.Event.Event_Me
                         foreach (var item in loadEndList)
                         {
                             
-                            CommandIn(item, e);
+                            CommandIn(item, e, pt);
 
                         }
 
                     }
                     else
                     {
-                        CommandIn(input, e);//查一下是不是固有指令
+                        CommandIn(input, e, pt);//查一下是不是固有指令
                     }
                 }
                 catch (Exception)
@@ -175,8 +271,12 @@ namespace Native.Csharp.App.Event.Event_Me
         //模块区_______________________________________________________________________________________________________________________________________________________________________
 
         //固有指令
-        public void CommandIn(string input, CqGroupMessageEventArgs e)
+        public void CommandIn(string input, CqGroupMessageEventArgs e,string pt)
         {
+            if (input.Length < 2)//降低错误触发
+            {
+                return;
+            }
             switch (input.Substring(1, 2))//偷懒，只匹配.后2个字符
             {
 
@@ -248,7 +348,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 case "清点":
                     CountNum(input, out string num);
-                    //CountValue = int.Parse(num);
+                    CountValue = int.Parse(num);
                     Common.CqApi.SendGroupMessage(e.FromGroup, $@"{input.Substring(3).Trim()}有{num}张牌");
                     return;
 
@@ -315,7 +415,40 @@ namespace Native.Csharp.App.Event.Event_Me
                     Common.CqApi.SendGroupMessage(e.FromGroup, Variety(input));
                     return;
 
+                case "变量":
+                    Common.CqApi.SendGroupMessage(e.FromGroup, Variable(input));
+                    return;
+
+                case "退群":
+
+                    if (pt == "None")//屁民瞎发啥指令
+                    {
+                        Common.CqApi.SendGroupMessage(e.FromGroup, "权限不足！");
+                        return;
+                    }
+                    if (input.Length > 8)//有参数
+                    {
+                        if (input.Substring(3).Trim() == Convert.ToString(Common.CqApi.GetLoginQQ()))//膝盖中了一箭
+                        {
+                            Common.CqApi.SendGroupMessage(e.FromGroup, "感谢你的支持，再见！");
+                            Common.CqApi.SetGroupExit(e.FromGroup, false);
+                            return;
+                        }
+                        return;//踢的不是我，溜了溜了
+                    }
+                    else//没参数，意思全退呗
+                    {
+                        Common.CqApi.SendGroupMessage(e.FromGroup, "感谢你的支持，再见！");
+                        Common.CqApi.SetGroupExit(e.FromGroup, false);
+                        return;
+                    }
+
                 case "清理":
+                    if (pt == "None")
+                    {
+                        Common.CqApi.SendGroupMessage(e.FromGroup, "权限不足！");
+                        return;
+                    }
                     try
                     {
                         DeleteOldFiles(System.AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\", int.Parse(input.Substring(3).Trim()));
@@ -347,22 +480,23 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 case "日志":
                     Common.CqApi.SendGroupMessage(e.FromGroup, @"更新日志：
-Ver1.0.4：现在开放群私聊操作；新增开关指令；新增退群指令；如果指令现在能获取到计数指令的返回值。
+Ver1.1.0：现在开放群私聊操作；新增变量指令；新增开关指令；新增退群指令；如果指令现在支持表达式；清理与退群指令现在需要群管操作。
 Ver1.0.3：新增如果指令；新增清理指令；现在计算指令支持mod、e、π；现在能自定义无参指令；指令集中的指令忘记加点现在会自动补全；检索结果现在会换行显示；修复单枚骰子的潜在BUG。
 Ver1.0.2：删除报错指令；新增转化指令；降低误触几率。
-Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增加查看更新日志的功能。
-");
+Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增加查看更新日志的功能。");
                     return;
 
-                case "如果"://.如果 [>/</=/!] [指定值]?[指令 A B]
-                    input = input.Substring(3).Trim().Replace("大于", ">").Replace("小于", "<").Replace("等于", "=").Replace("？", "?").Replace("！", "!").Replace("不等于" ,"!");
+                case "如果"://.如果 [表达式] [>/</=/!] [指定值]?[指令 A B]
+                    input = input.Substring(3).Trim().Replace("大于", ">").Replace("小于", "<").Replace("等于", "=").Replace("？", "?").Replace("！", "!").Replace("不等于" ,"!");//[表达式] [>/</=/!] [指定值]?[指令 A B]
                     
                     try
                     {
                         List<string> sharpInput = new List<string>(input.Split(new string[] { "?" }, StringSplitOptions.RemoveEmptyEntries));
-                        
-                        string oper = input.Substring(0, 1);
-                        string value = sharpInput[0].Substring(1).Trim();
+                        List<string> expreesInput = new List<string>(sharpInput[0].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[表达式] [>/</=/!] [指定值]
+
+                        string expression = expreesInput[0].Replace("骰子", $"{Number}").Replace("清点", $"{CountValue}");
+                        string oper = expreesInput[1];
+                        string value = expreesInput[2];
                        
                         sharpInput.RemoveAt(0);
                         for (int i = 0; i < sharpInput.Count; i++)
@@ -375,48 +509,48 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         switch (oper)
                         {
                             case ">":
-                                if (Number > int.Parse(value))
+                                if ((int)new DataTable().Compute(expression, "") > int.Parse(value))
                                 {
                                     foreach (var item in sharpInput)
                                     {
 
-                                        CommandIn(item, e);
+                                        CommandIn(item, e, pt);
 
                                     }
                                 }
                                 break;
 
                             case "<":
-                                if (Number < int.Parse(value))
+                                if ((int)new DataTable().Compute(expression, "") < int.Parse(value))
                                 {
                                     foreach (var item in sharpInput)
                                     {
 
-                                        CommandIn(item, e);
+                                        CommandIn(item, e, pt);
 
                                     }
                                 }
                                 break;
 
                             case "=":
-                                if (Number == int.Parse(value))
+                                if ((int)new DataTable().Compute(expression, "") == int.Parse(value))
                                 {
                                     foreach (var item in sharpInput)
                                     {
 
-                                        CommandIn(item, e);
+                                        CommandIn(item, e, pt);
 
                                     }
                                 }
                                 break;
 
                             case "!":
-                                if (Number != int.Parse(value))
+                                if ((int)new DataTable().Compute(expression, "") != int.Parse(value))
                                 {
                                     foreach (var item in sharpInput)
                                     {
 
-                                        CommandIn(item, e);
+                                        CommandIn(item, e, pt);
 
                                     }
                                 }
@@ -441,8 +575,8 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
         public string Calc(string input)
         {
             input = input.Substring(3).Trim().Replace("×", "*").Replace("x", "*").Replace("X", "*")
-                            .Replace("（", "(").Replace("）", ")").Replace("÷", "/").Replace("％","/100")
-                            .Replace("%","/100").Replace("e", "(" + Convert.ToString(Math.E) + ")")
+                            .Replace("（", "(").Replace("）", ")").Replace("÷", "/").Replace("％", "/100")
+                            .Replace("%", "/100").Replace("e", "(" + Convert.ToString(Math.E) + ")")
                             .Replace("π", "(" + Convert.ToString(Math.PI) + ")").Replace("mod", "%");//中文运算符都换成程序运算符
 
             try
@@ -455,6 +589,12 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                 return "请输入正确的四则算式！";
             }
         }
+
+        //public static object Eval(string s)
+        //{
+        //    Microsoft.JScript.Vsa.VsaEngine ve = Microsoft.JScript.Vsa.VsaEngine.CreateEngine();
+        //    return Microsoft.JScript.Eval.JScriptEvaluate(s, ve);
+        //}
 
         //骰子
         public string Dices(string input)
@@ -1142,9 +1282,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         }
                         else
                         {
-                            //固有指令合集
-                            var temp = ".计算 .骰子 .创建 .清空 .销毁 .添加 .删除 .移动 .插入 .移除 .抽牌 .查看 .洗牌 .清点 .检索 .发现 .翻转 .导入 .属性 .定义 .报错 .去重 .复制 .棋盘 .日志 .转化 .如果 .清理";
-                            foreach (var item in new List<string>(temp.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
+                            foreach (var item in new List<string>(commandList.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                             {
                                 if (item == comOuput[0])
                                 {
@@ -1418,8 +1556,65 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             }
         }
 
-        //骰子
-        public void Dice14(string input)
+        //变量
+        public string Variable(string input)//.变量 [变量名] [表达式/区域/删除]
+        {
+            try
+            {
+                List<string> tempInput = new List<string>(input.Substring(3).Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[变量名] [表达式/【区域】/删除]
+                int indexer = vKey.FindIndex((string f) => f == "&#91;" + tempInput[0] + "&#93;");//获取索引
+                if (tempInput[1] == "删除")
+                {
+                    if (indexer == -1)
+                    {
+                        return $"变量[{tempInput[0]}]不存在！";
+                    }
+                    else
+                    {
+                        vKey.RemoveAt(indexer);
+                        vValue.RemoveAt(indexer);
+                        return $"变量[{tempInput[0]}]删除成功！";
+                    }
+                }
+                if (tempInput[1].Substring(0,1) == "【" && tempInput[1].Substring(tempInput[1].Length - 1, 1) == "】")//是区域
+                {
+                    if (indexer == -1)//变量不存在，添加新项
+                    {
+                        vKey.Add("&#91;" + tempInput[0] + "&#93;");
+                        string vv = LoadInfo(tempInput[1].Replace("【", "").Replace("】", ""));
+                        vValue.Add(vv);
+                        return $"添加变量[{tempInput[0]}] = {vv}";
+                    }
+                    else//变量存在，修改键值
+                    {
+                        string vv = LoadInfo(tempInput[1].Replace("【", "").Replace("】", ""));
+                        vValue[indexer] = vv;
+                        return $"修改变量[{tempInput[0]}] = {vv}";
+                    }
+                }
+                //如果都不是，那就是表达式
+                string expression = tempInput[1].Replace("骰子", $"{Number}").Replace("清点", $"{CountValue}");
+                if (indexer == -1)//变量不存在，添加新项
+                {
+                    vKey.Add("&#91;" + tempInput[0] + "&#93;");
+                    string vv = Convert.ToString(new DataTable().Compute(expression, ""));
+                    vValue.Add(vv);
+                    return $"添加变量[{tempInput[0]}] = {vv}";
+                }
+                else
+                {
+                    string vv = Convert.ToString(new DataTable().Compute(expression, ""));
+                    vValue[indexer] = vv;
+                    return $"修改变量[{tempInput[0]}] = {vv}";
+                }
+            }
+            catch (Exception)
+            {
+                return "非法输入！";
+            }
+        }
+
+        public void Dicex(string input)
         {
             try
             {
