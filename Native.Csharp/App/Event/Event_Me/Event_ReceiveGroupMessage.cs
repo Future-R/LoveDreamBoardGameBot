@@ -56,7 +56,8 @@ namespace Native.Csharp.App.Event.Event_Me
         //变量的键名和键值
         public static List<string> vKey = new List<string>();
         public static List<string> vValue = new List<string>();
-
+        public static bool varDelay;
+        public static int vvc;
         //群聊专用全局变量
         public static GroupMember member;
         public static string PT;
@@ -66,8 +67,14 @@ namespace Native.Csharp.App.Event.Event_Me
         {
             string input = e.Message;
             QQQ = e.FromQQ;
+            varDelay = false;
             try
             {
+                if (input.StartsWith("~"))
+                {
+                    varDelay = true;
+                    input = input.Substring(1);
+                }
                 if (input.StartsWith("..") || input.StartsWith("。。") || input.StartsWith("!!") || input.StartsWith("！！"))//用户输入的前缀为连续扳机，去掉第1个并传递给群私聊类处理
                 {
                     CqPrivateMessageEventArgs ee = new CqPrivateMessageEventArgs(e.Id, e.MsgId, e.FromQQ, input.Substring(1));
@@ -190,7 +197,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
 可在区域名开头加入'私密'，如'私密牌库'。非私密区域在某些卡牌变化场景会打印内容。
 牌名可写成'假名【真名】'的形式，伪装的牌在离开非私密区域时会显露原形。
-群聊输入内容的最前方多输入1次扳机可以私发结果。
+群聊输入内容的最前方多输入1次扳机可以私发结果，多输入1次'~'开启变量延迟解释。
 使用'!'代替'.'作为扳机可自动补全部分指令，参考'开始'指令。
 将机器人踢出群或者禁言可能导致账户被冻结或者引发程序异常，请使用退群和关闭指令来令机器人退群和暂停运行。
 ");
@@ -377,20 +384,21 @@ AP*2'
 删除：变量名的后1个参数可输入。删除指定名称的变量。
 范例：'.变量 Var 看新世'
 '.查[Var]界'会被解释为'.查看新世界'并执行。
+在指令扳机前输入'~'如：'~.查看[var]'可以开启变量延迟解释，用于解释定义复合指令中的变量。
 变量非常适合搭配'如果'指令使用。";
                             break;
                         case "定义":
                             helpReturn = @"自定义1个新指令。新指令会自动执行'#'后的每条指令。
 .定义 [添加/删除] [.新指令 甲 乙 丙]#[.指令 甲 乙]#[.指令 甲 丙*]
-添加/删除：此处输入删除时，仅需要输入需要删除的指令名。
+添加/删除：指示了需要添加还是删除指令。删除指令时不需要输入指令参数，如：'.定义 删除 .抽指定牌'。
 新指令 甲 乙 丙：新指令为自定义指令名；甲乙丙为自定义指令的参数。参数的个数必须为正整数。
 指令 甲 乙：指示被自定义指令执行的复合指令中的1个指令。自定义指令执行时，子指令的参数会被转义为自定义指令的参数。指令之间用'#'连接。
 范例：'.定义 添加 .抽指定牌 牌名#.出牌 私密套牌 手牌 牌名#.检索 手牌 牌名'
 '.定义 删除 .抽指定牌'
 特别地，你可以忽略'定义'和'如果'指令中指令名前的'.'扳机，而程序会为你自动补全：
 '.定义 添加 抽指定牌 牌名#出牌 私密套牌 手牌 牌名'
-但是如果你希望将结果私发，只能手动输入复合指令中所有的扳机：
-'.定义 添加 抽指定牌 牌名#..出牌 私密套牌 手牌 牌名'";
+但是如果你希望将结果私发，只能手动输入指令中所有的扳机：
+'.定义 添加 抽指定牌 牌名#..出牌 私密套牌 手牌 牌名''";
                             break;
                         case "如果":
                             helpReturn = @"如果表达式的结果大于/小于/等于/不等于指定值，执行'?'后的每条指令。
@@ -401,6 +409,7 @@ AP*2'
 指令 甲 乙：复合指令的子指令。可参考'定义'指令。
 范例：'.如果 (骰子+1)*2 > [Var]?.添加 骰池 骰子?.清点 骰池'
 '[变量名]'的形式表示这是一个自定义变量，详情参考'变量'指令。
+如果你希望将结果私发，只需要在指令而非子指令前连发两次扳机，这点与'定义'指令不同。
 '如果'指令非常适合嵌入到'定义'指令中使用。";
                             break;
                         case "清理":
@@ -444,11 +453,14 @@ QQ号：输入QQ号使对应的1个机器人关闭，不填则使所有机器人
             //用户输入指令
             if (!botCloseList.Exists((long f) => f == e.FromGroup))
             {
-                int vvc = 0;
-                foreach (var item in vValue)//变量解释器
+                if (!varDelay)
                 {
-                    input = input.Replace(vKey[vvc], item);
-                    vvc++;
+                    vvc = 0;
+                    foreach (var item in vValue)//变量解释器
+                    {
+                        input = input.Replace(vKey[vvc], item);
+                        vvc++;
+                    }
                 }
 
                 //判断路径是否存在
@@ -498,12 +510,21 @@ QQ号：输入QQ号使对应的1个机器人关闭，不填则使所有机器人
                             else
                             {
                                 Defa = false;
-                                if (input.StartsWith("！") || input.StartsWith("!"))//该指令是自动补全参数指令
+                                if (temp.StartsWith("！") || temp.StartsWith("!"))//该指令是自动补全参数指令
                                 {
                                     Defa = true;
-                                    input = "." + input.Remove(0, 1);
+                                    temp = "." + temp.Remove(0, 1);
                                 }
-                                CommandIn(item, e);
+                                if (varDelay)
+                                {
+                                    vvc = 0;
+                                    foreach (var itemx in vValue)//变量解释器
+                                    {
+                                        temp = temp.Replace(vKey[vvc], itemx);
+                                        vvc++;
+                                    }
+                                }
+                                CommandIn(temp, e);
                             }
                         }
 
@@ -515,6 +536,15 @@ QQ号：输入QQ号使对应的1个机器人关闭，不填则使所有机器人
                         {
                             Defa = true;
                             input = "." + input.Remove(0, 1);
+                        }
+                        if (varDelay)
+                        {
+                            vvc = 0;
+                            foreach (var itemx in vValue)//变量解释器
+                            {
+                                input = input.Replace(vKey[vvc], itemx);
+                                vvc++;
+                            }
                         }
                         CommandIn(input, e);//查一下是不是固有指令
                     }
@@ -531,6 +561,7 @@ QQ号：输入QQ号使对应的1个机器人关闭，不填则使所有机器人
         //固有指令
         public void CommandIn(string input, CqGroupMessageEventArgs e)
         {
+            input = input.Replace("&#91;", "[").Replace("&#93;", "]");
             if (input.Length < 2)//降低错误触发
             {
                 return;
@@ -756,7 +787,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         sharpInput.RemoveAt(0);
                         for (int i = 0; i < sharpInput.Count; i++)
                         {
-                            if (sharpInput[i].Substring(0,1) != "." && sharpInput[i].StartsWith("。"))
+                            if (!sharpInput[i].StartsWith(".") && !sharpInput[i].StartsWith("。"))
                             {
                                 sharpInput[i] = "." + sharpInput[i];
                             }
@@ -2092,7 +2123,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             try
             {
                 List<string> tempInput = new List<string>(input.Substring(3).Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[变量名] [表达式/【区域】/删除]
-                int indexer = vKey.FindIndex((string f) => f == "&#91;" + tempInput[0] + "&#93;");//获取索引
+                int indexer = vKey.FindIndex((string f) => f == @"[" + tempInput[0] + @"]");//获取索引
                 if (tempInput[1] == "删除")
                 {
                     if (indexer == -1)
@@ -2110,7 +2141,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                 {
                     if (indexer == -1)//变量不存在，添加新项
                     {
-                        vKey.Add("&#91;" + tempInput[0] + "&#93;");
+                        Event_ReceiveGroupMessage.vKey.Add(@"[" + tempInput[0] + @"]");
                         string vv = LoadInfo(tempInput[1].Replace("【", "").Replace("】", ""));
                         vValue.Add(vv);
                         return $"添加变量[{tempInput[0]}] = {vv}";
@@ -2126,7 +2157,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                 string strInput = tempInput[1].Replace("骰子", $"{Number}").Replace("清点", $"{CountValue}");
                 if (indexer == -1)//变量不存在，添加新项
                 {
-                    vKey.Add("&#91;" + tempInput[0] + "&#93;");
+                    Event_ReceiveGroupMessage.vKey.Add(@"[" + tempInput[0] + @"]");
                     vValue.Add(strInput);
                     return $"添加变量[{tempInput[0]}] = {strInput}";
                 }
