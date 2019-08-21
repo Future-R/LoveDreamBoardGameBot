@@ -175,9 +175,11 @@
     <Compile Include="App\Event\Event_AppMain.cs" />
     <Compile Include="App\Event\Event_CqExit.cs" />
     <Compile Include="App\Event\Event_CqStartup.cs" />
+    <Compile Include="App\Event\Event_Me\Event_CheckError.cs" />
     <Compile Include="App\Event\Event_Me\Event_ReceiveGroupPrivateMessage.cs" />
     <Compile Include="App\Event\Event_Me\Event_ReceiveGroupMessage.cs" />
     <Compile Include="App\Event\Event_Me\Event_ReceiveFriendMessage.cs" />
+    <Compile Include="App\Event\Event_Me\Event_Variable.cs" />
     <Compile Include="App\Interface\ICqAppDisable.cs" />
     <Compile Include="App\Interface\ICqAppEnable.cs" />
     <Compile Include="App\Interface\ICallMenu.cs" />
@@ -207,12 +209,6 @@
     <Compile Include="Repair\Helper\AssemblyHelper.cs" />
     <Compile Include="Repair\Helper\ReflectionHelper.cs" />
     <Compile Include="Repair\ModuleInitializer.cs" />
-    <Compile Include="UI\Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="UI\Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

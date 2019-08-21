@@ -22,14 +22,25 @@ namespace Native.Csharp.App.Event.Event_Me
         public void ReceiveGroupPrivateMessage(object sender, CqPrivateMessageEventArgs e)
         {
             string input = e.Message;
-            if (input.StartsWith("~"))
+            Event_Variable.QQQ = e.FromQQ;
+            Event_Variable.varDelay = false;
+            try
             {
-                Event_ReceiveGroupMessage.varDelay = true;
-                input = input.Substring(1);
+                //检查是否启用变量延迟解释
+                if (input.StartsWith("~"))
+                {
+                    Event_Variable.varDelay = true;
+                    input = input.Substring(1);
+                }
             }
-            Event_ReceiveGroupMessage.QQQ = e.FromQQ;
+            catch (Exception ex)
+            {
+                Common.CqApi.SendPrivateMessage(e.FromQQ, Event_CheckError.CheckError(ex));
+            }
+
+
             input = new Regex("[\\s]+").Replace(input, " ");//合并复数空格
-            input = input.Trim().Replace("色子", "骰子");//去除前后空格，统一一些措辞
+            input = input.Trim();//去除前后空格
             //把用户输入的第一个中文句号替换为英文
             if (input.StartsWith("。"))
             {
@@ -44,50 +55,61 @@ namespace Native.Csharp.App.Event.Event_Me
                 return;
             }
 
+            try//插件开关
+            {
+                if (input.StartsWith(".开启"))
+                {
+                    if (input.Length > 8)
+                    {
+                        if (input.Substring(3).Trim() == Convert.ToString(Common.CqApi.GetLoginQQ()))
+                        {
+                            Event_Variable.botCloseList.Remove(e.FromQQ);
+                            Common.CqApi.SendPrivateMessage(e.FromQQ, $"{Convert.ToString(Common.CqApi.GetLoginQQ())}已开启！");
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        Event_Variable.botCloseList.Remove(e.FromQQ);
+                        Common.CqApi.SendPrivateMessage(e.FromQQ, "已开启！");
+                    }
+                }
+                if (input.StartsWith(".关闭"))
+                {
+                    if (input.Length > 8)
+                    {
+                        if (input.Substring(3).Trim() == Convert.ToString(Common.CqApi.GetLoginQQ()))
+                        {
+                            Event_Variable.botCloseList.Add(e.FromQQ);
+                            Event_Variable.botCloseList = Event_Variable.botCloseList.Distinct().ToList();
+                            Common.CqApi.SendPrivateMessage(e.FromQQ, $"{Convert.ToString(Common.CqApi.GetLoginQQ())}已关闭！");
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        Event_Variable.botCloseList.Add(e.FromQQ);
+                        Event_Variable.botCloseList = Event_Variable.botCloseList.Distinct().ToList();
+                        Common.CqApi.SendPrivateMessage(e.FromQQ, "已关闭！");
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Common.CqApi.SendPrivateMessage(e.FromQQ, "意外的错误！");
+            }
 
             if (input.StartsWith(".帮助"))//帮助指令
             {
                 if (input.Length < 5)//无参帮助
                 {
-                    Common.CqApi.SendPrivateMessage(e.FromQQ, $@"恋梦桌游姬V1.1.0 By未来菌
-输入'.帮助 [指令名]'查看对应指令的详细解释
-方括号内为参数，带*的为选填参数,带!的为自动补全参数：
-.计算 [算式]
-.骰子 [数量*] [面数!]
-.创建 [区域]
-.销毁 [区域]
-.添加 [区域!] [牌名] [牌名*]
-.删除 [区域!] [牌名] [牌名*]
-.插入 [区域] [序号] [牌名] [牌名*]
-.移除 [区域] [序号]
-.抽牌 [旧区域!] [新区域!] [数量*]
-.出牌 [旧区域!] [新区域!] [牌名] [牌名*]
-.查看 [区域!]
-.洗牌 [区域!]
-.清点 [区域]
-.检索 [区域] [字段] [所有*]
-.发现 [区域] [数量*]
-.翻转 [区域]
-.去重 [区域]
-.转化 [区域!] [旧牌名] [新牌名] [所有*]
-.复制 [旧区域] [新区域]
-.属性 [角色!] [键名:键值] [键名:键值*]
-.导入 [区域] [文本]
-.开始 [游戏名]
-.棋盘 [房间号]
-.变量 [变量名] [字符串/【区域】/删除]
-.定义 [添加/删除] [新指令 甲 乙 丙]#[指令 甲 乙]#[指令 甲 丙*]
-.如果 [表达式] [>/</=/!] [数值]?[指令 甲 乙]?[指令 甲 丙*]
-.清理 [天数]（群主权限）
-.退群 [QQ号*]（群管权限）
-.开启/关闭 [QQ号*]
-
-可在区域名开头加入'私密'，如'私密牌库'。非私密区域在某些卡牌变化场景会打印内容。
-牌名可写成'假名【真名】'的形式，伪装的牌在离开非私密区域时会显露原形。
-群聊输入内容的最前方多输入1次扳机可以私发结果，多输入1次'~'开启变量延迟解释。
-使用'!'代替'.'作为扳机可自动补全部分指令，参考'开始'指令。
-将机器人踢出群或者禁言可能导致账户被冻结或者引发程序异常，请使用退群和关闭指令来令机器人退群和暂停运行。
-");
+                    Common.CqApi.SendPrivateMessage(e.FromQQ, Event_Variable.helpDescription);
                 }
                 else//含参帮助
                 {
@@ -240,7 +262,7 @@ AP*2'
                             break;
                         case "开始":
                             helpReturn = @"开始1局游戏，自动绑定你的默认牌库、手牌、桌面和默认骰子面。绑定后，将'.'替换为'!'，可以自动补全部分指令
-（骰子、添加、删除、插入、移除、抽牌、出牌、查看、转化、属性）
+（骰子、添加、删除、抽牌、出牌、查看、转化、属性）
 .开始 [游戏名]
 范例：'.开始 心灵同步'
 绑定后，可以简化操作如下：
@@ -248,7 +270,7 @@ AP*2'
 !骰子
 .添加 手牌 幸运币
 !添加 幸运币
-.移除 怪兽卡区域 3
+.抽牌 卡组 手牌 5
 !抽牌 5
 .出牌 手牌 战场 混沌法球
 !出牌 混沌法球
@@ -286,7 +308,6 @@ AP*2'
 '.定义 添加 抽指定牌 牌名#出牌 私密套牌 手牌 牌名'
 但是如果你希望将结果私发，只能手动输入指令中所有的扳机：
 '.定义 添加 抽指定牌 牌名#..出牌 私密套牌 手牌 牌名''";
-
                             break;
                         case "如果":
                             helpReturn = @"如果表达式的结果大于/小于/等于/不等于指定值，执行'?'后的每条指令。
@@ -297,6 +318,7 @@ AP*2'
 指令 甲 乙：复合指令的子指令。可参考'定义'指令。
 范例：'.如果 (骰子+1)*2 > [Var]?.添加 骰池 骰子?.清点 骰池'
 '[变量名]'的形式表示这是一个自定义变量，详情参考'变量'指令。
+如果你希望将结果私发，只需要在指令而非子指令前连发两次扳机，这点与'定义'指令不同。
 '如果'指令非常适合嵌入到'定义'指令中使用。";
                             break;
                         case "清理":
@@ -338,15 +360,15 @@ QQ号：输入QQ号使对应的1个机器人关闭，不填则使所有机器人
 
 
             //用户输入指令
-            if (!Event_ReceiveGroupMessage.botCloseList.Exists((long f) => f == e.FromQQ))
+            if (!Event_Variable.botCloseList.Exists((long f) => f == e.FromQQ))
             {
-                if (!Event_ReceiveGroupMessage.varDelay)
+                if (!Event_Variable.varDelay)
                 {
-                    Event_ReceiveGroupMessage.vvc = 0;
-                    foreach (var item in Event_ReceiveGroupMessage.vValue)//变量解释器
+                    int vvc = 0;
+                    foreach (var item in Event_Variable.vValue)//变量解释器
                     {
-                        input = input.Replace(Event_ReceiveGroupMessage.vKey[Event_ReceiveGroupMessage.vvc], item);
-                        Event_ReceiveGroupMessage.vvc++;
+                        input = input.Replace(Event_Variable.vKey[vvc], item);
+                        vvc++;
                     }
                 }
 
@@ -389,39 +411,40 @@ QQ号：输入QQ号使对应的1个机器人关闭，不填则使所有机器人
                         foreach (var item in loadEndList)
                         {
                             temp = item;
-                            Event_ReceiveGroupMessage.Defa = false;
-                            if (temp.StartsWith("！") || temp.StartsWith("!"))//该指令是自动补全参数指令
-                            {
-                                Event_ReceiveGroupMessage.Defa = true;
-                                temp = "." + temp.Remove(0, 1);
-                            }
-                            if (Event_ReceiveGroupMessage.varDelay)
-                            {
-                                Event_ReceiveGroupMessage.vvc = 0;
-                                foreach (var itemx in Event_ReceiveGroupMessage.vValue)//变量解释器
+                                Event_Variable.Defa = false;
+                                if (temp.StartsWith("！") || temp.StartsWith("!"))//该指令是自动补全参数指令
                                 {
-                                    temp = temp.Replace(Event_ReceiveGroupMessage.vKey[Event_ReceiveGroupMessage.vvc], itemx);
-                                    Event_ReceiveGroupMessage.vvc++;
+                                    Event_Variable.Defa = true;
+                                    temp = "." + temp.Remove(0, 1);
                                 }
-                            }
-                            CommandIn(temp, e);
+                                if (Event_Variable.varDelay)
+                                {
+                                    int vvc = 0;
+                                    foreach (var itemx in Event_Variable.vValue)//变量解释器
+                                    {
+                                        temp = temp.Replace(Event_Variable.vKey[vvc], itemx);
+                                        vvc++;
+                                    }
+                                }
+                                CommandIn(temp, e);
                         }
+
                     }
                     else
                     {
-                        Event_ReceiveGroupMessage.Defa = false;
+                        Event_Variable.Defa = false;
                         if (input.StartsWith("！") || (input.StartsWith("!")))//该指令是自动补全参数指令
                         {
-                            Event_ReceiveGroupMessage.Defa = true;
+                            Event_Variable.Defa = true;
                             input = "." + input.Remove(0, 1);
                         }
-                        if (Event_ReceiveGroupMessage.varDelay)
+                        if (Event_Variable.varDelay)
                         {
-                            Event_ReceiveGroupMessage.vvc = 0;
-                            foreach (var itemx in Event_ReceiveGroupMessage.vValue)//变量解释器
+                            int vvc = 0;
+                            foreach (var itemx in Event_Variable.vValue)//变量解释器
                             {
-                                input = input.Replace(Event_ReceiveGroupMessage.vKey[Event_ReceiveGroupMessage.vvc], itemx);
-                                Event_ReceiveGroupMessage.vvc++;
+                                input = input.Replace(Event_Variable.vKey[vvc], itemx);
+                                vvc++;
                             }
                         }
                         CommandIn(input, e);//查一下是不是固有指令
@@ -429,7 +452,7 @@ QQ号：输入QQ号使对应的1个机器人关闭，不填则使所有机器人
                 }
                 catch (Exception)
                 {
-                    Common.CqApi.SendPrivateMessage(e.FromQQ, "出现异常！");
+                    Common.CqApi.SendPrivateMessage(e.FromQQ, "指令输入错误！输入'.帮助'检查你的格式！");
                 }
             }
         }
@@ -515,7 +538,7 @@ QQ号：输入QQ号使对应的1个机器人关闭，不填则使所有机器人
 
                 case "清点":
                     CountNum(input, out string num);
-                    Event_ReceiveGroupMessage.CountValue = int.Parse(num);
+                    Event_Variable.CountValue = int.Parse(num);
                     Common.CqApi.SendPrivateMessage(e.FromQQ, $@"{input.Substring(3).Trim()}有{num}张牌");
                     return;
 
@@ -591,12 +614,7 @@ QQ号：输入QQ号使对应的1个机器人关闭，不填则使所有机器人
                     return;
 
                 case "日志":
-                    Common.CqApi.SendPrivateMessage(e.FromQQ, @"更新日志：
-Plus1.1.0：新增开始指令；部分指令现在可以用!代替.简化输入；群聊指令支持私发结果；重写了帮助指令；移动指令更名为出牌；出牌指令现在取符合条件的随机目标而不是最前方目标；变量指令的表达式输入改为字符串输入；变量现在可以全局使用。
-Beta1.1.0：现在开放群私聊操作；新增变量指令；新增开关指令；新增退群指令；如果指令现在支持表达式；清理与退群指令现在需要群管操作。
-Ver1.0.3：新增如果指令；新增清理指令；现在计算指令支持mod、e、π；现在能自定义无参指令；指令集中的指令忘记加点现在会自动补全；检索结果现在会换行显示；修复单枚骰子的潜在BUG。
-Ver1.0.2：删除报错指令；新增转化指令；降低误触几率。
-Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增加查看更新日志的功能。");
+                    Common.CqApi.SendPrivateMessage(e.FromQQ, Event_Variable.updateLogDescription);
                     return;
 
                 case "如果"://.如果 [表达式] [>/</=/!] [指定值]?[指令 A B]
@@ -607,7 +625,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         List<string> sharpInput = new List<string>(input.Split(new string[] { "?" }, StringSplitOptions.RemoveEmptyEntries));
                         List<string> expreesInput = new List<string>(sharpInput[0].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[表达式] [>/</=/!] [指定值]
 
-                        string expression = expreesInput[0].Replace("骰子", $"{Event_ReceiveGroupMessage.Number}").Replace("清点", $"{Event_ReceiveGroupMessage.CountValue}");
+                        string expression = expreesInput[0].Replace("骰子", $"{Event_Variable.Number}").Replace("清点", $"{Event_Variable.CountValue}");
                         string oper = expreesInput[1];
                         string value = expreesInput[2];
 
@@ -670,18 +688,16 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                                 break;
 
                             default:
-                                Common.CqApi.SendPrivateMessage(e.FromQQ, "找不到比较符！");
+                                Common.CqApi.SendGroupMessage(e.FromQQ, "找不到比较符！");
                                 break;
                         }
                     }
                     catch (Exception)
                     {
-                        Common.CqApi.SendPrivateMessage(e.FromQQ, "抛出异常！");
+                        Common.CqApi.SendGroupMessage(e.FromQQ, "抛出异常！");
                     }
                     return;
             }
-
-            //Common.CqApi.SendPrivateMessage(e.FromQQ, "不存在的指令！获取指令目录请输入“.帮助”！");
         }
 
         //计算
@@ -703,6 +719,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             }
         }
 
+        //调用Js运算可能会导致酷Q被杀软拦截，不建议使用
         //public static object Eval(string s)
         //{
         //    Microsoft.JScript.Vsa.VsaEngine ve = Microsoft.JScript.Vsa.VsaEngine.CreateEngine();
@@ -714,11 +731,11 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
         {
             try
             {
-                if (Event_ReceiveGroupMessage.Defa == true)
+                if (Event_Variable.Defa == true)
                 {
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_ReceiveGroupMessage.QQQ + ".ini"))//如果属性文件存在
+                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
                     {
-                        string att = LoadInfo(@"Att\" + Event_ReceiveGroupMessage.QQQ);
+                        string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
                         string diceFace = "";
                         foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                         {
@@ -754,7 +771,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                                 int result = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(inputArray[1])) + 1;
                                 results = results + "+" + result;
                             }
-                            Event_ReceiveGroupMessage.Number = (int)new DataTable().Compute(results, "");
+                            Event_Variable.Number = (int)new DataTable().Compute(results, "");
                             return results.Substring(1) + " = " + new DataTable().Compute(results, "");
                         }
                         catch (Exception)
@@ -772,7 +789,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                             }
                             Random rd = new Random();
                             int result = rd.Next(0, Convert.ToInt32(inputArray[0])) + 1;
-                            Event_ReceiveGroupMessage.Number = result;
+                            Event_Variable.Number = result;
                             return $"{result}";
                         }
                         catch (Exception)
@@ -791,7 +808,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         }
                         Random rd = new Random();
                         int result = rd.Next(0, Convert.ToInt32(inputArray[0])) + 1;
-                        Event_ReceiveGroupMessage.Number = result;
+                        Event_Variable.Number = result;
                         return $"{result}";
                     }
                     catch (Exception)
@@ -838,19 +855,8 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             GetInfo(input, out string name, out string reture, out string refake);
             List<string> tempInput = new List<string>(reture.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
             List<string> fromListFake = new List<string>();
-            foreach (var item in tempInput)//tempInput截去真名，传入fromListFake
-            {
-                if (item.Contains("【"))
-                {
-                    int startPos = item.IndexOf("【");
-                    fromListFake.Add(item.Substring(0, startPos));//截去真名
-                }
-                else
-                {
-                    fromListFake.Add(item);
-                }
-            }
-            leave = String.Join(" ", fromListFake.ToArray()) + "离开了区域！";
+
+            leave = refake + "离开了区域！";
             if (leave.Length < 7) leave = "";
             int ret = DelInfo(name);
             if (ret == 2)
@@ -874,11 +880,11 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
         public string Add(string input)//.删除 区域 AA BB CC
         {
             input = input.Substring(3).Trim();
-            if (Event_ReceiveGroupMessage.Defa == true)
+            if (Event_Variable.Defa == true)
             {
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_ReceiveGroupMessage.QQQ + ".ini"))//如果属性文件存在
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
                 {
-                    string att = LoadInfo(@"Att\" + Event_ReceiveGroupMessage.QQQ);
+                    string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
                     string hand = "";
                     foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                     {
@@ -898,7 +904,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             try
             {
                 //如果文件存在的话……我会抽时间优化一下这块代码
-                if (File.Exists(System.AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + input.Substring(0, spsNum) + ".ini"))
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + input.Substring(0, spsNum) + ".ini"))
                 {
                     try
                     {
@@ -941,11 +947,11 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
         /// <param name="refake">假名列表</param>
         public void GetInfo(string input, out string name, out string reture, out string refake)
         {
-            if (Event_ReceiveGroupMessage.Defa == true)
+            if (Event_Variable.Defa == true)
             {
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_ReceiveGroupMessage.QQQ + ".ini"))//如果属性文件存在
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
                 {
-                    string att = LoadInfo(@"Att\" + Event_ReceiveGroupMessage.QQQ);
+                    string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
                     string hand = "";
                     foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                     {
@@ -987,18 +993,18 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                     list2.Add(item);
                 }
             }
-            refake = String.Join(" ", list2.ToArray());
+            refake = string.Join(" ", list2.ToArray());
         }
 
         //删除
         public string DelInfos(string input, out string trueName)//.删除 区域 AA BB CC
         {
             trueName = "";
-            if (Event_ReceiveGroupMessage.Defa == true)
+            if (Event_Variable.Defa == true)
             {
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_ReceiveGroupMessage.QQQ + ".ini"))//如果属性文件存在
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
                 {
-                    string att = LoadInfo(@"Att\" + Event_ReceiveGroupMessage.QQQ);
+                    string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
                     string hand = "";
                     foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                     {
@@ -1031,7 +1037,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         if (find == -1)
                         {
                             trueName = "";
-                            return $@"无法找到{String.Join(" ", delList.ToArray())}";
+                            return $@"无法找到{string.Join(" ", delList.ToArray())}";
                         }
                         if (collection2[find + i].Contains("【"))
                         {
@@ -1040,9 +1046,9 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         collection.Remove(delList[i]);
                     }
                     DelInfo(tempInput[0]); CreateInfo(tempInput[0]);
-                    WriteInfo(tempInput[0], $@"{String.Join(" ", collection.ToArray())}");
+                    WriteInfo(tempInput[0], $@"{string.Join(" ", collection.ToArray())}");
                     return $@"{tempInput[0]}:
-{String.Join(" ", collection.ToArray())}";
+{string.Join(" ", collection.ToArray())}";
                 }
                 else
                 {
@@ -1061,11 +1067,11 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             try
             {
                 input = input.Substring(3).Trim();
-                if (Event_ReceiveGroupMessage.Defa == true)
+                if (Event_Variable.Defa == true)
                 {
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_ReceiveGroupMessage.QQQ + ".ini"))//如果属性文件存在
+                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
                     {
-                        string att = LoadInfo(@"Att\" + Event_ReceiveGroupMessage.QQQ);
+                        string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
                         string deck = "";
                         foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                         {
@@ -1094,7 +1100,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         list.RemoveAt(rd);
                     }
                     DelInfo(input); CreateInfo(input);
-                    string notExistValue = String.Join(" ", list2.ToArray());
+                    string notExistValue = string.Join(" ", list2.ToArray());
                     WriteInfo(input, $@"{notExistValue}");
                     return "洗切完成！";
                 }
@@ -1118,11 +1124,11 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             try
             {
                 input = input.Substring(3).Trim();
-                if (Event_ReceiveGroupMessage.Defa == true)
+                if (Event_Variable.Defa == true)
                 {
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_ReceiveGroupMessage.QQQ + ".ini"))//如果属性文件存在
+                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
                     {
-                        string att = LoadInfo(@"Att\" + Event_ReceiveGroupMessage.QQQ);
+                        string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
                         string oldZone = "";
                         string newZone = "";
                         foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
@@ -1152,10 +1158,10 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                     nameList.Add(list[i + 2]);//需要移动的对象
                 }
                 List<string> fromList = new List<string>(
-                    File.ReadAllText(System.AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name1 + ".ini")
+                    File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name1 + ".ini")
                     .Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//来源区域全称
                 List<string> toList = new List<string>(
-                    File.ReadAllText(System.AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name2 + ".ini")
+                    File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name2 + ".ini")
                     .Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//目标区域
                 List<string> fromListFake = new List<string>();//来源区域假名
 
@@ -1173,7 +1179,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                             fromListFake.Add(item);
                         }
                     }
-                    fakeName = String.Join(" ", fromListFake.ToArray());
+                    fakeName = string.Join(" ", fromListFake.ToArray());
 
                     int find;
                     for (int i = 0; i < nameList.Count; i++)
@@ -1182,7 +1188,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         if (find == -1)
                         {
                             trueName = "";
-                            return $@"无法找到{String.Join(" ", nameList.ToArray())}";
+                            return $@"无法找到{string.Join(" ", nameList.ToArray())}";
                         }
                         if (fromList[find + i].Contains("【"))
                         {
@@ -1207,7 +1213,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         strNum.Clear();
                     }
                     DelInfo(name1); CreateInfo(name1);
-                    WriteInfo(name1, $@" {String.Join(" ", fromList.ToArray())}");//写入来源区域
+                    WriteInfo(name1, $@" {string.Join(" ", fromList.ToArray())}");//写入来源区域
                     DelInfo(name2); CreateInfo(name2);
                     WriteInfo(name2, $@" {String.Join(" ", toList.ToArray())}");//写入目标区域
                     if (name2.Contains("私密"))
@@ -1234,7 +1240,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                             trueName = "";
                         }
                         return $@"{name2}:
-{String.Join(" ", toListFake.ToArray())}";//打印更改后的内容
+{string.Join(" ", toListFake.ToArray())}";//打印更改后的内容
                     }
 
                 }
@@ -1258,11 +1264,11 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             try
             {
                 input = input.Substring(3).Trim();
-                if (Event_ReceiveGroupMessage.Defa == true)
+                if (Event_Variable.Defa == true)
                 {
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_ReceiveGroupMessage.QQQ + ".ini"))//如果属性文件存在
+                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
                     {
-                        string att = LoadInfo(@"Att\" + Event_ReceiveGroupMessage.QQQ);
+                        string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
                         string oldZone = "";
                         string newZone = "";
                         foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
@@ -1348,11 +1354,11 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             try
             {
                 input = input.Substring(3).Trim();
-                if (Event_ReceiveGroupMessage.Defa == true)
+                if (Event_Variable.Defa == true)
                 {
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_ReceiveGroupMessage.QQQ + ".ini"))//如果属性文件存在
+                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
                     {
-                        string att = LoadInfo(@"Att\" + Event_ReceiveGroupMessage.QQQ);
+                        string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
                         string deck = "";
                         foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                         {
@@ -1436,7 +1442,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                 {
                     if (list[2] == "所有" || list[2] == "全部")
                     {
-                        return String.Join(Environment.NewLine, toList.ToArray());//换行
+                        return string.Join(Environment.NewLine, toList.ToArray());//换行
                     }
                 }
                 return toList[new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(toList.Count - 1))];
@@ -1478,9 +1484,9 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         count = 3;
                     }
 
-                    if (list1.Count < count + 1)
+                    if (list1.Count < count + 1)//如果数量不足或相等，直接发现所有目标
                     {
-                        return String.Join(" ", list1.ToArray());
+                        return string.Join(Environment.NewLine, list1.ToArray());
                     }
 
                     for (int i = 0; i < count; i++)
@@ -1489,7 +1495,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         list2.Add(list1[rd]);
                         list1.RemoveAt(rd);
                     }
-                    return String.Join(" ", list2.ToArray());
+                    return string.Join(Environment.NewLine, list2.ToArray());
                 }
                 else
                 {
@@ -1526,12 +1532,12 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
 {list1[count - 1]}离开了区域！";
                             list1.RemoveAt(count - 1);
                             DelInfo(list[0]); CreateInfo(list[0]);
-                            WriteInfo(list[0], String.Join(" ", list1.ToArray()));
+                            WriteInfo(list[0], string.Join(" ", list1.ToArray()));
                             return ret;
                         }
                         list1.RemoveAt(count - 1);
                         DelInfo(list[0]); CreateInfo(list[0]);
-                        WriteInfo(list[0], String.Join(" ", list1.ToArray()));
+                        WriteInfo(list[0], string.Join(" ", list1.ToArray()));
                         return "移除完成！";
                     }
                 }
@@ -1574,8 +1580,8 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                         }
                         else
                         {
-                            Event_ReceiveGroupMessage.SetCommandList();
-                            foreach (var item in new List<string>(Event_ReceiveGroupMessage.CommandList.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
+                            Event_Variable.SetCommandList();
+                            foreach (var item in new List<string>(Event_Variable.CommandList.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                             {
                                 if (item == comOuput[0])
                                 {
@@ -1648,9 +1654,9 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             {
                 List<string> tempInput = new List<string>(input.Substring(3).Trim().Replace("：", ":")
                     .Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[人物] [值名: 数值] [值名: 数值*]
-                if (Event_ReceiveGroupMessage.Defa == true)
+                if (Event_Variable.Defa == true)
                 {
-                    tempInput.Insert(0, $"{Event_ReceiveGroupMessage.QQQ}");
+                    tempInput.Insert(0, $"{Event_Variable.QQQ}");
                 }
                 if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + tempInput[0] + ".ini"))//如果属性文件存在
                 {
@@ -1790,11 +1796,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             }
             catch (Exception ex)
             {
-                String str = "";
-                str += ex.Message + "\n";//异常消息
-                str += ex.StackTrace + "\n";//提示出错位置，不会定位到方法内部去
-                str += ex.ToString() + "\n";//将方法内部和外部所有出错的位置提示出来
-                return str;
+                return Event_CheckError.CheckError(ex);
             }
 
         }
@@ -1889,11 +1891,11 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             {
                 List<string> tempInput = new List<string>(input.Substring(3).Trim()
                     .Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[区域] [旧牌名] [新牌名] [所有*]
-                if (Event_ReceiveGroupMessage.Defa == true)
+                if (Event_Variable.Defa == true)
                 {
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_ReceiveGroupMessage.QQQ + ".ini"))//如果属性文件存在
+                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
                     {
-                        string att = LoadInfo(@"Att\" + Event_ReceiveGroupMessage.QQQ);
+                        string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
                         string hand = "";
                         foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                         {
@@ -1950,7 +1952,7 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
             try
             {
                 List<string> tempInput = new List<string>(input.Substring(3).Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[变量名] [表达式/【区域】/删除]
-                int indexer = Event_ReceiveGroupMessage.vKey.FindIndex((string f) => f == @"[" + tempInput[0] + @"]");//获取索引
+                int indexer = Event_Variable.vKey.FindIndex((string f) => f == @"[" + tempInput[0] + @"]");//获取索引
                 if (tempInput[1] == "删除")
                 {
                     if (indexer == -1)
@@ -1959,8 +1961,8 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                     }
                     else
                     {
-                        Event_ReceiveGroupMessage.vKey.RemoveAt(indexer);
-                        Event_ReceiveGroupMessage.vValue.RemoveAt(indexer);
+                        Event_Variable.vKey.RemoveAt(indexer);
+                        Event_Variable.vValue.RemoveAt(indexer);
                         return $"变量[{tempInput[0]}]删除成功！";
                     }
                 }
@@ -1968,29 +1970,29 @@ Ver1.0.1：修复骰子过多触发的BUG；去除一个不必要的提示；增
                 {
                     if (indexer == -1)//变量不存在，添加新项
                     {
-                        Event_ReceiveGroupMessage.vKey.Add(@"[" + tempInput[0] + @"]");
+                        Event_Variable.vKey.Add(@"[" + tempInput[0] + @"]");
                         string vv = LoadInfo(tempInput[1].Replace("【", "").Replace("】", ""));
-                        Event_ReceiveGroupMessage.vValue.Add(vv);
+                        Event_Variable.vValue.Add(vv);
                         return $"添加变量[{tempInput[0]}] = {vv}";
                     }
                     else//变量存在，修改键值
                     {
                         string vv = LoadInfo(tempInput[1].Replace("【", "").Replace("】", ""));
-                        Event_ReceiveGroupMessage.vValue[indexer] = vv;
+                        Event_Variable.vValue[indexer] = vv;
                         return $"修改变量[{tempInput[0]}] = {vv}";
                     }
                 }
                 //如果都不是，那就是字符串
-                string strInput = tempInput[1].Replace("骰子", $"{Event_ReceiveGroupMessage.Number}").Replace("清点", $"{Event_ReceiveGroupMessage.CountValue}");
+                string strInput = tempInput[1].Replace("骰子", $"{Event_Variable.Number}").Replace("清点", $"{Event_Variable.CountValue}");
                 if (indexer == -1)//变量不存在，添加新项
                 {
-                    Event_ReceiveGroupMessage.vKey.Add(@"[" + tempInput[0] + @"]");
-                    Event_ReceiveGroupMessage.vValue.Add(strInput);
+                    Event_Variable.vKey.Add(@"[" + tempInput[0] + @"]");
+                    Event_Variable.vValue.Add(strInput);
                     return $"添加变量[{tempInput[0]}] = {strInput}";
                 }
                 else
                 {
-                    Event_ReceiveGroupMessage.vValue[indexer] = strInput;
+                    Event_Variable.vValue[indexer] = strInput;
                     return $"修改变量[{tempInput[0]}] = {strInput}";
                 }
             }
