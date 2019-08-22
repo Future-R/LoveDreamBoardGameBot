@@ -151,8 +151,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>StatusExport.tt</DependentUpon>
     </Compile>
-    <Compile Include="App\Entity\CAQ_Reply.cs" />
-    <Compile Include="App\Entity\MyEntity.cs" />
     <Compile Include="App\EventArgs\CqAddFriendRequestEventArgs.cs" />
     <Compile Include="App\EventArgs\CqAddGroupRequestEventArgs.cs" />
     <Compile Include="App\EventArgs\CqAppDisableEventArgs.cs" />
@@ -176,6 +174,7 @@
     <Compile Include="App\Event\Event_CqExit.cs" />
     <Compile Include="App\Event\Event_CqStartup.cs" />
     <Compile Include="App\Event\Event_Me\Event_CheckError.cs" />
+    <Compile Include="App\Event\Event_Me\Event_HelpDescription.cs" />
     <Compile Include="App\Event\Event_Me\Event_ReceiveGroupPrivateMessage.cs" />
     <Compile Include="App\Event\Event_Me\Event_ReceiveGroupMessage.cs" />
     <Compile Include="App\Event\Event_Me\Event_ReceiveFriendMessage.cs" />

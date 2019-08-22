@@ -8,7 +8,6 @@ using Native.Csharp.App.Interface;
 using Native.Csharp.App.EventArgs;
 using Native.Csharp.Sdk.Cqp;
 using Native.Csharp.App.Event.Event_Me;
-using SQLBuilder.Repositories;
 
 namespace Native.Csharp.App.Event
 {
