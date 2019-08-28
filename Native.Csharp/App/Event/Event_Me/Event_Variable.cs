@@ -1,4 +1,5 @@
 ﻿using Native.Csharp.App.Interface;
+using Native.Csharp.Sdk.Cqp.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,12 @@ namespace Native.Csharp.App.Event.Event_Me
     /// </summary>
     public class Event_Variable
     {
+
+        //群聊专用全局变量
+        public static GroupMember member;
+        public static string PT;
+        public static bool isGroup = true;
+
         //静态全局变量与函数
 
         /// <summary>
