@@ -1,9 +1,4 @@
-﻿using Native.Csharp.App.EventArgs;
-using Native.Csharp.App.Interface;
-using Native.Csharp.Sdk.Cqp;
-using Native.Csharp.Sdk.Cqp.Model;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
