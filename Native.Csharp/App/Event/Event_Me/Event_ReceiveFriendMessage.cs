@@ -210,7 +210,7 @@ namespace Native.Csharp.App.Event.Event_Me
             }
             catch (Exception)
             {
-                Common.CqApi.SendGroupMessage(e.FromQQ, "指令输入错误！输入'.帮助'检查你的格式！");
+                Common.CqApi.SendPrivateMessage(e.FromQQ, "指令输入错误！输入'.帮助'检查你的格式！");
             }
         }
     }
