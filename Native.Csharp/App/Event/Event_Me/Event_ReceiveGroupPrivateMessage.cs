@@ -53,56 +53,6 @@ namespace Native.Csharp.App.Event.Event_Me
                 return;
             }
 
-            try//插件开关
-            {
-                if (input.StartsWith(".开启"))
-                {
-                    if (input.Length > 8)
-                    {
-                        if (input.Substring(3).Trim() == Convert.ToString(Common.CqApi.GetLoginQQ()))
-                        {
-                            Event_Variable.botCloseList.Remove(e.FromQQ);
-                            Common.CqApi.SendPrivateMessage(e.FromQQ, $"{Convert.ToString(Common.CqApi.GetLoginQQ())}已开启！");
-                        }
-                        else
-                        {
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        Event_Variable.botCloseList.Remove(e.FromQQ);
-                        Common.CqApi.SendPrivateMessage(e.FromQQ, "已开启！");
-                    }
-                }
-                if (input.StartsWith(".关闭"))
-                {
-                    if (input.Length > 8)
-                    {
-                        if (input.Substring(3).Trim() == Convert.ToString(Common.CqApi.GetLoginQQ()))
-                        {
-                            Event_Variable.botCloseList.Add(e.FromQQ);
-                            Event_Variable.botCloseList = Event_Variable.botCloseList.Distinct().ToList();
-                            Common.CqApi.SendPrivateMessage(e.FromQQ, $"{Convert.ToString(Common.CqApi.GetLoginQQ())}已关闭！");
-                        }
-                        else
-                        {
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        Event_Variable.botCloseList.Add(e.FromQQ);
-                        Event_Variable.botCloseList = Event_Variable.botCloseList.Distinct().ToList();
-                        Common.CqApi.SendPrivateMessage(e.FromQQ, "已关闭！");
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                Common.CqApi.SendPrivateMessage(e.FromQQ, "意外的错误！");
-            }
-
             if (input.StartsWith(".帮助"))//帮助指令
             {
                 if (input.Length < 5)//无参帮助

@@ -556,7 +556,11 @@ namespace Native.Csharp.App.Event.Event_Me
             }
         }
 
-        //计算
+        /// <summary>
+        /// 计算字符串算式
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public static string Calc(string input)
         {
             input = input.Substring(3).Trim().Replace("×", "*").Replace("x", "*").Replace("X", "*")
@@ -928,7 +932,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                 deck = item.Substring(3);
                             }
                         }
-                        input = input + " " + deck;
+                        input = (input + " " + deck).Trim();
                     }
                     else
                     {
@@ -939,18 +943,32 @@ namespace Native.Csharp.App.Event.Event_Me
                 if (inputs != "" || inputs != "读取错误！")
                 {
                     List<string> list = new List<string>(inputs.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
-                    List<string> list2 = new List<string>();
-                    int count = list.Count;
-                    for (int i = 0; i < count; i++)
+                    ////Fisher Yates Shuffle算法的时空复杂度太高，故舍弃
+                    //List<string> list2 = new List<string>();
+                    //for (int i = 0; i < count; i++)
+                    //{
+                    //    int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(list.Count));
+                    //    list2.Add(list[rd]);
+                    //    list.RemoveAt(rd);
+                    //}
+                    //DelInfo(input); CreateInfo(input);
+                    //string shuffles = string.Join(" ", list2.ToArray());
+                    for (int count = list.Count; count > 0; count--)
                     {
-                        int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(list.Count));
-                        list2.Add(list[rd]);
+                        int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(count));
+                        list.Add(list[rd]);
                         list.RemoveAt(rd);
                     }
                     DelInfo(input); CreateInfo(input);
-                    string notExistValue = string.Join(" ", list2.ToArray());
-                    WriteInfo(input, $@"{notExistValue}");
-                    return "洗切完成！";
+                    WriteInfo(input, $@"{string.Join(" ", list.ToArray())}");
+                    if (input.Contains("私密"))
+                    {
+                        return "洗切完成！";
+                    }
+                    else
+                    {
+                        return string.Join(" ", list.ToArray());
+                    }
                 }
                 else
                 {
@@ -967,7 +985,6 @@ namespace Native.Csharp.App.Event.Event_Me
         //出牌
         public static string Move(string input, out string trueName)//.出牌 区域A 区域B XXX YYY ZZZ
         {
-            string fakeName = "";
             trueName = "";
             try
             {
@@ -990,7 +1007,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                 newZone = item.Substring(3);
                             }
                         }
-                        input = oldZone + " " + newZone + " " + input;
+                        input = (oldZone + " " + newZone + " " + input).Trim();
                     }
                     else
                     {
@@ -1003,7 +1020,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 List<string> nameList = new List<string>();
                 for (int i = 0; i < list.Count - 2; i++)
                 {
-                    nameList.Add(list[i + 2]);//需要移动的对象
+                    nameList.Add(list[i + 2]);//需要移动的对象假名
                 }
                 List<string> fromList = new List<string>(
                     File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name1 + ".ini")
@@ -1027,43 +1044,28 @@ namespace Native.Csharp.App.Event.Event_Me
                             fromListFake.Add(item);
                         }
                     }
-                    fakeName = string.Join(" ", fromListFake.ToArray());
 
                     int find;
-                    for (int i = 0; i < nameList.Count; i++)
+                    for (int i = 0; i < nameList.Count; i++)//遍历需要移动的对象假名
                     {
-                        find = fromListFake.FindIndex((string f) => f.Equals(nameList[i]));
-                        if (find == -1)
+                        find = fromListFake.FindIndex((string f) => f.Equals(nameList[i]));//找到第一个匹配假名的元素
+                        if (find == -1)//如果找不到
                         {
                             trueName = "";
-                            return $@"无法找到{string.Join(" ", nameList.ToArray())}";
+                            return $@"无法找到{string.Join(" ", nameList.ToArray())}";//返回无法处理的元素集
                         }
-                        if (fromList[find + i].Contains("【"))
+                        if (fromList[find].Contains("【"))//找到了，且移动的元素带有伪装，将全名传入trueName，用来返回
                         {
-                            trueName += $@" {fromList[find + i]}";
+                            trueName += $@" {fromList[find]}";
                         }
-                        toList.Add(fromList[find + i]);
-                        fromList.Remove(fromList[find + i]);
-                    }
-                    List<int> strNum = new List<int>();
-                    int strNumRD;
-                    foreach (var item in nameList)//遍历需要移动的牌名名单
-                    {
-                        for (int i = 0; i < fromListFake.Count; i++)//遍历来源区域假名
-                        {
-                            if (item == fromListFake[i])//如果名单对应上某假名
-                            {
-                                strNum.Add(i);//将假名的位置添加到strNum
-                            }
-                        }
-                        strNumRD = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(strNum.Count - 1));
-                        fromListFake.RemoveAt(strNum[strNumRD]);
-                        strNum.Clear();
+                        toList.Add(fromList[find]);
+                        fromList.Remove(fromList[find]);
+                        fromListFake.RemoveAt(find);
                     }
                     DelInfo(name1); CreateInfo(name1);
                     WriteInfo(name1, $@" {string.Join(" ", fromList.ToArray())}");//写入来源区域
                     DelInfo(name2); CreateInfo(name2);
-                    WriteInfo(name2, $@" {String.Join(" ", toList.ToArray())}");//写入目标区域
+                    WriteInfo(name2, $@" {string.Join(" ", toList.ToArray())}");//写入目标区域
                     if (name2.Contains("私密"))
                     {
                         return "出牌完毕！";
@@ -1092,17 +1094,18 @@ namespace Native.Csharp.App.Event.Event_Me
                     }
 
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     trueName = "";
-                    return "出牌失败！";
+                    return Event_CheckError.CheckError(ex);
+                    //return "出牌失败！";
                 }
 
             }
             catch (Exception)
             {
                 trueName = "";
-                return "出牌失败！";
+                return "来源区域或目标区域不存在，请创建！";
             }
         }
 
@@ -1605,8 +1608,8 @@ namespace Native.Csharp.App.Event.Event_Me
                         switch (item.Substring(0, 3))
                         {
                             case "牌堆:":
-                                orige[i] = $@"牌堆:{input}";
-                                reValues.Add($@"{item} → {input}");
+                                orige[i] = $@"牌堆:私密{input}";
+                                reValues.Add($@"{item} → 私密{input}");
                                 break;
                             case "手牌:":
                                 orige[i] = $@"手牌:{id}的{input}";
@@ -1626,16 +1629,16 @@ namespace Native.Csharp.App.Event.Event_Me
                     }
                     DelInfo(@"Att\" + id); CreateInfo(@"Att\" + id);
                     WriteInfo(@"Att\" + id, string.Join(" ", orige.Distinct().ToArray()));
-                    return $@"{input}的属性修改:{Environment.NewLine}{string.Join(Environment.NewLine, reValues.ToArray()) }";
+                    return $@"{Event_Variable.QQQ}的属性修改:{Environment.NewLine}{string.Join(Environment.NewLine, reValues.ToArray()) }";
 
                 }
                 else//没有旧信息的话就创建
                 {
                     CreateInfo(@"Att\" + id);
-                    WriteInfo(@"Att\" + id, $@"牌堆:{input} 手牌:{id}的{input} 桌面:{input}的桌面 骰子:20");
+                    WriteInfo(@"Att\" + id, $@"牌堆:私密{input} 手牌:{id}的{input} 桌面:{input}的桌面 骰子:20");
                     CreateInfo(input); CreateInfo($@"{input}的桌面");
                     return $@"{input}的属性为
-牌堆:{input}
+牌堆:私密{input}
 手牌:{id}的{input}
 桌面:{input}的桌面
 骰子:20";
