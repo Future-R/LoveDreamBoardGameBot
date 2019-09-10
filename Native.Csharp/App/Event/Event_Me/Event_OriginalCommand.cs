@@ -121,6 +121,10 @@ namespace Native.Csharp.App.Event.Event_Me
                     Common.CqApi.SendPrivateMessage(id, Shuffle(input));
                     return;
 
+                case "排序":
+                    Common.CqApi.SendPrivateMessage(id, SortShffle(input));
+                    return;
+
                 case "插入":
                     Common.CqApi.SendPrivateMessage(id, Inser(input));
                     return;
@@ -364,6 +368,10 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 case "洗牌":
                     Common.CqApi.SendGroupMessage(id, Shuffle(input));
+                    return;
+
+                case "排序":
+                    Common.CqApi.SendPrivateMessage(id, SortShffle(input));
                     return;
 
                 case "插入":
@@ -943,16 +951,6 @@ namespace Native.Csharp.App.Event.Event_Me
                 if (inputs != "" || inputs != "读取错误！")
                 {
                     List<string> list = new List<string>(inputs.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
-                    ////Fisher Yates Shuffle算法的时空复杂度太高，故舍弃
-                    //List<string> list2 = new List<string>();
-                    //for (int i = 0; i < count; i++)
-                    //{
-                    //    int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(list.Count));
-                    //    list2.Add(list[rd]);
-                    //    list.RemoveAt(rd);
-                    //}
-                    //DelInfo(input); CreateInfo(input);
-                    //string shuffles = string.Join(" ", list2.ToArray());
                     for (int count = list.Count; count > 0; count--)
                     {
                         int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(count));
@@ -972,7 +970,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 }
                 else
                 {
-                    return "洗切失败！";
+                    return "区域为空或不存在！";
                 }
             }
             catch (Exception)
@@ -980,6 +978,39 @@ namespace Native.Csharp.App.Event.Event_Me
                 return "洗切失败！";
             }
 
+        }
+
+        //排序
+        public static string SortShffle(string input)
+        {
+            try
+            {
+                input = input.Substring(3).Trim();
+                string inputs = LoadInfo(input);
+                if (inputs != "" || inputs != "读取错误！")
+                {
+                    List<string> list = new List<string>(inputs.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
+                    list.Sort();
+                    DelInfo(input); CreateInfo(input);
+                    WriteInfo(input, $@"{string.Join(" ", list.ToArray())}");
+                    if (input.Contains("私密"))
+                    {
+                        return "排序完成！";
+                    }
+                    else
+                    {
+                        return $@"{string.Join(Environment.NewLine, list.ToArray())}";
+                    }
+                }
+                else
+                {
+                    return "区域为空或不存在！";
+                }
+            }
+            catch (Exception ex)
+            {
+                return Event_CheckError.CheckError(ex);
+            }
         }
 
         //出牌
@@ -1017,6 +1048,14 @@ namespace Native.Csharp.App.Event.Event_Me
                 List<string> list = new List<string>(input.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//区域A 区域B XXX YYY ZZZ
                 string name1 = list[0];
                 string name2 = list[1];
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name1 + ".ini"))
+                {
+                    return $@"来源区域{name1}不存在，请先创建该区域！";
+                }
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name2 + ".ini"))
+                {
+                    return $@"目标区域{name2}不存在，请先创建该区域！";
+                }
                 List<string> nameList = new List<string>();
                 for (int i = 0; i < list.Count - 2; i++)
                 {

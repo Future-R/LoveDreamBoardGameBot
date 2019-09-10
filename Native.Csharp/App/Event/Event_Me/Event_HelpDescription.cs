@@ -98,6 +98,12 @@ namespace Native.Csharp.App.Event.Event_Me
 .洗牌 [区域!]
 范例：'.洗牌 私密牌堆'";
                     break;
+                case "排序":
+                    helpReturn = @"将区域的所有卡牌按默认排序器排序。
+.排序 [区域]
+范例：'.排序 投票'
+若想倒序，可参考'翻转'指令。";
+                    break;
                 case "清点":
                     helpReturn = @"计算区域内的卡牌数量。
 .清点 [区域!]
