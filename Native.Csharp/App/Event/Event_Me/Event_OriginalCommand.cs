@@ -17,7 +17,7 @@ namespace Native.Csharp.App.Event.Event_Me
         /// <param name="id">传递消息的编号</param>
         public static void CommandIn(string input, long id)
         {
-            input = input.Replace("&#91;", "[").Replace("&#93;", "]");
+            input = input.Replace("&#91;", "[").Replace("&#93;", "]").Replace("QQ",Event_Variable.QQQ.ToString());
             if (input.Length < 2)//降低错误触发
             {
                 return;
@@ -150,7 +150,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
 
                 case "开始":
-                    Common.CqApi.SendPrivateMessage(id, GameStart(input, id));
+                    Common.CqApi.SendPrivateMessage(id, GameStart(input));
                     Common.CqApi.SendPrivateMessage(id, "设定完毕！");
                     return;
 
@@ -262,7 +262,7 @@ namespace Native.Csharp.App.Event.Event_Me
         /// <param name="id">传递消息的编号</param>
         public static void CommandIn(string input, long id, bool isGroup)
         {
-            input = input.Replace("&#91;", "[").Replace("&#93;", "]");
+            input = input.Replace("&#91;", "[").Replace("&#93;", "]").Replace("QQ", Event_Variable.QQQ.ToString());
             if (input.Length < 2)//降低错误触发
             {
                 return;
@@ -395,7 +395,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
 
                 case "开始":
-                    Common.CqApi.SendGroupMessage(id, GameStart(input, id));
+                    Common.CqApi.SendGroupMessage(id, GameStart(input));
                     Common.CqApi.SendGroupMessage(id, "设定完毕！");
                     return;
 
@@ -1229,7 +1229,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 if (inputs != "" || inputs != "读取错误！")
                 {
                     List<string> list = new List<string>(inputs.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
-                    num = $@"{list.Count - 1}";
+                    num = $@"{list.Count}";
                 }
                 else
                 {
@@ -1327,7 +1327,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         }
                         else
                         {
-                            count = list1.Count;
+                            count = int.Parse(list[1]);
                         }
                     }
                     else
@@ -1511,96 +1511,110 @@ namespace Native.Csharp.App.Event.Event_Me
                 }
                 if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + tempInput[0] + ".ini"))//如果属性文件存在
                 {
-                    string orige = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + tempInput[0] + ".ini");//[值名: 数值] [值名: 数值*] [值名: 数值*] [值名: 数值*]
-                    List<string> origeKey = new List<string>();//[值名] [值名] [值名] [值名]
-                    List<string> origeNum = new List<string>();//[数值] [数值*] [数值*] [数值*]
-                    string tempItem; string tempNum; string tempKey; string tempDo;
-                    foreach (string item in new List<string>(orige.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))//把key和num拆开
+                    //[值名: 数值] [值名: 数值*] [值名: 数值*] [值名: 数值*]
+                    string orige = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + tempInput[0] + ".ini");
+                    if (tempInput.Count < 2)//只有角色参数，直接显示属性
                     {
-                        tempItem = item;
-                        tempNum = tempItem.Substring(tempItem.IndexOf(":") + 1).Trim();//数值
-                        tempKey = tempItem.Remove(tempItem.IndexOf(":")).Trim();//键名
-                        origeKey.Add(tempKey);
-                        origeNum.Add(tempNum);
+                        return $@"{tempInput[0]}的属性为:
+{orige.Trim().Replace(" ",Environment.NewLine)}";
                     }
-                    foreach (var item in tempInput.GetRange(1, tempInput.Count - 1))
+                    Dictionary<string, string> Orige = new Dictionary<string, string>();//来源字典
+                    foreach (string item in new List<string>(orige.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                     {
-                        tempNum = $@"{GetStringLastNumber(item)}";//修改数值
-                        tempKey = item.Replace($@"{GetStringLastNumber(item)}", "").Substring(0, item.Replace($@"{GetStringLastNumber(item)}", "").Length - 1);//修改键名
-                        tempDo = item.Replace($@"{GetStringLastNumber(item)}", "").Substring(item.Replace($@"{GetStringLastNumber(item)}", "").Length - 1, 1)
-                            .Replace("x", "*").Replace("÷", "/").Replace("×", "*");//操作符
-                        for (int j = 0; j < origeKey.Count; j++)//遍历origeKey,搜索与修改键名相同的键名，如果都没有，添加这个键名与对应的键值。如果有，修改键值并置空操作符。
+                        int indexer = item.IndexOf(":") + 1;
+                        if (indexer == -1)
                         {
-                            if (origeKey[j] == tempKey)
+                            return $@"{tempInput[0]}存在坏档现象，请重新创建或手动修复！
+“{item}”缺少键名或键值";
+                        }
+                        Orige.Add(item.Substring(0, indexer - 1 ).TrimStart(),item.Substring(indexer).Trim());
+                    }
+                    int doIndex = -1; string doString = "";
+                    //开始修改键值
+                    foreach (var item in tempInput.GetRange(1,tempInput.Count - 1))
+                    {
+                        foreach (var item2 in new string[] { ":", "*", "/", "+", "-", "%" })//遍历查找该行是否存在五种操作符之一
+                        {
+                            doIndex = item.IndexOf(item2);
+                            if (doIndex != -1)//如果找到了，输出操作符，然后结束遍历
                             {
-                                if (tempDo == ":")//如果是冒号，替换数值
-                                {
-                                    origeNum[j] = tempNum;
-                                    tempDo = "";
-                                }
-                                if (tempDo == "+")
-                                {
-                                    origeNum[j] = $@"{ int.Parse(origeNum[j]) + int.Parse(tempNum) }";
-                                    tempDo = "";
-                                }
-                                if (tempDo == "-")
-                                {
-                                    origeNum[j] = $@"{ int.Parse(origeNum[j]) - int.Parse(tempNum) }";
-                                    tempDo = "";
-                                }
-                                if (tempDo == "*")
-                                {
-                                    origeNum[j] = $@"{ int.Parse(origeNum[j]) * int.Parse(tempNum) }";
-                                    tempDo = "";
-                                }
-                                if (tempDo == "/")
-                                {
-                                    origeNum[j] = $@"{ int.Parse(origeNum[j]) / int.Parse(tempNum) }";
-                                    tempDo = "";
-                                }
+                                doString = item2;
+                                break;
                             }
+                            //Common.CqApi.SendGroupMessage(111846595, $@"item = {item}; item2 = {item2}");
                         }
-                        if (tempDo != "")//如果操作符不为空，表示前面没有对键值进行操作=>找不到匹配的键名=>需要添加新项
+                        if (doIndex == -1)
                         {
-                            origeKey.Add(tempKey);
-                            origeNum.Add(tempNum);
+                            return $@"请检查您的输入！
+“{item}”中找不到操作符！";//如果完全找不到，返回一个错误
+                        }
+                        switch (doString)//修改字典
+                        {
+                            case ":":
+                                Orige[item.Substring(0, doIndex).Trim()] = item.Substring(doIndex + 1).Trim();
+                                break;
+                            case "*":
+                                Orige[item.Substring(0, doIndex).Trim()] =
+                                    (int.Parse(Orige[item.Substring(0, doIndex).Trim()]) * int.Parse(item.Substring(doIndex + 1).Trim())).ToString();
+                                break;
+                            case "/":
+                                Orige[item.Substring(0, doIndex).Trim()] =
+                                    (int.Parse(Orige[item.Substring(0, doIndex).Trim()]) / int.Parse(item.Substring(doIndex + 1).Trim())).ToString();
+                                break;
+                            case "+":
+                                Orige[item.Substring(0, doIndex).Trim()] =
+                                    (int.Parse(Orige[item.Substring(0, doIndex).Trim()]) + int.Parse(item.Substring(doIndex + 1).Trim())).ToString();
+                                break;
+                            case "-":
+                                Orige[item.Substring(0, doIndex).Trim()] =
+                                    (int.Parse(Orige[item.Substring(0, doIndex).Trim()]) - int.Parse(item.Substring(doIndex + 1).Trim())).ToString();
+                                break;
+                            case "%":
+                                Orige[item.Substring(0, doIndex).Trim()] =
+                                    (int.Parse(Orige[item.Substring(0, doIndex).Trim()]) % int.Parse(item.Substring(doIndex + 1).Trim())).ToString();
+                                break;
+                            default:
+                                break;
                         }
                     }
-                    List<string> list1 = new List<string>();
-                    for (int i = 0; i < origeKey.Count; i++)
+                    //输出字典
+                    string newInfo = "";
+                    foreach (var item in Orige)
                     {
-                        list1.Add($"{origeKey[i]}:{origeNum[i]}");//合并为list1
+                        newInfo += " " + item.Key + ":" + item.Value;
                     }
                     DelInfo(@"Att\" + tempInput[0]); CreateInfo(@"Att\" + tempInput[0]);
-                    WriteInfo(@"Att\" + tempInput[0], string.Join(" ", list1.ToArray()));
-                    return $@"{tempInput[0]}的属性为:{Environment.NewLine}{ string.Join(Environment.NewLine, list1.ToArray()) }";
+                    WriteInfo( @"Att\" + tempInput[0], newInfo.Trim() );
+                    return $@"{tempInput[0]}的属性为:
+{ newInfo.Trim().Replace(" ", Environment.NewLine) }";
                 }
                 else//没有旧信息的话就创建
                 {
                     CreateInfo(@"Att\" + tempInput[0]);
                     WriteInfo(@"Att\" + tempInput[0], string.Join(" ", tempInput.GetRange(1, tempInput.Count - 1).ToArray()));
-                    return $@"{tempInput[0]}的属性为:{Environment.NewLine}{ string.Join(Environment.NewLine, tempInput.GetRange(1, tempInput.Count - 1).ToArray()) }";
+                    return $@"{tempInput[0]}的属性为:
+{ string.Join(Environment.NewLine, tempInput.GetRange(1, tempInput.Count - 1).ToArray()) }";
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return "非法输入！";
+                return Event_CheckError.CheckError(ex);
             }
         }
 
         //开始
-        public static string GameStart(string input, long id)
+        public static string GameStart(string input)
         {
             try
             {
                 input = input.Substring(3).Trim();
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + id + ".ini"))//如果属性文件存在
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
                 {
-                    List<string> orige = new List<string>(File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + id + ".ini")
+                    List<string> orige = new List<string>(File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini")
                         .Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
                     List<string> reValues = new List<string>();//接收返回值
                     int i = -1;
-                    List<string> newOrige = new List<string>(File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + id + ".ini")
+                    List<string> newOrige = new List<string>(File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini")
                         .Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
                     foreach (var item in newOrige)//匹配前缀替换
                     {
@@ -1612,36 +1626,36 @@ namespace Native.Csharp.App.Event.Event_Me
                                 reValues.Add($@"{item} → 私密{input}");
                                 break;
                             case "手牌:":
-                                orige[i] = $@"手牌:{id}的{input}";
-                                reValues.Add($@"{item} → {id}的{input}");
+                                orige[i] = $@"手牌:{Event_Variable.QQQ}的{input}";
+                                reValues.Add($@"{item} → {Event_Variable.QQQ}的{input}");
                                 break;
                             case "桌面:":
                                 orige[i] = $@"桌面:{input}的桌面";
                                 reValues.Add($@"{item} → {input}的桌面");
                                 break;
                             case "骰子:":
-                                orige[i] = $@"骰子:20";
-                                reValues.Add($@"{item} → 20");
+                                orige[i] = $@"骰子:100";
+                                reValues.Add($@"{item} → 100");
                                 break;
                             default:
                                 break;
                         }
                     }
-                    DelInfo(@"Att\" + id); CreateInfo(@"Att\" + id);
-                    WriteInfo(@"Att\" + id, string.Join(" ", orige.Distinct().ToArray()));
+                    DelInfo(@"Att\" + Event_Variable.QQQ); CreateInfo(@"Att\" + Event_Variable.QQQ);
+                    WriteInfo(@"Att\" + Event_Variable.QQQ, string.Join(" ", orige.Distinct().ToArray()));
                     return $@"{Event_Variable.QQQ}的属性修改:{Environment.NewLine}{string.Join(Environment.NewLine, reValues.ToArray()) }";
 
                 }
                 else//没有旧信息的话就创建
                 {
-                    CreateInfo(@"Att\" + id);
-                    WriteInfo(@"Att\" + id, $@"牌堆:私密{input} 手牌:{id}的{input} 桌面:{input}的桌面 骰子:20");
+                    CreateInfo(@"Att\" + Event_Variable.QQQ);
+                    WriteInfo(@"Att\" + Event_Variable.QQQ, $@"牌堆:私密{input} 手牌:{Event_Variable.QQQ}的{input} 桌面:{input}的桌面 骰子:100");
                     CreateInfo(input); CreateInfo($@"{input}的桌面");
-                    return $@"{input}的属性为
+                    return $@"{Event_Variable.QQQ}的属性为
 牌堆:私密{input}
-手牌:{id}的{input}
+手牌:{Event_Variable.QQQ}的{input}
 桌面:{input}的桌面
-骰子:20";
+骰子:100";
 
                 }
             }
@@ -1975,7 +1989,7 @@ namespace Native.Csharp.App.Event.Event_Me
             using (StreamWriter sw = File.AppendText(System.AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name + ".ini"))
             {
                 str = new Regex("[\\s]+").Replace(str, " ");
-                sw.Write($" {str}");
+                sw.Write(" " + str);
                 return true;
             }
         }
@@ -1987,7 +2001,7 @@ namespace Native.Csharp.App.Event.Event_Me
         /// <returns></returns>
         public static string LoadInfo(string name)
         {
-            name = AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name + ".ini";
+            name = AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name.Trim() + ".ini";
             try
             {
                 if (File.Exists(name))
@@ -2004,25 +2018,6 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 return "读取错误！";
             }
-        }
-
-        /// <summary>
-        /// 获取尾数
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        public static int GetStringLastNumber(string str)
-        {
-            int result = 0;
-            if (str != null && str != string.Empty)
-            {
-                Match match = Regex.Match(str, @"(^.+?)(\d+$)");
-                if (match.Success)
-                {
-                    result = (int)decimal.Parse(match.Groups[2].Value);
-                }
-            }
-            return result;
         }
 
         /// <summary>

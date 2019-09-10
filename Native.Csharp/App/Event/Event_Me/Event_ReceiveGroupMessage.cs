@@ -13,6 +13,9 @@ namespace Native.Csharp.App.Event.Event_Me
     /// CqPrivateMessageEventArgs→CqGroupMessageEventArgs
     /// SendPrivateMessage→ReceiveGroupMessage
     /// e.FromQQ→e.FromGroup
+    /// 备忘录：
+    /// 三次扳机完全隐藏
+    /// 图片棋盘
     /// </summary>
     public class Event_ReceiveGroupMessage : IReceiveGroupMessage
     {
