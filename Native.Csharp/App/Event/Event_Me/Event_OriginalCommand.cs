@@ -20,6 +20,9 @@ namespace Native.Csharp.App.Event.Event_Me
             if (Event_Variable.varNeedExp)
             {
                 input = input.Replace("QQ", Event_Variable.QQQ.ToString());
+                input = input.Substring(0, 3) + input.Substring(3).Replace("骰子", $"{Event_Variable.Number}")
+                                                                 .Replace("清点", $"{Event_Variable.CountValue}")
+                                                                 .Replace("结果", $"{Event_Variable.ComputeValue}");
             }
             
             if (input.Length < 2)//降低错误触发
@@ -172,7 +175,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         List<string> sharpInput = new List<string>(input.Split(new string[] { "?" }, StringSplitOptions.RemoveEmptyEntries));
                         List<string> expreesInput = new List<string>(sharpInput[0].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[表达式] [>/</=/!] [指定值]
 
-                        string expression = expreesInput[0].Replace("骰子", $"{Event_Variable.Number}").Replace("清点", $"{Event_Variable.CountValue}");
+                        string expression = expreesInput[0];
                         string oper = expreesInput[1];
                         string value = expreesInput[2];
 
@@ -257,6 +260,9 @@ namespace Native.Csharp.App.Event.Event_Me
             if (Event_Variable.varNeedExp)
             {
                 input = input.Replace("QQ", Event_Variable.QQQ.ToString());
+                input = input.Substring(0, 3) + input.Substring(3).Replace("骰子", $"{Event_Variable.Number}")
+                                                                  .Replace("清点", $"{Event_Variable.CountValue}")
+                                                                  .Replace("结果", $"{Event_Variable.ComputeValue}");
             }
             if (input.Length < 2)//降低错误触发
             {
@@ -464,7 +470,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         List<string> sharpInput = new List<string>(input.Split(new string[] { "?" }, StringSplitOptions.RemoveEmptyEntries));
                         List<string> expreesInput = new List<string>(sharpInput[0].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[表达式] [>/</=/!] [指定值]
 
-                        string expression = expreesInput[0].Replace("骰子", $"{Event_Variable.Number}").Replace("清点", $"{Event_Variable.CountValue}");
+                        string expression = expreesInput[0];
                         string oper = expreesInput[1];
                         string value = expreesInput[2];
 
@@ -549,15 +555,12 @@ namespace Native.Csharp.App.Event.Event_Me
             input = input.Substring(3).Trim().Replace("×", "*").Replace("x", "*").Replace("X", "*")
                             .Replace("（", "(").Replace("）", ")").Replace("÷", "/").Replace("％", "/100")
                             .Replace("%", "/100").Replace("e", "(" + Convert.ToString(Math.E) + ")")
-                            .Replace("π", "(" + Convert.ToString(Math.PI) + ")").Replace("mod", "%")//中文运算符都换成程序运算符
-                            .Replace("骰子", $"{Event_Variable.Number}")
-                            .Replace("清点", $"{Event_Variable.CountValue}")
-                            .Replace("结果", $"{Event_Variable.ComputeValue}");
+                            .Replace("π", "(" + Convert.ToString(Math.PI) + ")").Replace("mod", "%");//中文运算符都换成程序运算符
 
             try
             {
                 object result = new DataTable().Compute(input, "");
-                Event_Variable.ComputeValue = int.Parse(result.ToString());
+                Event_Variable.ComputeValue = result.ToString();
                 return "计算结果为：" + result;
             }
             catch (Exception)
@@ -1920,7 +1923,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     }
                 }
                 //如果都不是，那就是字符串
-                string strInput = tempInput[1].Replace("骰子", $"{Event_Variable.Number}").Replace("清点", $"{Event_Variable.CountValue}");
+                string strInput = tempInput[1];
                 if (indexer == -1)//变量不存在，添加新项
                 {
                     Event_Variable.vKey.Add(@"[" + tempInput[0] + @"]");

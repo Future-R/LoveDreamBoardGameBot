@@ -33,7 +33,7 @@ namespace Native.Csharp.App.Event.Event_Me
         /// <summary>
         /// 上一次计算的值
         /// </summary>
-        public static int ComputeValue
+        public static string ComputeValue
         {
             get; set;
         }
@@ -137,7 +137,7 @@ namespace Native.Csharp.App.Event.Event_Me
 牌名可写成'假名【真名】'的形式，伪装的牌在离开非私密区域时会显露原形。
 群聊输入内容的最前方多输入1次扳机可以私发结果，多输入1次'~'开启变量延迟解释。
 使用'!'代替'.'作为扳机可自动补全部分指令，参考'开始'指令。
-输入的'QQ'将会被自动解释为操作者的QQ号。输入的末尾加上'!'可避免解释变量及QQ。
+输入的'QQ'将会被自动解释为操作者的QQ号。输入的末尾加上'!'可避免解释变量及环境变量。
 将机器人踢出群或者禁言可能导致账户被冻结或者引发程序异常，请使用退群和关闭指令来令机器人退群和暂停运行。
 ";
         //提取某玩家的属性值
