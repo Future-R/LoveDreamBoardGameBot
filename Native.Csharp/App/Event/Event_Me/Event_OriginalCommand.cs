@@ -17,7 +17,11 @@ namespace Native.Csharp.App.Event.Event_Me
         /// <param name="id">传递消息的编号</param>
         public static void CommandIn(string input, long id)
         {
-            input = input.Replace("QQ",Event_Variable.QQQ.ToString());
+            if (Event_Variable.varNeedExp)
+            {
+                input = input.Replace("QQ", Event_Variable.QQQ.ToString());
+            }
+            
             if (input.Length < 2)//降低错误触发
             {
                 return;
@@ -250,7 +254,10 @@ namespace Native.Csharp.App.Event.Event_Me
         /// <param name="id">传递消息的编号</param>
         public static void CommandIn(string input, long id, bool isGroup)
         {
-            input = input.Replace("&#91;", "[").Replace("&#93;", "]").Replace("QQ", Event_Variable.QQQ.ToString());
+            if (Event_Variable.varNeedExp)
+            {
+                input = input.Replace("QQ", Event_Variable.QQQ.ToString());
+            }
             if (input.Length < 2)//降低错误触发
             {
                 return;
@@ -542,11 +549,15 @@ namespace Native.Csharp.App.Event.Event_Me
             input = input.Substring(3).Trim().Replace("×", "*").Replace("x", "*").Replace("X", "*")
                             .Replace("（", "(").Replace("）", ")").Replace("÷", "/").Replace("％", "/100")
                             .Replace("%", "/100").Replace("e", "(" + Convert.ToString(Math.E) + ")")
-                            .Replace("π", "(" + Convert.ToString(Math.PI) + ")").Replace("mod", "%");//中文运算符都换成程序运算符
+                            .Replace("π", "(" + Convert.ToString(Math.PI) + ")").Replace("mod", "%")//中文运算符都换成程序运算符
+                            .Replace("骰子", $"{Event_Variable.Number}")
+                            .Replace("清点", $"{Event_Variable.CountValue}")
+                            .Replace("结果", $"{Event_Variable.ComputeValue}");
 
             try
             {
                 object result = new DataTable().Compute(input, "");
+                Event_Variable.ComputeValue = int.Parse(result.ToString());
                 return "计算结果为：" + result;
             }
             catch (Exception)
@@ -1364,8 +1375,15 @@ namespace Native.Csharp.App.Event.Event_Me
                     for (int i = 0; i < count; i++)
                     {
                         int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(list1.Count - 1));
-                        list2.Add(list1[rd]);
-                        list1.RemoveAt(rd);
+                        if (list2.Contains(list1[rd]))
+                        {
+                            i--;
+                        }
+                        else
+                        {
+                            list2.Add(list1[rd]);
+                            list1.RemoveAt(rd);
+                        }
                     }
                     return string.Join(Environment.NewLine, list2.ToArray());
                 }

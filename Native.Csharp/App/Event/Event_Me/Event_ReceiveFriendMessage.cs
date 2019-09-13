@@ -3,7 +3,6 @@ using Native.Csharp.App.Interface;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Native.Csharp.App.Event.Event_Me
@@ -19,6 +18,7 @@ namespace Native.Csharp.App.Event.Event_Me
             string input = e.Message.Replace("&#91;", "[").Replace("&#93;", "]");
             Event_Variable.QQQ = e.FromQQ;
             Event_Variable.varDelay = false;
+            Event_Variable.varNeedExp = true;
             try
             {
                 //检查是否启用变量延迟解释
@@ -26,6 +26,11 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     Event_Variable.varDelay = true;
                     input = input.Substring(1);
+                }
+                if (input.EndsWith("!") || input.EndsWith("！"))//叹号结尾，不需要被解释
+                {
+                    Event_Variable.varNeedExp = false;
+                    input = input.Remove(input.Length - 1, 1);//去掉结尾
                 }
             }
             catch (Exception ex)
@@ -65,7 +70,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
 
             //用户输入指令
-            if (!Event_Variable.varDelay)
+            if (!Event_Variable.varDelay && Event_Variable.varNeedExp)
             {
                 int vvc = 0;
                 foreach (var item in Event_Variable.vValue)//变量解释器
@@ -121,7 +126,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                 Event_Variable.Defa = true;
                                 temp = "." + temp.Remove(0, 1);
                             }
-                            if (Event_Variable.varDelay)
+                            if (Event_Variable.varDelay && Event_Variable.varNeedExp)
                             {
                                 int vvc = 0;
                                 foreach (var itemx in Event_Variable.vValue)//变量解释器
@@ -143,7 +148,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         Event_Variable.Defa = true;
                         input = "." + input.Remove(0, 1);
                     }
-                    if (Event_Variable.varDelay)
+                    if (Event_Variable.varDelay && Event_Variable.varNeedExp)
                     {
                         int vvc = 0;
                         foreach (var itemx in Event_Variable.vValue)//变量解释器

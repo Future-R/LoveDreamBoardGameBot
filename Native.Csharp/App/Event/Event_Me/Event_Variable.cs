@@ -31,6 +31,13 @@ namespace Native.Csharp.App.Event.Event_Me
             get; set;
         }
         /// <summary>
+        /// 上一次计算的值
+        /// </summary>
+        public static int ComputeValue
+        {
+            get; set;
+        }
+        /// <summary>
         /// 自动补全参数是否开启
         /// </summary>
         public static bool Defa
@@ -41,6 +48,10 @@ namespace Native.Csharp.App.Event.Event_Me
         /// 机器人是开启还是关闭
         /// </summary>
         public static List<long> botCloseList = new List<long>();
+        /// <summary>
+        /// 变量需要被解释
+        /// </summary>
+        public static bool varNeedExp = true;
         public static long groupId;
         public static long qqId;
 
@@ -65,7 +76,7 @@ namespace Native.Csharp.App.Event.Event_Me
             CommandList = ".计算 .骰子 .创建 .清空 .销毁 .添加 .删除 .移动 .插入 .移除 " +
                           ".抽牌 .查看 .洗牌 .清点 .检索 .发现 .翻转 .导入 .属性 .定义 " +
                           ".报错 .去重 .复制 .棋盘 .日志 .转化 .如果 .清理 .开启 .关闭 " +
-                          ".退群 .变量 .开始 .排序 .比赛"; ;
+                          ".退群 .变量 .开始 .排序 .比赛";
         }
         /// <summary>
         /// 获取发言人的QQ号
@@ -87,7 +98,7 @@ namespace Native.Csharp.App.Event.Event_Me
         /// <summary>
         /// 帮助描述
         /// </summary>
-        public static string helpDescription = $@"恋梦桌游姬V1.1.0 By未来菌
+        public static string helpDescription = $@"恋梦桌游姬V1.1.1 By未来菌
 输入'.帮助 [指令名]'查看对应指令的详细解释
 方括号内为参数，带*的为选填参数,带!的为自动补全参数：
 .计算 [算式]
@@ -126,7 +137,7 @@ namespace Native.Csharp.App.Event.Event_Me
 牌名可写成'假名【真名】'的形式，伪装的牌在离开非私密区域时会显露原形。
 群聊输入内容的最前方多输入1次扳机可以私发结果，多输入1次'~'开启变量延迟解释。
 使用'!'代替'.'作为扳机可自动补全部分指令，参考'开始'指令。
-输入的'QQ'将会被自动替换为操作者的QQ号。
+输入的'QQ'将会被自动解释为操作者的QQ号。输入的末尾加上'!'可避免解释变量及QQ。
 将机器人踢出群或者禁言可能导致账户被冻结或者引发程序异常，请使用退群和关闭指令来令机器人退群和暂停运行。
 ";
         //提取某玩家的属性值
@@ -134,8 +145,8 @@ namespace Native.Csharp.App.Event.Event_Me
         /// 更新日志描述
         /// </summary>
         public static string updateLogDescription = @"更新日志：
-Ver1.1.1：
-大幅优化插件结构，新增排序指令，新增环境变量QQ，优化洗牌、出牌算法，优化部分指令输入；修复各种Bug。
+Ver1.1.1（中秋版）：
+大幅优化插件结构，新增排序指令，新增环境变量QQ、结果，优化洗牌、出牌算法，优化部分指令输入；修复各种Bug。
 Plus1.1.0：
 新增开始指令；部分指令现在可以用!代替.简化输入；群聊指令支持私发结果；重写了帮助指令；移动指令更名为出牌；出牌指令现在取符合条件的随机目标而不是最前方目标；变量指令的表达式输入改为字符串输入；变量现在可以全局使用。
 Beta1.1.0：

@@ -25,6 +25,7 @@ namespace Native.Csharp.App.Event.Event_Me
             string input = e.Message.Replace("&#91;", "[").Replace("&#93;", "]");
             Event_Variable.QQQ = e.FromQQ;
             Event_Variable.varDelay = false;
+            Event_Variable.varNeedExp = true;
 
             input = new Regex("[\\s]+").Replace(input, " ");//合并复数空格
             input = input.Trim();//去除前后空格
@@ -33,6 +34,11 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 Event_Variable.varDelay = true;
                 input = input.Substring(1);
+            }
+            if (input.EndsWith("!") || input.EndsWith("！"))//叹号结尾，不需要被解释
+            {
+                Event_Variable.varNeedExp = false;
+                input = input.Remove(input.Length - 1 , 1);//去掉结尾
             }
             //把用户输入的第一个中文句号替换为英文
             if (input.StartsWith("。"))
@@ -133,7 +139,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
 
             //用户输入指令
-            if (!Event_Variable.varDelay)
+            if (!Event_Variable.varDelay && Event_Variable.varNeedExp)
             {
                 int vvc = 0;
                 foreach (var item in Event_Variable.vValue)//变量解释器
@@ -195,7 +201,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                 Event_Variable.Defa = true;
                                 temp = "." + temp.Remove(0, 1);
                             }
-                            if (Event_Variable.varDelay)
+                            if (Event_Variable.varDelay && Event_Variable.varNeedExp)
                             {
                                 int vvc = 0;
                                 foreach (var itemx in Event_Variable.vValue)//变量解释器
@@ -217,7 +223,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         Event_Variable.Defa = true;
                         input = "." + input.Remove(0, 1);
                     }
-                    if (Event_Variable.varDelay)
+                    if (Event_Variable.varDelay && Event_Variable.varNeedExp)
                     {
                         int vvc = 0;
                         foreach (var itemx in Event_Variable.vValue)//变量解释器
