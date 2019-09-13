@@ -11,12 +11,12 @@ namespace Native.Csharp.App.Event.Event_Me
     /// <summary>
     /// 私聊回复
     /// </summary>
-    public class Event_ReceiveFriendMessage : IReceiveFriendMessage
+    public class Event_ReceiveFriendMessage : IReceiveFriendMessage,IReceiveGroupPrivateMessage
     {
         public void ReceiveFriendMessage(object sender, CqPrivateMessageEventArgs e)
         {
             Event_Variable.isGroup = false;
-            string input = e.Message;
+            string input = e.Message.Replace("&#91;", "[").Replace("&#93;", "]");
             Event_Variable.QQQ = e.FromQQ;
             Event_Variable.varDelay = false;
             try
@@ -159,6 +159,16 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 Common.CqApi.SendPrivateMessage(e.FromQQ, "指令输入错误！输入'.帮助'检查你的格式！");
             }
+        }
+
+        /// <summary>
+        /// 实现群私聊接口
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void ReceiveGroupPrivateMessage(object sender, CqPrivateMessageEventArgs e)
+        {
+            ReceiveFriendMessage(sender,e);
         }
     }
 }

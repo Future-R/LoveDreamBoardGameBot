@@ -144,7 +144,6 @@
     <Compile Include="App\Event\Event_Me\Event_CheckError.cs" />
     <Compile Include="App\Event\Event_Me\Event_HelpDescription.cs" />
     <Compile Include="App\Event\Event_Me\Event_OriginalCommand.cs" />
-    <Compile Include="App\Event\Event_Me\Event_ReceiveGroupPrivateMessage.cs" />
     <Compile Include="App\Event\Event_Me\Event_ReceiveGroupMessage.cs" />
     <Compile Include="App\Event\Event_Me\Event_ReceiveFriendMessage.cs" />
     <Compile Include="App\Event\Event_Me\Event_Variable.cs" />

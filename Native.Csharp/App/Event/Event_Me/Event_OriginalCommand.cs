@@ -17,7 +17,7 @@ namespace Native.Csharp.App.Event.Event_Me
         /// <param name="id">传递消息的编号</param>
         public static void CommandIn(string input, long id)
         {
-            input = input.Replace("&#91;", "[").Replace("&#93;", "]").Replace("QQ",Event_Variable.QQQ.ToString());
+            input = input.Replace("QQ",Event_Variable.QQQ.ToString());
             if (input.Length < 2)//降低错误触发
             {
                 return;
@@ -34,16 +34,8 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
 
                 case "创建":
-                    switch (Crea(input))
-                    {
-                        case 0:
-                            Common.CqApi.SendPrivateMessage(id, $@"创建{input.Trim().Substring(3).Trim()}成功！");//待优化
-                            return;
-
-                        default:
-                            Common.CqApi.SendPrivateMessage(id, $@"创建{input.Trim().Substring(3).Trim()}失败！");
-                            return;
-                    }
+                    Common.CqApi.SendPrivateMessage(id, Crea(input));
+                    return;
 
                 case "销毁":
                     Common.CqApi.SendPrivateMessage(id, Boom(input, out string leave1) + Environment.NewLine + leave1);
@@ -55,16 +47,8 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         Common.CqApi.SendPrivateMessage(id, leave2);
                     }
-                    switch (Crea(input))//创建
-                    {
-                        case 0:
-                            Common.CqApi.SendPrivateMessage(id, $@"清空{input.Trim().Substring(3).Trim()}成功！");
-                            return;
-
-                        default:
-                            Common.CqApi.SendPrivateMessage(id, $@"{input.Trim().Substring(3).Trim()}丢失！");
-                            return;
-                    }
+                    Crea(input);
+                    return;
 
 
                 case "添加":
@@ -283,16 +267,8 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
 
                 case "创建":
-                    switch (Crea(input))
-                    {
-                        case 0:
-                            Common.CqApi.SendGroupMessage(id, $@"创建{input.Trim().Substring(3).Trim()}成功！");//待优化
-                            return;
-
-                        default:
-                            Common.CqApi.SendGroupMessage(id, $@"创建{input.Trim().Substring(3).Trim()}失败！");
-                            return;
-                    }
+                    Common.CqApi.SendGroupMessage(id, Crea(input));
+                    return;
 
                 case "销毁":
                     Common.CqApi.SendGroupMessage(id, Boom(input, out string leave1) + Environment.NewLine + leave1);
@@ -300,20 +276,12 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 case "清空":
                     Boom(input, out string leave2);
-                    if (leave2.Length > 1)
+                    if (leave2.Length > 6)
                     {
                         Common.CqApi.SendGroupMessage(id, leave2);
                     }
-                    switch (Crea(input))//创建
-                    {
-                        case 0:
-                            Common.CqApi.SendGroupMessage(id, $@"清空{input.Trim().Substring(3).Trim()}成功！");
-                            return;
-
-                        default:
-                            Common.CqApi.SendGroupMessage(id, $@"{input.Trim().Substring(3).Trim()}丢失！");
-                            return;
-                    }
+                    Crea(input);
+                    return;
 
 
                 case "添加":
@@ -371,7 +339,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
 
                 case "排序":
-                    Common.CqApi.SendPrivateMessage(id, SortShffle(input));
+                    Common.CqApi.SendGroupMessage(id, SortShffle(input));
                     return;
 
                 case "插入":
@@ -687,25 +655,35 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //创建
-        public static int Crea(string input)
+        public static string Crea(string input)
         {
             try
             {
                 input = input.Substring(3).Trim();
                 string[] inputArray = input.Split(' ');
+                string sendStr = "";
 
-                if (inputArray.Length == 1)//没有模板
+                for (int i = 0; i < inputArray.Length; i++)
                 {
-                    return CreateInfo(inputArray[0]);//接收返回值
+                    int reValue = CreateInfo(inputArray[i]);//接收返回值
+                    switch (reValue)
+                    {
+                        case 0:
+                            sendStr += $@"创建{inputArray[i]}成功！{Environment.NewLine}";
+                            break;
+                        case 2:
+                            sendStr += $@"{inputArray[i]}已存在！{Environment.NewLine}";
+                            break;
+                        default:
+                            sendStr += $@"创建{inputArray[i]}失败！{Environment.NewLine}";
+                            break;
+                    }
                 }
-                else
-                {
-                    return 3;
-                }
+                return sendStr;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return 4;
+                return Event_CheckError.CheckError(ex);
             }
 
         }
@@ -713,28 +691,37 @@ namespace Native.Csharp.App.Event.Event_Me
         //销毁
         public static string Boom(string input, out string leave)
         {
-            GetInfo(input, out string name, out string reture, out string refake);
-            List<string> tempInput = new List<string>(reture.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
-            List<string> fromListFake = new List<string>();
+            leave = "";
+            string reValue = "";
+            string[] paramInput = input.Substring(3).Trim().Split(' ');
+            for (int i = 0; i < paramInput.Length; i++)
+            {
+                GetInfo(".查看" + paramInput[i], out string name, out string reture, out string refake);
+                List<string> tempInput = new List<string>(reture.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
+                List<string> fromListFake = new List<string>();
 
-            leave = refake + "离开了区域！";
-            if (leave.Length < 7) leave = "";
-            int ret = DelInfo(name);
-            if (ret == 2)
-            {
-                return $@"找不到{name}！";
-            }
-            else
-            {
-                if (ret == 0)
+                if (reture.Length > 1)
                 {
-                    return $@"{name}已销毁！";
+                    leave += reture + $@"离开了区域{paramInput[i]}！" + Environment.NewLine;
+                }
+                int ret = DelInfo(name);
+                if (ret == 2)
+                {
+                    reValue += $@"找不到{name}！{Environment.NewLine}";
                 }
                 else
                 {
-                    return $@"{name}清空失败！";
+                    if (ret == 0)
+                    {
+                        reValue += $@"{name}已销毁！{Environment.NewLine}";
+                    }
+                    else
+                    {
+                        reValue += $@"{name}清空失败！{Environment.NewLine}";
+                    }
                 }
             }
+            return reValue;
         }
 
         //添加
@@ -835,24 +822,8 @@ namespace Native.Csharp.App.Event.Event_Me
                 name = name + "(区域不存在)";
             }
             List<string> list = new List<string>(LoadInfo(inputArray[0]).Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//全称列表
-            List<string> list2 = new List<string>();//隐藏真名的列表
-            //List<string> listTrue = new List<string>();//只含真名的列表
-
             reture = LoadInfo(inputArray[0]);
-            foreach (var item in list)
-            {
-                if (item.Contains("【") && item.Contains("】"))
-                {
-                    int startPos = item.IndexOf("【");
-                    //int endPos = item.IndexOf("】");
-                    //listTrue.Add(item.Substring(startPos + 1, endPos - startPos - 1));//获取真名
-                    list2.Add(item.Substring(0, startPos));//截去真名
-                }
-                else
-                {
-                    list2.Add(item);
-                }
-            }
+            CutTrueName(list, out List<string> list2);
             refake = string.Join(" ", list2.ToArray());
         }
 
@@ -947,31 +918,31 @@ namespace Native.Csharp.App.Event.Event_Me
                         return "请先使用'开始'指令绑定牌堆";
                     }
                 }
-                string inputs = LoadInfo(input);
-                if (inputs != "" || inputs != "读取错误！")
+                string[] inputs = input.Split(' ');
+                string reValue = "";
+                for (int i = 0; i < inputs.Length; i++)
                 {
-                    List<string> list = new List<string>(inputs.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
-                    for (int count = list.Count; count > 0; count--)
+                    string zone = LoadInfo(inputs[i]);
+                    if (zone != "" || zone != "读取错误！")
                     {
-                        int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(count));
-                        list.Add(list[rd]);
-                        list.RemoveAt(rd);
-                    }
-                    DelInfo(input); CreateInfo(input);
-                    WriteInfo(input, $@"{string.Join(" ", list.ToArray())}");
-                    if (input.Contains("私密"))
-                    {
-                        return "洗切完成！";
+                        List<string> list = new List<string>(zone.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
+                        for (int count = list.Count; count > 0; count--)
+                        {
+                            int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(count));
+                            list.Add(list[rd]);
+                            list.RemoveAt(rd);
+                        }
+                        DelInfo(inputs[i]); CreateInfo(inputs[i]);
+                        WriteInfo(inputs[i], $@"{string.Join(" ", list.ToArray())}");
+
+                        reValue += $"{inputs[i]}洗切完成！；";
                     }
                     else
                     {
-                        return string.Join(" ", list.ToArray());
+                        reValue += $"{inputs[i]}为空或不存在！；" ;
                     }
                 }
-                else
-                {
-                    return "区域为空或不存在！";
-                }
+                return reValue;
             }
             catch (Exception)
             {
@@ -1048,13 +1019,13 @@ namespace Native.Csharp.App.Event.Event_Me
                 List<string> list = new List<string>(input.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//区域A 区域B XXX YYY ZZZ
                 string name1 = list[0];
                 string name2 = list[1];
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name1 + ".ini"))
+                if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name1 + ".ini"))
                 {
                     return $@"来源区域{name1}不存在，请先创建该区域！";
                 }
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name2 + ".ini"))
+                if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + name2 + ".ini"))//不存在就创建
                 {
-                    return $@"目标区域{name2}不存在，请先创建该区域！";
+                    CreateInfo(name2);
                 }
                 List<string> nameList = new List<string>();
                 for (int i = 0; i < list.Count - 2; i++)
@@ -1357,6 +1328,13 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     List<string> list1 = new List<string>(inputs.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//AAA BBB CC DDDD
                     List<string> list2 = new List<string>();
+                    list1 = new List<string>(list1.Distinct());//去重并乱序，以免后面直接发现时暴露牌序
+                    for (int count1 = list1.Count; count1 > 0; count1--)
+                    {
+                        int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(count1));
+                        list1.Add(list1[rd]);
+                        list1.RemoveAt(rd);
+                    }
 
                     if (list.Count >= 2)//没有输入数量则默认为3
                     {
@@ -1377,6 +1355,10 @@ namespace Native.Csharp.App.Event.Event_Me
                     if (list1.Count < count + 1)//如果数量不足或相等，直接发现所有目标
                     {
                         return string.Join(Environment.NewLine, list1.ToArray());
+                    }
+                    else
+                    {
+                        list1 = new List<string>(inputs.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
                     }
 
                     for (int i = 0; i < count; i++)
@@ -1404,41 +1386,57 @@ namespace Native.Csharp.App.Event.Event_Me
             try
             {
                 input = input.Substring(3).Trim();
-                List<string> list = new List<string>(input.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[区域] [数量*]
-                string inputs = LoadInfo(list[0]);
-                int count = int.Parse(list[1]);//序号
-                if (inputs != "" || inputs != "读取错误！")
+                List<string> list = new List<string>(input.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[区域] [序号*]
+                string reValue = "";int count;
+                for (int i = 1; i < list.Count; i++)
                 {
-                    List<string> list1 = new List<string>(inputs.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//AAA BBB CC DDDD
-                    if (list1.Count < count || count < 1)
+                    string zone = LoadInfo(list[0]);
+                    //来源区域元素列表
+                    List<string> list1 = new List<string>
+                            (zone.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//AAA BBB CC DDDD
+                    if (zone != "" || zone != "读取错误！")
                     {
-                        return "超出边界！";
+                        if (list[i].Contains("随机"))
+                        {
+                            count = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(list1.Count - 1));
+                        }
+                        else
+                        {
+                            count = int.Parse(list[i]);//序号
+                        }
+                        if (list1.Count < count || count < 1)
+                        {
+                            return $@"{count}超出边界！";
+                        }
+                        else
+                        {
+                            if (list1[count - 1].Contains("【"))
+                            {
+                                reValue += $@"移除完成！
+{list1[count - 1]}离开了区域！{Environment.NewLine}";
+                                list1.RemoveAt(count - 1);
+                                DelInfo(list[0]); CreateInfo(list[0]);
+                                WriteInfo(list[0], string.Join(" ", list1.ToArray()));
+                            }
+                            else
+                            {
+                                list1.RemoveAt(count - 1);
+                                DelInfo(list[0]); CreateInfo(list[0]);
+                                WriteInfo(list[0], string.Join(" ", list1.ToArray()));
+                                reValue += "移除完成！" + Environment.NewLine;
+                            }
+                        }
                     }
                     else
                     {
-                        if (list1[count - 1].Contains("【"))
-                        {
-                            string ret = $@"移除完成！
-{list1[count - 1]}离开了区域！";
-                            list1.RemoveAt(count - 1);
-                            DelInfo(list[0]); CreateInfo(list[0]);
-                            WriteInfo(list[0], string.Join(" ", list1.ToArray()));
-                            return ret;
-                        }
-                        list1.RemoveAt(count - 1);
-                        DelInfo(list[0]); CreateInfo(list[0]);
-                        WriteInfo(list[0], string.Join(" ", list1.ToArray()));
-                        return "移除完成！";
+                        return "区域为空或不存在！";
                     }
                 }
-                else
-                {
-                    return "区域为空或不存在！";
-                }
+                return reValue;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return "移除失败！";
+                return "移除失败！" + Event_CheckError.CheckError(ex);
             }
         }
 
@@ -1753,16 +1751,32 @@ namespace Native.Csharp.App.Event.Event_Me
         {
             try
             {
-                List<string> tempInput = new List<string>(input.Substring(3).Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//旧区域 新区域
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + tempInput[0] + ".ini") && !File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + tempInput[1] + ".ini"))
+                List<string> tempInput = new List<string>
+                    (input.Substring(3).Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//旧区域 新区域 新区域
+                string reValue = "";
+                for (int i = 1; i < tempInput.Count; i++)
                 {
-                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + tempInput[0] + ".ini", AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + tempInput[1] + ".ini");
-                    return "复制完毕！";
+                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + tempInput[0] + ".ini"))
+                    {
+                        if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + tempInput[i] + ".ini"))//目标已存在，追加型复制
+                        {
+                            string orige = LoadInfo(tempInput[0]);//来源区域内容
+                            WriteInfo(tempInput[i], "" + orige.Trim());
+                            reValue += $"{tempInput[i]}追加完毕！；";
+                        }
+                        else//目标不存在，创建型复制
+                        {
+                            File.Copy(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + tempInput[0] + ".ini",
+                                      AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + tempInput[i] + ".ini");
+                            reValue += $"{tempInput[i]}复制完毕！；";
+                        }
+                    }
+                    else
+                    {
+                        return $@"{tempInput[0]}不存在！";
+                    }
                 }
-                else
-                {
-                    return $@"{tempInput[0]}不存在或{tempInput[1]}已存在！";
-                }
+                return reValue;
             }
             catch (Exception)
             {
@@ -1960,7 +1974,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 Directory.CreateDirectory(CurDir);
             }
             //不存在就创建
-            String FilePath = CurDir + FileName;
+            string FilePath = CurDir + FileName;
             //文件已存在
             if (File.Exists(FilePath))
             {
@@ -1971,8 +1985,6 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 //文件覆盖方式添加内容
                 StreamWriter file = new StreamWriter(FilePath, false);
-                ////保存数据到文件
-                //file.Write("");
                 //关闭文件
                 file.Close();
                 //释放对象
@@ -2088,6 +2100,28 @@ namespace Native.Csharp.App.Event.Event_Me
             catch (Exception)
             {
                 // ignored
+            }
+        }
+
+        /// <summary>
+        /// 截去真名
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="listAllName"></param>
+        public static void CutTrueName(List<string> list,out List<string> listFakeName)
+        {
+            listFakeName = new List<string>();
+            foreach (var item in list)
+            {
+                if (item.Contains("【") && item.Contains("】"))
+                {
+                    int startPos = item.IndexOf("【");
+                    listFakeName.Add(item.Substring(0, startPos));//截去真名
+                }
+                else
+                {
+                    listFakeName.Add(item);
+                }
             }
         }
     }
