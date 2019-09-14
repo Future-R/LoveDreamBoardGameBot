@@ -192,48 +192,28 @@ namespace Native.Csharp.App.Event.Event_Me
                             case ">":
                                 if ((int)new DataTable().Compute(expression, "") > int.Parse(value))
                                 {
-                                    foreach (var item in sharpInput)
-                                    {
-
-                                        CommandIn(item, id);
-
-                                    }
+                                    SonCommand(sharpInput, id);
                                 }
                                 break;
 
                             case "<":
                                 if ((int)new DataTable().Compute(expression, "") < int.Parse(value))
                                 {
-                                    foreach (var item in sharpInput)
-                                    {
-
-                                        CommandIn(item, id);
-
-                                    }
+                                    SonCommand(sharpInput, id);
                                 }
                                 break;
 
                             case "=":
                                 if ((int)new DataTable().Compute(expression, "") == int.Parse(value))
                                 {
-                                    foreach (var item in sharpInput)
-                                    {
-
-                                        CommandIn(item, id);
-
-                                    }
+                                    SonCommand(sharpInput, id);
                                 }
                                 break;
 
                             case "!":
                                 if ((int)new DataTable().Compute(expression, "") != int.Parse(value))
                                 {
-                                    foreach (var item in sharpInput)
-                                    {
-
-                                        CommandIn(item, id);
-
-                                    }
+                                    SonCommand(sharpInput, id);
                                 }
                                 break;
 
@@ -487,48 +467,28 @@ namespace Native.Csharp.App.Event.Event_Me
                             case ">":
                                 if ((int)new DataTable().Compute(expression, "") > int.Parse(value))
                                 {
-                                    foreach (var item in sharpInput)
-                                    {
-
-                                        CommandIn(item, id);
-
-                                    }
+                                    SonCommand(sharpInput, id);
                                 }
                                 break;
 
                             case "<":
                                 if ((int)new DataTable().Compute(expression, "") < int.Parse(value))
                                 {
-                                    foreach (var item in sharpInput)
-                                    {
-
-                                        CommandIn(item, id);
-
-                                    }
+                                    SonCommand(sharpInput, id);
                                 }
                                 break;
 
                             case "=":
                                 if ((int)new DataTable().Compute(expression, "") == int.Parse(value))
                                 {
-                                    foreach (var item in sharpInput)
-                                    {
-
-                                        CommandIn(item, id);
-
-                                    }
+                                    SonCommand(sharpInput, id);
                                 }
                                 break;
 
                             case "!":
                                 if ((int)new DataTable().Compute(expression, "") != int.Parse(value))
                                 {
-                                    foreach (var item in sharpInput)
-                                    {
-
-                                        CommandIn(item, id);
-
-                                    }
+                                    SonCommand(sharpInput, id);
                                 }
                                 break;
 
@@ -2142,6 +2102,21 @@ namespace Native.Csharp.App.Event.Event_Me
                 else
                 {
                     listFakeName.Add(item);
+                }
+            }
+        }
+
+        public static void SonCommand(List<string> sharpInput, long id)
+        {
+            foreach (var item in sharpInput)
+            {
+                if (Event_Variable.isGroup)
+                {
+                    CommandIn(item, id, Event_Variable.isGroup);
+                }
+                else
+                {
+                    CommandIn(item, id);
                 }
             }
         }
