@@ -83,36 +83,9 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
 
                 case "查看":
-                    string[] lookInputs = input.Substring(3).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    int lookCons = 0;
-                    if (lookInputs.Length > 1)//说明有第二个参数
-                    {
-                        try
-                        {
-                            lookCons = int.Parse(lookInputs[lookInputs.Length - 1]);
-                            input = ".查看" + lookInputs[0];
-                        }
-                        catch (Exception)
-                        {
-                            Common.CqApi.SendPrivateMessage(Event_Variable.idNum,$@"错误：{lookInputs[lookInputs.Length - 1]}不是数字！");
-                            return;
-                        }
-                    }
                     GetInfo(input, out string looname, out string looret, out string loofak);
-                    if (lookCons > 0)//大于0说明写入了一个正确参数
-                    {
-                        for (int i = lookCons; i < loofak.Length; i += lookCons + 2)
-                        {
-                            loofak = loofak.Insert(i, Environment.NewLine);
-                        }
-                        Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{looname}:
+                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{looname}:
 {loofak}");
-                    }
-                    else
-                    {
-                        Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{looname}:
-{loofak}");
-                    }
                     return;
 
                 case "清数":
@@ -821,7 +794,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
         }
         /// <summary>
-        /// 查看/获取信息
+        /// 获取信息
         /// </summary>
         /// <param name="input">.查看 [区域] XXX</param>
         /// <param name="name">区域</param>
