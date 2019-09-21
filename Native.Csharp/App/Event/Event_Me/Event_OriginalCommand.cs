@@ -99,20 +99,32 @@ namespace Native.Csharp.App.Event.Event_Me
                         }
                     }
                     GetInfo(input, out string looname, out string looret, out string loofak);
-                    if (lookCons > 0)//大于0说明写入了一个正确参数
+                    //                    if (lookCons > 0)//大于0说明写入了一个正确参数
+                    //                    {
+                    //                        for (int i = lookCons; i < loofak.Length; i += lookCons + 2)
+                    //                        {
+                    //                            loofak = loofak.Insert(i, Environment.NewLine);
+                    //                        }
+                    //                        Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{looname}:
+                    //{loofak}");
+                    //                    }
+                    //                    else
+                    //                    {
+                    //                        Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{looname}:
+                    //{loofak}");
+                    //                    }
+                    List<string> fakerList = new List<string>( loofak.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) );
+                    if (lookCons > 0)
                     {
-                        for (int i = lookCons; i < loofak.Length; i += lookCons + 2)
+                        int fakerCount = fakerList.Count;
+                        for (int i = lookCons; i < fakerCount; i+= lookCons + 1)
                         {
-                            loofak = loofak.Insert(i, Environment.NewLine);
+                            fakerList.Insert(i,Environment.NewLine);
                         }
-                        Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{looname}:
-{loofak}");
+                        loofak = string.Join(" ", fakerList.ToArray());
                     }
-                    else
-                    {
-                        Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{looname}:
+                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{looname}:
 {loofak}");
-                    }
                     return;
 
                 case "清数":
