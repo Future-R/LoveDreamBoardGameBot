@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Native.Csharp.App.EventArgs;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -78,7 +79,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 case "查看":
                     GetInfo(input, out string looname, out string looret, out string loofak);
-                    Common.CqApi.SendPrivateMessage(id, $@"{looname}:
+                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{looname}:
 {loofak}");
                     return;
 
@@ -204,16 +205,38 @@ namespace Native.Csharp.App.Event.Event_Me
                                 break;
 
                             case "=":
-                                if ((int)new DataTable().Compute(expression, "") == int.Parse(value))
+                                try//如果计算成功，说明
                                 {
-                                    SonCommand(sharpInput, id);
+                                    object type = new DataTable().Compute(expression, "");
+                                    if (type.ToString() == value)
+                                    {
+                                        SonCommand(sharpInput, id);
+                                    }
+                                }
+                                catch (Exception)//如果失败，说明是字符串，直接判断是否相等
+                                {
+                                    if (expression == value)
+                                    {
+                                        SonCommand(sharpInput, id);
+                                    }
                                 }
                                 break;
 
                             case "!":
-                                if ((int)new DataTable().Compute(expression, "") != int.Parse(value))
+                                try//如果计算成功，说明
                                 {
-                                    SonCommand(sharpInput, id);
+                                    object type = new DataTable().Compute(expression, "");
+                                    if (type.ToString() != value)
+                                    {
+                                        SonCommand(sharpInput, id);
+                                    }
+                                }
+                                catch (Exception)//如果失败，说明是字符串，直接判断是否相等
+                                {
+                                    if (expression != value)
+                                    {
+                                        SonCommand(sharpInput, id);
+                                    }
                                 }
                                 break;
 
@@ -226,6 +249,9 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         Common.CqApi.SendPrivateMessage(id, "抛出异常！");
                     }
+                    return;
+
+                default:
                     return;
             }
         }
@@ -370,8 +396,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 case "退群":
                     Event_Variable.groupId = id;
-                    Event_Variable.qqId = Event_Variable.QQQ;
-                    Event_Variable.member = Common.CqApi.GetMemberInfo(Event_Variable.groupId, Event_Variable.qqId, true);//获取群成员
+                    Event_Variable.member = Common.CqApi.GetMemberInfo(Event_Variable.groupId, Event_Variable.QQQ, true);//获取群成员
                     Event_Variable.PT = Convert.ToString(Event_Variable.member.PermitType);//获取权限：Holder群主，Manage管理，None群员
                     if (Event_Variable.PT == "None")//屁民瞎发啥指令
                     {
@@ -402,8 +427,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         return;
                     }
                     Event_Variable.groupId = id;
-                    Event_Variable.qqId = Event_Variable.QQQ;
-                    Event_Variable.member = Common.CqApi.GetMemberInfo(Event_Variable.groupId, Event_Variable.qqId, true);//获取群成员
+                    Event_Variable.member = Common.CqApi.GetMemberInfo(Event_Variable.groupId, Event_Variable.QQQ, true);//获取群成员
                     Event_Variable.PT = Convert.ToString(Event_Variable.member.PermitType);//获取权限：Holder群主，Manage管理，None群员
                     if (Event_Variable.PT != "Holder")
                     {

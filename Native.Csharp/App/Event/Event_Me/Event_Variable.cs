@@ -52,8 +52,13 @@ namespace Native.Csharp.App.Event.Event_Me
         /// 变量需要被解释
         /// </summary>
         public static bool varNeedExp = true;
+
+        /// <summary>
+        /// 仅用于指示发送目标
+        /// </summary>
+        public static long idNum;
+
         public static long groupId;
-        public static long qqId;
 
         //public static float GetValue()
         //{

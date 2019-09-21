@@ -35,6 +35,15 @@ namespace Native.Csharp.App.Event.Event_Me
                 Event_Variable.varDelay = true;
                 input = input.Substring(1);
             }
+            if (input.EndsWith(";") || input.EndsWith("；"))//分号结尾，屏蔽回显
+            {
+                Event_Variable.idNum = 0;
+                input = input.Remove(input.Length - 1, 1);//去掉结尾
+            }
+            else//否则正常载入目标ID
+            {
+                Event_Variable.idNum = e.FromGroup;
+            }
             if (input.EndsWith("!") || input.EndsWith("！"))//叹号结尾，不需要被解释
             {
                 Event_Variable.varNeedExp = false;
