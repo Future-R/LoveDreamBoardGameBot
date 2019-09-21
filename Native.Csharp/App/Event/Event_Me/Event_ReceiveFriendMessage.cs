@@ -19,6 +19,7 @@ namespace Native.Csharp.App.Event.Event_Me
             Event_Variable.QQQ = e.FromQQ;
             Event_Variable.varDelay = false;
             Event_Variable.varNeedExp = true;
+            Event_Variable.idNum = e.FromQQ;
             try
             {
                 //检查是否启用变量延迟解释
@@ -26,15 +27,6 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     Event_Variable.varDelay = true;
                     input = input.Substring(1);
-                }
-                if (input.EndsWith(";") || input.EndsWith("；"))//分号结尾，屏蔽回显
-                {
-                    Event_Variable.idNum = 0;
-                    input = input.Remove(input.Length - 1, 1);//去掉结尾
-                }
-                else//否则正常载入目标ID
-                {
-                    Event_Variable.idNum = e.FromQQ;
                 }
                 if (input.EndsWith("!") || input.EndsWith("！"))//叹号结尾，不需要被解释
                 {
@@ -82,9 +74,9 @@ namespace Native.Csharp.App.Event.Event_Me
             if (!Event_Variable.varDelay && Event_Variable.varNeedExp)
             {
                 int vvc = 0;
-                foreach (var item in Event_Variable.vValue)//变量解释器
+                foreach (var item in Event_Variable.VariableList)//变量解释器
                 {
-                    input = input.Replace(Event_Variable.vKey[vvc], item);
+                    input = input.Replace('[' + item.Key + ']', item.Value);
                     vvc++;
                 }
             }
@@ -138,9 +130,9 @@ namespace Native.Csharp.App.Event.Event_Me
                             if (Event_Variable.varDelay && Event_Variable.varNeedExp)
                             {
                                 int vvc = 0;
-                                foreach (var itemx in Event_Variable.vValue)//变量解释器
+                                foreach (var itemx in Event_Variable.VariableList)//变量解释器
                                 {
-                                    temp = temp.Replace(Event_Variable.vKey[vvc], itemx);
+                                    temp = temp.Replace('[' + itemx.Key + ']', itemx.Value);
                                     vvc++;
                                 }
                             }
@@ -160,9 +152,9 @@ namespace Native.Csharp.App.Event.Event_Me
                     if (Event_Variable.varDelay && Event_Variable.varNeedExp)
                     {
                         int vvc = 0;
-                        foreach (var itemx in Event_Variable.vValue)//变量解释器
+                        foreach (var itemx in Event_Variable.VariableList)//变量解释器
                         {
-                            input = input.Replace(Event_Variable.vKey[vvc], itemx);
+                            input = input.Replace('[' + itemx.Key + ']', itemx.Value);
                             vvc++;
                         }
                     }
