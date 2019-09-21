@@ -19,10 +19,15 @@ namespace Native.Csharp.App.Event.Event_Me
         public static void CommandIn(string input, long id)
         {
             Event_Variable.cutDown = true;
+            input = input.Trim();
             if (input.EndsWith(";") || input.EndsWith("；"))//分号结尾，屏蔽回显
             {
                 Event_Variable.idNum = 0;
                 input = input.Remove(input.Length - 1, 1);//去掉结尾
+            }
+            else
+            {
+                Event_Variable.idNum = id;
             }
             if (Event_Variable.varNeedExp)
             {
@@ -296,10 +301,15 @@ namespace Native.Csharp.App.Event.Event_Me
         public static void CommandIn(string input, long id, bool isGroup)
         {
             Event_Variable.cutDown = true;
+            input = input.Trim();
             if (input.EndsWith(";") || input.EndsWith("；"))//分号结尾，屏蔽回显
             {
                 Event_Variable.idNum = 0;
                 input = input.Remove(input.Length - 1, 1);//去掉结尾
+            }
+            else
+            {
+                Event_Variable.idNum = id;
             }
             if (Event_Variable.varNeedExp)
             {
@@ -360,7 +370,32 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
 
                 case "查看":
+                    string[] lookInputs = input.Substring(3).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    int lookCons = 0;
+                    if (lookInputs.Length > 1)//说明有第二个参数
+                    {
+                        try
+                        {
+                            lookCons = int.Parse(lookInputs[lookInputs.Length - 1]);
+                            input = ".查看" + lookInputs[0];
+                        }
+                        catch (Exception)
+                        {
+                            Common.CqApi.SendGroupMessage(Event_Variable.idNum, $@"错误：{lookInputs[lookInputs.Length - 1]}不是数字！");
+                            return;
+                        }
+                    }
                     GetInfo(input, out string looname, out string looret, out string loofak);
+                    List<string> fakerList = new List<string>(loofak.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+                    if (lookCons > 0)
+                    {
+                        int fakerCount = fakerList.Count;
+                        for (int i = lookCons; i < fakerCount; i += lookCons + 1)
+                        {
+                            fakerList.Insert(i, Environment.NewLine);
+                        }
+                        loofak = string.Join(" ", fakerList.ToArray());
+                    }
                     Common.CqApi.SendGroupMessage(Event_Variable.idNum, $@"{looname}:
 {loofak}");
                     return;
