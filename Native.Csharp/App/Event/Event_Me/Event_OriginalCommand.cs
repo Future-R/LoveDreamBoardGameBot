@@ -18,6 +18,7 @@ namespace Native.Csharp.App.Event.Event_Me
         /// <param name="id">传递消息的编号</param>
         public static void CommandIn(string input, long id)
         {
+            Event_Variable.cutDown = true;
             if (input.EndsWith(";") || input.EndsWith("；"))//分号结尾，屏蔽回显
             {
                 Event_Variable.idNum = 0;
@@ -282,6 +283,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
 
                 default:
+                    Event_Variable.cutDown = false;
                     return;
             }
         }
@@ -293,6 +295,7 @@ namespace Native.Csharp.App.Event.Event_Me
         /// <param name="id">传递消息的编号</param>
         public static void CommandIn(string input, long id, bool isGroup)
         {
+            Event_Variable.cutDown = true;
             if (input.EndsWith(";") || input.EndsWith("；"))//分号结尾，屏蔽回显
             {
                 Event_Variable.idNum = 0;
@@ -560,6 +563,9 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         Common.CqApi.SendGroupMessage(Event_Variable.idNum, "抛出异常！");
                     }
+                    return;
+                default:
+                    Event_Variable.cutDown = false;
                     return;
             }
         }

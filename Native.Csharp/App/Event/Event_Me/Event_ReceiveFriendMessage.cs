@@ -137,6 +137,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                 }
                             }
                             Event_OriginalCommand.CommandIn(temp, e.FromQQ);
+                            e.Handler = Event_Variable.cutDown;
                         }
                     }
 
@@ -159,6 +160,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         }
                     }
                     Event_OriginalCommand.CommandIn(input, e.FromQQ);//查一下是不是固有指令
+                    e.Handler = Event_Variable.cutDown;
                 }
             }
             catch (Exception)

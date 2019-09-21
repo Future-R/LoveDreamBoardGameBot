@@ -80,7 +80,7 @@ namespace Native.Csharp.App.Event.Event_Me
         {
             CommandList = ".计算 .骰子 .创建 .清空 .销毁 .添加 .删除 .移动 .插入 .移除 " +
                           ".抽牌 .查看 .洗牌 .清数 .检索 .发现 .翻转 .导入 .属性 .定义 " +
-                          ".报错 .去重 .复制 .棋盘 .日志 .转化 .如果 .清理 .开启 .关闭 " +
+                          ".报错 .去重 .复制 .日志 .转化 .如果 .清理 .开启 .关闭 " +
                           ".退群 .变量 .开始 .排序 .比赛";
         }
         /// <summary>
@@ -105,9 +105,14 @@ namespace Native.Csharp.App.Event.Event_Me
         public static bool varDelay;
 
         /// <summary>
+        /// 截断处理，不让后面的插件处理信息了
+        /// </summary>
+        public static bool cutDown;
+
+        /// <summary>
         /// 帮助描述
         /// </summary>
-        public static string helpDescription = $@"恋梦桌游姬V1.1.1 By未来菌
+        public static string helpDescription = $@"恋梦桌游姬V1.1.2 By未来菌
 输入'.帮助 [指令名]'查看对应指令的详细解释
 方括号内为参数，带*的为选填参数,带!的为自动补全参数：
 .计算 [算式]
@@ -134,7 +139,6 @@ namespace Native.Csharp.App.Event.Event_Me
 .属性 [角色!] [键名:键值] [键名:键值*]
 .导入 [区域] [文本]
 .开始 [游戏名]
-.棋盘 [房间号]
 .变量 [变量名] [字符串/【区域】/删除]
 .定义 [添加/删除] [新指令 甲 乙 丙]#[指令 甲 乙]#[指令 甲 丙*]
 .如果 [表达式] [>/</=/!] [数值]?[指令 甲 乙]?[指令 甲 丙*]
