@@ -34,6 +34,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 input = input.Replace("QQ", Event_Variable.QQQ.ToString());
                 input = input.Substring(0, 3) + input.Substring(3).Replace("骰点", $"{Event_Variable.Number}")
                                                                  .Replace("清点", $"{Event_Variable.CountValue}")
+                                                                 .Replace("时点",$"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0,8).Replace(":" , "" )}")
                                                                  .Replace("结果", $"{Event_Variable.ComputeValue}");
             }
             
@@ -109,14 +110,15 @@ namespace Native.Csharp.App.Event.Event_Me
                     if (lookCons > 0)
                     {
                         int fakerCount = fakerList.Count;
-                        for (int i = lookCons; i < fakerCount; i+= lookCons + 1)
+                        for (int i = lookCons; i < fakerCount + 1; i+= lookCons + 1)
                         {
+                            fakerCount = fakerList.Count;
                             fakerList.Insert(i,Environment.NewLine);
                         }
                         loofak = string.Join(" ", fakerList.ToArray());
                     }
                     Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{looname}:
-{loofak}");
+ {loofak}");
                     return;
 
                 case "清数":
@@ -316,6 +318,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 input = input.Replace("QQ", Event_Variable.QQQ.ToString());
                 input = input.Substring(0, 3) + input.Substring(3).Replace("骰点", $"{Event_Variable.Number}")
                                                                   .Replace("清点", $"{Event_Variable.CountValue}")
+                                                                  .Replace("时点", $"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0, 8).Replace(":", "")}")
                                                                   .Replace("结果", $"{Event_Variable.ComputeValue}");
             }
             if (input.Length < 2)//降低错误触发
@@ -390,14 +393,15 @@ namespace Native.Csharp.App.Event.Event_Me
                     if (lookCons > 0)
                     {
                         int fakerCount = fakerList.Count;
-                        for (int i = lookCons; i < fakerCount; i += lookCons + 1)
+                        for (int i = lookCons; i < fakerCount + 1; i += lookCons + 1)
                         {
+                            fakerCount = fakerList.Count;
                             fakerList.Insert(i, Environment.NewLine);
                         }
                         loofak = string.Join(" ", fakerList.ToArray());
                     }
                     Common.CqApi.SendGroupMessage(Event_Variable.idNum, $@"{looname}:
-{loofak}");
+ {loofak}");
                     return;
 
                 case "清数":
