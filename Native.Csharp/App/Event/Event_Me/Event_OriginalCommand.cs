@@ -207,7 +207,8 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
 
                 case "如果"://.如果 [表达式] [>/</=/!] [指定值]?[指令 A B]
-                    input = input.Substring(3).Trim().Replace("大于", ">").Replace("小于", "<").Replace("等于", "=").Replace("？", "?").Replace("！", "!").Replace("不等于", "!");//[表达式] [>/</=/!] [指定值]?[指令 A B]
+                    input = input.Substring(3).Trim()
+                        .Replace("大于", ">").Replace("小于", "<").Replace("等于", "=").Replace("？", "?").Replace("！", "!").Replace("不等于", "!").Replace("c", "C");//[表达式] [>/</=/!] [指定值]?[指令 A B]
 
                     try
                     {
@@ -231,14 +232,14 @@ namespace Native.Csharp.App.Event.Event_Me
                             case ">":
                                 if ((int)new DataTable().Compute(expression, "") > int.Parse(value))
                                 {
-                                    SonCommand(sharpInput, id);
+                                    SonCommand(sharpInput, Event_Variable.idNum);
                                 }
                                 break;
 
                             case "<":
                                 if ((int)new DataTable().Compute(expression, "") < int.Parse(value))
                                 {
-                                    SonCommand(sharpInput, id);
+                                    SonCommand(sharpInput, Event_Variable.idNum);
                                 }
                                 break;
 
@@ -248,14 +249,14 @@ namespace Native.Csharp.App.Event.Event_Me
                                     object type = new DataTable().Compute(expression, "");
                                     if (type.ToString() == value)
                                     {
-                                        SonCommand(sharpInput, id);
+                                        SonCommand(sharpInput, Event_Variable.idNum);
                                     }
                                 }
                                 catch (Exception)//如果失败，说明是字符串，直接判断是否相等
                                 {
                                     if (expression == value)
                                     {
-                                        SonCommand(sharpInput, id);
+                                        SonCommand(sharpInput, Event_Variable.idNum);
                                     }
                                 }
                                 break;
@@ -266,15 +267,22 @@ namespace Native.Csharp.App.Event.Event_Me
                                     object type = new DataTable().Compute(expression, "");
                                     if (type.ToString() != value)
                                     {
-                                        SonCommand(sharpInput, id);
+                                        SonCommand(sharpInput, Event_Variable.idNum);
                                     }
                                 }
                                 catch (Exception)//如果失败，说明是字符串，直接判断是否相等
                                 {
                                     if (expression != value)
                                     {
-                                        SonCommand(sharpInput, id);
+                                        SonCommand(sharpInput, Event_Variable.idNum);
                                     }
+                                }
+                                break;
+
+                            case "C":
+                                if (expression.Contains(value))
+                                {
+                                    SonCommand(sharpInput, Event_Variable.idNum);
                                 }
                                 break;
 
@@ -544,7 +552,8 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
 
                 case "如果"://.如果 [表达式] [>/</=/!] [指定值]?[指令 A B]
-                    input = input.Substring(3).Trim().Replace("大于", ">").Replace("小于", "<").Replace("等于", "=").Replace("？", "?").Replace("！", "!").Replace("不等于", "!");//[表达式] [>/</=/!] [指定值]?[指令 A B]
+                    input = input.Substring(3).Trim()
+                        .Replace("大于", ">").Replace("小于", "<").Replace("等于", "=").Replace("？", "?").Replace("！", "!").Replace("不等于", "!").Replace("c", "C");//[表达式] [>/</=/!] [指定值]?[指令 A B]
 
                     try
                     {
@@ -568,28 +577,35 @@ namespace Native.Csharp.App.Event.Event_Me
                             case ">":
                                 if ((int)new DataTable().Compute(expression, "") > int.Parse(value))
                                 {
-                                    SonCommand(sharpInput, id);
+                                    SonCommand(sharpInput, Event_Variable.idNum);
                                 }
                                 break;
 
                             case "<":
                                 if ((int)new DataTable().Compute(expression, "") < int.Parse(value))
                                 {
-                                    SonCommand(sharpInput, id);
+                                    SonCommand(sharpInput, Event_Variable.idNum);
                                 }
                                 break;
 
                             case "=":
                                 if ((int)new DataTable().Compute(expression, "") == int.Parse(value))
                                 {
-                                    SonCommand(sharpInput, id);
+                                    SonCommand(sharpInput, Event_Variable.idNum);
                                 }
                                 break;
 
                             case "!":
                                 if ((int)new DataTable().Compute(expression, "") != int.Parse(value))
                                 {
-                                    SonCommand(sharpInput, id);
+                                    SonCommand(sharpInput, Event_Variable.idNum);
+                                }
+                                break;
+
+                            case "C":
+                                if (expression.Contains(value))
+                                {
+                                    SonCommand(sharpInput, Event_Variable.idNum);
                                 }
                                 break;
 
