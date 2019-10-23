@@ -38,6 +38,13 @@ namespace Native.Csharp.App.Event.Event_Me
             get; set;
         }
         /// <summary>
+        /// 缓存空间
+        /// </summary>
+        public static string TempZone
+        {
+            get; set;
+        }
+        /// <summary>
         /// 自动补全参数是否开启
         /// </summary>
         public static bool Defa
@@ -141,7 +148,7 @@ namespace Native.Csharp.App.Event.Event_Me
 .开始 [游戏名]
 .变量 [变量名] [字符串/(角色名:属性名)/【区域】/删除]
 .定义 [添加/删除] [新指令 甲 乙 丙]#[指令 甲 乙]#[指令 甲 丙*]
-.如果 [表达式] [>/</=/!] [数值]?[指令 甲 乙]?[指令 甲 丙*]
+.如果 [表达式] [>/</=/!/C] [数值]?[指令 甲 乙]?[指令 甲 丙*]
 .清理 [天数]（群主权限）
 .退群 [QQ号*]（群管权限）
 .开启/关闭 [QQ号*]
@@ -159,7 +166,7 @@ namespace Native.Csharp.App.Event.Event_Me
         /// </summary>
         public static string updateLogDescription = @"更新日志：
 Beta1.2.0：
-新增环境变量时点；'如果'指令现在支持包含判断；修复'如果'的子指令回复无法被屏蔽的BUG。
+新增环境变量时点、缓存；'如果'指令现在支持包含判断；现在回复时会标注对象昵称，优先从玩家属性中获取；修复'如果'的子指令回复无法被屏蔽的BUG。
 Ver1.1.2：
 指令和子指令末尾加上';'可以屏蔽回复；变量指令现在可以获取到角色属性；查看指令现在支持设定每行显示的元素个数；属性现在可以删除某个键；如果指令现在支持字符串比较；清点指令更名为清数；环境变量'骰子'更名为'骰点'；调整了插件优先级；删除了棋盘指令。
 Ver1.1.1（中秋版）：
