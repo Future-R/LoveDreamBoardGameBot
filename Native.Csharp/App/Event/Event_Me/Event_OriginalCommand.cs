@@ -43,6 +43,30 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 return;
             }
+            //转义RD和WW
+            if (input.StartsWith(".r") || input.StartsWith(".R"))
+            {
+                input = ".骰子" + input.Substring(2);
+            }
+            if (input.StartsWith(".w") || input.StartsWith(".W"))
+            {
+                if (input.Substring(2) == "W"|| input.Substring(2) == "w")
+                {
+                    input = ".骰子10a10";
+                }
+                else
+                {
+                    input = ".骰子" + input.Substring(2).TrimStart('w').TrimStart('W');
+                    if (input.Length < 4)
+                    {
+                        input = ".骰子10a10";
+                    }
+                    if (!input.Contains("a"))
+                    {
+                        input += "a10";
+                    }
+                }
+            }
             switch (input.Substring(1, 2))//偷懒，只匹配.后2个字符
             {
 
@@ -353,6 +377,30 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 return;
             }
+            //转义RD和WW
+            if (input.StartsWith(".r") || input.StartsWith(".R"))
+            {
+                input = ".骰子" + input.Substring(2);
+            }
+            if (input.StartsWith(".w") || input.StartsWith(".W"))
+            {
+                if (input.Substring(2) == "W" || input.Substring(2) == "w")
+                {
+                    input = ".骰子10a10";
+                }
+                else
+                {
+                    input = ".骰子" + input.Substring(2).TrimStart('w').TrimStart('W');
+                    if (input.Length < 4)
+                    {
+                        input = ".骰子10a10";
+                    }
+                    if (!input.Contains("a"))
+                    {
+                        input += "a10";
+                    }
+                }
+            }
             switch (input.Substring(1, 2))//偷懒，只匹配.后2个字符
             {
 
@@ -656,102 +704,356 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //骰子
-        public static string Dices(string input)
+        public static string Dices(string 输入表达式)
         {
             try
             {
-                if (Event_Variable.Defa == true)
+                输入表达式 = 输入表达式.Substring(3).Trim().Replace("A",">").Replace("a", ">");//输入的表达式去除开头结尾的空格 A识别为大于
+                char[] 掷骰原因 = null;
+                if (输入表达式.Split(' ').Length > 1)
                 {
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
+                    掷骰原因 = 输入表达式.Split(' ').Last().ToCharArray();//如果输入了参数一个以上，会将最后一个参数设置为掷骰原因
+                }
+                输入表达式 = 输入表达式.TrimEnd(掷骰原因).ToUpper();//去除尾部原因，转化为大写
+
+                string 骰子面 = "100"; string 骰池样式 = "10";string 加骰成功值 = "8";//提供默认值
+
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//导入用户设置
+                {
+                    string 文本整体 = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini").Trim();
+                    foreach (var 一行文本 in 文本整体.Split(' '))
                     {
-                        string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
-                        string diceFace = "";
-                        foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
+                        if (一行文本.StartsWith("骰子:"))//如果设置了默认骰
                         {
-                            if (item.StartsWith("骰子:"))
+                            骰子面 = 一行文本.Substring(3).Trim();
+                        }
+                        if (一行文本.StartsWith("骰池:"))//如果设置了骰池样式
+                        {
+                            骰池样式 = 一行文本.Substring(3).Trim();
+                        }
+                        if (一行文本.StartsWith("加骰成功值:"))
+                        {
+                            加骰成功值 = 一行文本.Substring(6).Trim();
+                        }
+                    }
+                }
+                if (输入表达式.Length < 1)//用户没输入参数
+                {
+                    输入表达式 = "1D" + 骰子面;
+                }
+
+                /*
+                 * 中缀表达式转化为后缀表达式
+                 * 符号优先级：1.骰子、自定义骰子、< > =；2.* / %；3.+ -
+                 * 因为存在用户自定义的自定义骰子、骰子面等符号，所以需要进行分词预处理
+                 */
+                char 文字类型 = '数'; string 预处理结果 = "";
+                foreach (var 字符 in 输入表达式)
+                {
+                    if (字符 != ' ')
+                    {
+                        if ('0' <= 字符 && 字符 <= '9')
+                        {
+                            if (文字类型 == '符')
                             {
-                                diceFace = item.Substring(3);
+                                文字类型 = '数';
+                                预处理结果 += ' ';
                             }
                         }
-                        input = input + " " + diceFace;
+                        else
+                        {
+                            if (文字类型 == '数')
+                            {
+                                文字类型 = '符';
+                                预处理结果 += ' ';
+                            }
+                        }
+                    }
+                    if (字符 == '(' || 字符 == ')')//必须让括号前后都留空
+                    {
+                        预处理结果 += ' ' + 字符.ToString() + ' ';
                     }
                     else
                     {
-                        return "请先使用'开始'指令绑定默认骰子面数！";
+                        预处理结果 += 字符;
                     }
                 }
-                input = input.Substring(3).Trim();
-                string[] inputArray = input.Split(new char[3] { 'D', 'd', ' ' });
-
-
-                if (inputArray.Length > 1)//多个参数
+                List<string> 中继表达式 =
+                    new Regex("[\\s]+").Replace(预处理结果, " ").Trim().Split(' ').ToList();//合并复数空格，去除首末空格
+                int 遍历位置 = -1; List<string> 临时修改中继表达式 = new List<string>(中继表达式);
+                //判断-号是否是负号，如果是负号则在-号前插入0；
+                //判断D和<>=前是否为数字，如果不是，则在前面加1；
+                //判断D后是否为数字，如果不是，则在前面加骰子面；
+                foreach (var 元素 in 中继表达式)
                 {
-                    if (IsNumeric(inputArray[1]))//如果第二个参数是纯数，则为复数骰子
+                    遍历位置++;
+                    if (元素 == "-")
                     {
-                        try
+                        if (遍历位置 == 0)
                         {
-                            if (int.Parse(inputArray[0]) > 999 || int.Parse(inputArray[0]) < 1 || int.Parse(inputArray[1]) > 999 || int.Parse(inputArray[1]) < 1)
-                            {
-                                return "数字超界！";
-                            }
-                            string results = "";
-                            for (int i = 0; i < Convert.ToInt32(inputArray[0]); i++)
-                            {
-                                int result = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(inputArray[1])) + 1;
-                                results = results + "+" + result;
-                            }
-                            Event_Variable.Number = (int)new DataTable().Compute(results, "");
-                            return results.Substring(1) + " = " + new DataTable().Compute(results, "");
+                            临时修改中继表达式.Insert(0, "0");
+                            遍历位置++;
                         }
-                        catch (Exception)
+                        else if (!IsNumeric(临时修改中继表达式[遍历位置 - 1]))
                         {
-                            return "非法输入！";
+                            临时修改中继表达式.Insert(遍历位置, "0");
+                            遍历位置++;
                         }
                     }
-                    else//否则是单个骰子
-                    {
-                        try
-                        {
-                            if (int.Parse(inputArray[0]) > 999 || int.Parse(inputArray[0]) < 1)
-                            {
-                                return "数字超界！";
-                            }
-                            Random rd = new Random();
-                            int result = rd.Next(0, Convert.ToInt32(inputArray[0])) + 1;
-                            Event_Variable.Number = result;
-                            return $"{result}";
-                        }
-                        catch (Exception)
-                        {
-                            return "非法输入！";
-                        }
-                    }
-                }
-                else//否则是单个骰子
-                {
-                    try
-                    {
-                        if (int.Parse(inputArray[0]) > 999 || int.Parse(inputArray[0]) < 1)
-                        {
-                            return "数字超界！";
-                        }
-                        Random rd = new Random();
-                        int result = rd.Next(0, Convert.ToInt32(inputArray[0])) + 1;
-                        Event_Variable.Number = result;
-                        return $"{result}";
-                    }
-                    catch (Exception)
-                    {
 
-                        return "非法输入！";
+                    if ("D<>=".Contains(元素))
+                    {
+                        if (遍历位置 == 0)
+                        {
+                            临时修改中继表达式.Insert(0, "1");
+                            遍历位置++;
+                        }
+                        else if (!IsNumeric(临时修改中继表达式[遍历位置 - 1]))
+                        {
+                            临时修改中继表达式.Insert(遍历位置, "1");
+                            遍历位置++;
+                        }
+                        if (元素 == "D")
+                        {
+                            if (临时修改中继表达式.Count == 遍历位置 + 1)
+                            {
+                                临时修改中继表达式.Insert(遍历位置 + 1, 骰子面);
+                                遍历位置++;
+                            }
+                            else if (!IsNumeric(临时修改中继表达式[遍历位置 + 1]))
+                            {
+                                临时修改中继表达式.Insert(遍历位置 + 1, 骰子面);
+                                遍历位置++;
+                            }
+                        }
                     }
                 }
+                中继表达式 = 临时修改中继表达式;
+
+                Stack<string> 结果栈 = new Stack<string>();
+                Stack<string> 符号栈 = new Stack<string>();
+                foreach (var 元素 in 中继表达式)//读取中缀表达式
+                {
+                    if (元素 == " ")//如果是空格就跳了
+                    {
+                        break;
+                    }
+                    if (IsNumeric(元素))//是数字就直接推入结果栈
+                    {
+                        结果栈.Push(元素);
+                    }
+                    else
+                    {
+                        if (符号优先级(元素) != 0)//是预设符号
+                        {
+                            //不是空栈时，比较优先级，如果当前符号优先级不高于符号栈顶，则符号栈顶出栈
+                            while (符号栈.Count != 0)
+                            {
+                                if (符号优先级(元素) <= 符号优先级(符号栈.Peek()))
+                                {
+                                    结果栈.Push(符号栈.Pop());
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                                
+                            }
+                            符号栈.Push(元素);
+                        }
+                        else
+                        {
+                            switch (元素)
+                            {
+                                case "(":
+                                    符号栈.Push(元素);
+                                    break;
+
+                                case ")":
+                                    while (符号栈.Peek() != "(")
+                                    {
+                                        if (符号栈.Count == 0)
+                                        {
+                                            return "错误：找不到相应的左括号！";
+                                        }
+                                        else
+                                        {
+                                            结果栈.Push(符号栈.Pop());
+                                        }
+                                    }
+                                    符号栈.Pop();
+                                    break;
+
+                                default://是用户自定义的符号
+                                    if (符号栈.Peek() == "=")//上一个符号是=时，这里应是用户定义的骰子面
+                                    {
+                                        结果栈.Push("面:" + 元素);
+                                    }
+                                    else//否则检查是否是自定义骰子
+                                    {
+                                        if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + 元素 + ".ini"))
+                                        {
+                                            符号栈.Push("骰:" + 元素);
+                                        }
+                                        else//不存在的话报错返回
+                                        {
+                                            return $"错误：{元素}不是自定义骰子！";
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                }
+                while (符号栈.Count != 0)
+                {
+                    结果栈.Push(符号栈.Pop());
+                }
+
+                /*
+                 * 后缀表达式计算
+                 */
+                List<string> 计算表 = 结果栈.ToList();
+                计算表.Reverse();
+                string 计算过程 = "";
+                Stack<string> 计算结果 = new Stack<string>();
+                foreach (var 元素 in 计算表)
+                {
+                    if (IsNumeric(元素))
+                    {
+                        计算结果.Push(元素);
+                    }
+                    else
+                    {
+                        string 返回结果 = ""; int 参数1 = 0; int 参数2 = 0;
+                        switch (元素)
+                        {
+                            case "+":
+                            case "-":
+                            case "*":
+                            case "/":
+                            case "%":
+                                参数2 = Convert.ToInt32(计算结果.Pop());
+                                参数1 = Convert.ToInt32(计算结果.Pop());
+                                返回结果 = new DataTable().Compute($"{参数1}{元素}{参数2}", "").ToString();
+                                break;
+
+                            case "D":
+                                参数2 = Convert.ToInt32(计算结果.Pop());
+                                参数1 = Convert.ToInt32(计算结果.Pop());
+                                if (参数1 > 999 || 参数2 > 65535 || 参数1 < 1 || 参数2 < -65535)
+                                {
+                                    return $"错误：{参数1}{元素}{参数2}非法！";
+                                }
+                                string 骰池算式 = "";
+                                for (int i = 0; i < 参数1; i++)
+                                {
+                                    int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(参数2)) + 1;
+                                    骰池算式 += rd + "+";
+                                }
+                                骰池算式 = 骰池算式.TrimEnd('+');
+                                返回结果 = new DataTable().Compute(骰池算式, "").ToString();
+                                计算过程 += $"【{参数1}D{参数2}】=({骰池算式})={返回结果};{Environment.NewLine}";
+                                break;
+
+                            case ">":
+                            case "<":
+                            case "=":
+                                参数2 = Convert.ToInt32(计算结果.Pop());
+                                参数1 = Convert.ToInt32(计算结果.Pop());
+                                if (参数1 > 999 || 参数2 > 65535 || 参数1 < 1 || 参数2 < -65535)
+                                {
+                                    return $"错误：{参数1}{元素}{参数2}非法！";
+                                }
+                                string 加骰结果 = ""; int 加骰数 = 0; int 成功数 = 0; string 临时加骰成功值 = 加骰成功值;
+                                if (IsNumeric(骰池样式))
+                                {
+                                    if (临时加骰成功值 == "跟随")
+                                    {
+                                        临时加骰成功值 = 参数2.ToString();
+                                    }
+                                    for (int i = 0; i < 参数1; i++)
+                                    {
+                                        if (加骰数 > 999)
+                                        {
+                                            return $"错误：{参数1}{元素}{参数2}非法！";
+                                        }
+                                        int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(骰池样式)) + 1;
+                                        加骰结果 += rd.ToString() + " ";
+                                        if (元素 == ">" && rd > 参数2)
+                                        {
+                                            i--; 加骰数++;
+                                        }
+                                        if (元素 == "=" && rd == 参数2)
+                                        {
+                                            i--; 加骰数++;
+                                        }
+                                        if (元素 == "<" && rd < 参数2)
+                                        {
+                                            i--; 加骰数++; 
+                                        }
+                                        if (rd >= Convert.ToInt32(临时加骰成功值))
+                                        {
+                                            成功数++;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    return "骰池调用自定义骰子的功能还未开放！敬请期待！";
+                                }
+                                返回结果 = 成功数.ToString();
+                                计算过程 += $"【{参数1}{元素}{参数2}】={{{加骰结果}|χ{元素}{临时加骰成功值}}}={返回结果}(加骰{加骰数}次);{Environment.NewLine}";
+                                break;
+
+                            default://自定义骰子
+                                return "自定义骰子功能还未开放！敬请期待！";
+                        }
+                        计算结果.Push(返回结果);
+                    }
+                }
+                Event_Variable.Number = Convert.ToInt32(计算结果.Peek());
+                return $@"{new string(掷骰原因)}骰出了{new Regex("[\\s]+").Replace(预处理结果, "").Trim()} = {string.Join(" ", 计算结果.ToArray())}
+{计算过程}";
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return "非法输入！";
+                return Event_CheckError.CheckError(ex);
             }
 
+        }
+
+        public static int 符号优先级(string 符号)
+        {
+            int 优先级 = 0;
+            switch (符号)
+            {
+                case "+":
+                case "-":
+                    优先级 = 1;
+                    break;
+
+                case "*":
+                case "/":
+                case "%":
+                    优先级 = 2;
+                    break;
+
+                case "D":
+                case ">":
+                case "<":
+                case "=":
+                    优先级 = 3;
+                    break;
+
+                default:
+                    break;
+            }
+            if (符号.StartsWith("骰:"))
+            {
+                优先级 = 3;
+            }
+            return 优先级;
         }
 
         //创建
@@ -1434,7 +1736,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     list1 = new List<string>(list1.Distinct());//去重并乱序，以免后面直接发现时暴露牌序
                     for (int count1 = list1.Count; count1 > 0; count1--)
                     {
-                        int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(count1));
+                        int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(count1));//hash随机算法
                         list1.Add(list1[rd]);
                         list1.RemoveAt(rd);
                     }
@@ -1750,9 +2052,9 @@ namespace Native.Csharp.App.Event.Event_Me
 { string.Join(Environment.NewLine, tempInput.GetRange(1, tempInput.Count - 1).ToArray()) }";
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                return Event_CheckError.CheckError(ex);
+                return "格式错误！";
             }
         }
 

@@ -8,11 +8,14 @@ namespace Native.Csharp.App.Event.Event_Me
 {
     class Event_CheckError
     {
+        /// <summary>
+        /// 返回错误信息
+        /// </summary>
         public static string CheckError(Exception ex)
         {
             string str = "";
-            str += ex.Message + "\n";//异常消息
-            str += ex.StackTrace + "\n";//提示出错位置，不会定位到方法内部去
+            //str += ex.Message + "\n";//异常消息
+            //str += ex.StackTrace + "\n";//提示出错位置，不会定位到方法内部去
             str += ex.ToString() + "\n";//将方法内部和外部所有出错的位置提示出来
             return str;
         }
