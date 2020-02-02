@@ -50,20 +50,20 @@ namespace Native.Csharp.App.Event.Event_Me
             }
             if (input.StartsWith(".w") || input.StartsWith(".W"))
             {
-                if (input.Substring(2) == "W"|| input.Substring(2) == "w")
+                if (input.Substring(2) == "W" || input.Substring(2) == "w")
                 {
-                    input = ".骰子10a10";
+                    input = ".骰子10a9";
                 }
                 else
                 {
                     input = ".骰子" + input.Substring(2).TrimStart('w').TrimStart('W');
                     if (input.Length < 4)
                     {
-                        input = ".骰子10a10";
+                        input = ".骰子10a9";
                     }
                     if (!input.Contains("a"))
                     {
-                        input += "a10";
+                        input += "a9";
                     }
                 }
             }
@@ -386,18 +386,18 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 if (input.Substring(2) == "W" || input.Substring(2) == "w")
                 {
-                    input = ".骰子10a10";
+                    input = ".骰子10a9";
                 }
                 else
                 {
                     input = ".骰子" + input.Substring(2).TrimStart('w').TrimStart('W');
                     if (input.Length < 4)
                     {
-                        input = ".骰子10a10";
+                        input = ".骰子10a9";
                     }
                     if (!input.Contains("a"))
                     {
-                        input += "a10";
+                        input += "a9";
                     }
                 }
             }
@@ -1003,7 +1003,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                     return "骰池调用自定义骰子的功能还未开放！敬请期待！";
                                 }
                                 返回结果 = 成功数.ToString();
-                                计算过程 += $"【{参数1}{元素}{参数2}】={{{加骰结果}|χ{元素}{临时加骰成功值}}}={返回结果}(加骰{加骰数}次);{Environment.NewLine}";
+                                计算过程 += $"【{参数1}{元素}{参数2}】={{{加骰结果}|χ>{临时加骰成功值}}}={返回结果}(加骰{加骰数}次);{Environment.NewLine}";
                                 break;
 
                             default://自定义骰子
