@@ -29,7 +29,8 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
                 }
                 数据.私聊 = false;
-                解释.语法分析(用户输入.Substring(1), e.FromGroup);
+                数据.发送目标 = e.FromGroup;
+                解释.语法分析(用户输入.Substring(1));
             }
             catch (Exception ex)
             {

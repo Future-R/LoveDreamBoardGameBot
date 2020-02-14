@@ -167,6 +167,7 @@ namespace Native.Csharp.App.Event.Event_Me
         //}
         public void ReceiveFriendMessage(object sender, CqPrivateMessageEventArgs e)
         {
+            Common.CqApi.GetAppDirectory();
             try
             {
                 string 用户输入 = 消息预处理.处理(e.Message);
@@ -175,7 +176,8 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
                 }
                 数据.私聊 = true;
-                解释.语法分析(用户输入.Substring(1), e.FromQQ);
+                数据.发送目标 = e.FromQQ;
+                解释.语法分析(用户输入.Substring(1));
             }
             catch (Exception ex)
             {

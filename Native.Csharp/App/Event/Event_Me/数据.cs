@@ -18,6 +18,53 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static List<string> 反义词典 => new List<string>(词典位置.Split(new string[] { "A", Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
 
+        public static string 报错
+        {
+            get
+            {
+                return new string[]{
+                    "我懵了。", "哎？", "不对……", "怎么回事？", "什么情况？",
+                    "奇怪的错误……", "搞错了吧？" , "……", "又来了……" , "¿",
+                    "菜", "算了吧……" , "唔。", "这是什么操作？"}
+                    [new Random(Guid.NewGuid().GetHashCode()).Next(0, 14)];
+            }
+        }
+
+        public static int 循环次数
+        {
+            get;set;
+        }
+
+        public static int 发送次数
+        {
+            get;set;
+        }
+
+        public static long 发送目标
+        {
+            get;set;
+        }
+
+        public enum 真假
+        {
+            假 = 0,
+            错 = 0,
+            真 = 1,
+            对 = 1
+        }
+
+        public delegate string 字符委托(string 参数1, string 参数2);
+        public delegate bool 布尔委托(string 参数1, string 参数2);
+
+        public static string 空(string 参数1, string 参数2)
+        {
+            return "错误：引用了不正确的目标。";
+        }
+
+        public static bool 错(string 参数1, string 参数2)
+        {
+            return false;
+        }
 
         public static void 写入实体(List<string> 参数)
         {
@@ -37,6 +84,30 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     实体[实体名][组件名] = 组件值;
                 }
+            }
+        }
+
+        public static string 读取组件(string 获取语句)
+        {
+            List<string> 参数 = new List<string>(获取语句.Split(new[] { '的' }, StringSplitOptions.RemoveEmptyEntries));
+            if (数据.实体.ContainsKey(参数[0]))
+            {
+                if (参数.Count == 1)
+                {
+                    参数.Add("值");
+                }
+                if (数据.实体[参数[0]].ContainsKey(参数[1]))
+                {
+                    return 数据.实体[参数[0]][参数[1]];
+                }
+                else
+                {
+                    return $"{参数[0]}没有{参数[1]}。";
+                }
+            }
+            else
+            {
+                return $"没找到{参数[0]}。";
             }
         }
     }
