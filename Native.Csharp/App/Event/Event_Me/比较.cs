@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Native.Csharp.App.Event.Event_Me
 {
@@ -20,7 +16,7 @@ namespace Native.Csharp.App.Event.Event_Me
         public static bool 大于(string 参数1, string 参数2)
         {
             参数1 = 数据.读取组件(参数1);
-            if (Convert.ToInt32(参数1.Trim()) > Convert.ToInt32(参数2.Trim()))
+            if (Convert.ToDecimal(参数1.Trim()) > Convert.ToDecimal(参数2.Trim()))
             {
                 return true;
             }
@@ -29,7 +25,7 @@ namespace Native.Csharp.App.Event.Event_Me
         public static bool 小于(string 参数1, string 参数2)
         {
             参数1 = 数据.读取组件(参数1);
-            if (Convert.ToInt32(参数1.Trim()) < Convert.ToInt32(参数2.Trim()))
+            if (Convert.ToDecimal(参数1.Trim()) < Convert.ToDecimal(参数2.Trim()))
             {
                 return true;
             }

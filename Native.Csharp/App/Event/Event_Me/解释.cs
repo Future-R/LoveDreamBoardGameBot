@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Native.Csharp.App.Event.Event_Me
 {
@@ -10,13 +8,13 @@ namespace Native.Csharp.App.Event.Event_Me
         public static void 语法分析(string 用户输入)
         {
             //用户输入 = Regex.Replace(用户输入, @"[/n/r]", "");
-            数据.循环次数 = 0; 数据.发送次数 = 0;
+            消息预处理.环境初始化();
             List<string> 语句集 = new List<string>(用户输入.Split(new[] { '。' }, StringSplitOptions.RemoveEmptyEntries));
             foreach (var 语句 in 语句集)
             {
-                string 新语句 = 变量解释(语句);
+                
                 //Task.Factory.StartNew(线程.新任务, 线程.取消资源请求.Token);
-                string 执行结果 = 执行(新语句.Trim());
+                string 执行结果 = 执行(语句.Trim());
                 if (执行结果 != "")
                 {
                     数据.发送次数++;
@@ -39,7 +37,10 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static string 执行(string 语句)
         {
-            while (数据.循环次数 <= 9999)
+            数据.临时空间 = string.Empty;
+            语句 = 变量解释(语句);
+            语句 += 数据.临时空间;
+            while (数据.循环次数 <= 65536)
             {
                 数据.循环次数++;
                 //关键字打头
@@ -134,7 +135,7 @@ namespace Native.Csharp.App.Event.Event_Me
                             语句.Substring(语句.IndexOf("：") + 1)
                             .Split(new[] { '；' }, StringSplitOptions.RemoveEmptyEntries));
                     
-                    while (!判定(判别式) && 数据.循环次数 <= 9999)
+                    while (!判定(判别式) && 数据.循环次数 <= 65536)
                     {
                         foreach (var 子语句 in 语句集)
                         {
@@ -158,6 +159,25 @@ namespace Native.Csharp.App.Event.Event_Me
                         }
                     }
                     return "";
+                }
+                #endregion
+                #region 对于
+                if (语句.StartsWith("对于"))
+                {
+                    List<string> 对于语句 = new List<string>(语句.Substring(2).Split(new[] { '，' }, StringSplitOptions.RemoveEmptyEntries));
+                    if (对于语句.Count > 1)
+                    {
+                        if (对于语句[1].StartsWith("若") && 对于语句[2].StartsWith("则"))
+                        {
+                            //此处是规则写入
+                        }
+                    }
+                }
+                #endregion
+                #region 回复
+                if (语句.StartsWith("回复"))
+                {
+                    return 语句.Substring(2);
                 }
                 #endregion
 
@@ -191,6 +211,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         List<string> 内容 = new List<string>(语句.Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries));
                         内容.Insert(1, "值");
+                        内容[2] = 运算.计算(数据.实体[内容[0]][内容[1]] + "+" + 内容[2]);
                         数据.写入实体(内容);
                     }
                     return "";
@@ -199,7 +220,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     if (语句.Contains("的"))
                     {
-                        List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '+', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '-', '的' }, StringSplitOptions.RemoveEmptyEntries)));
                         写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "-" + 写入参数[2]);
                         数据.写入实体(写入参数);
                     }
@@ -207,6 +228,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         List<string> 内容 = new List<string>(语句.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries));
                         内容.Insert(1, "值");
+                        内容[2] = 运算.计算(数据.实体[内容[0]][内容[1]] + "-" + 内容[2]);
                         数据.写入实体(内容);
                     }
                     return "";
@@ -215,14 +237,15 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     if (语句.Contains("的"))
                     {
-                        List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '+', '的' }, StringSplitOptions.RemoveEmptyEntries)));
-                        写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "+" + 写入参数[2]);
+                        List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '*', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "*" + 写入参数[2]);
                         数据.写入实体(写入参数);
                     }
                     else//不输入组件则默认为“值”组件
                     {
                         List<string> 内容 = new List<string>(语句.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries));
                         内容.Insert(1, "值");
+                        内容[2] = 运算.计算(数据.实体[内容[0]][内容[1]] + "*" + 内容[2]);
                         数据.写入实体(内容);
                     }
                     return "";
@@ -231,14 +254,15 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     if (语句.Contains("的"))
                     {
-                        List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '+', '的' }, StringSplitOptions.RemoveEmptyEntries)));
-                        写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "+" + 写入参数[2]);
+                        List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '/', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "/" + 写入参数[2]);
                         数据.写入实体(写入参数);
                     }
                     else//不输入组件则默认为“值”组件
                     {
                         List<string> 内容 = new List<string>(语句.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
                         内容.Insert(1, "值");
+                        内容[2] = 运算.计算(数据.实体[内容[0]][内容[1]] + "/" + 内容[2]);
                         数据.写入实体(内容);
                     }
                     return "";
@@ -254,6 +278,11 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static string 变量解释(string 语句)
         {
+            if (语句.Contains("："))
+            {
+                数据.临时空间 = 语句.Substring(语句.IndexOf("："));
+                语句 = 语句.Substring(0, 语句.IndexOf("："));
+            }
             if (!语句.Contains("【") || !语句.Contains("】"))
             {
                 return 语句;
@@ -293,7 +322,13 @@ namespace Native.Csharp.App.Event.Event_Me
                                 }
 
                                 符号栈.Pop();
-                                
+                                参数.RemoveRange(0, 1);
+                                while (参数.Count > 0)
+                                {
+                                    替换内容 = 数值.的(替换内容,参数[0]);
+                                    参数.RemoveAt(0);
+                                }
+
                                 return 变量解释(语句.Substring(0, i - 内容栈.Count - 1) + 替换内容 + 语句.Substring(i + 1));
                             }
                             else
@@ -362,35 +397,35 @@ namespace Native.Csharp.App.Event.Event_Me
                 模式 = "有";
                 委托 = new 数据.布尔委托(比较.有);
             }
-            if (判别式.Contains("等于"))
+            else if (判别式.Contains("等于"))
             {
                 模式 = "等于";
                 委托 = new 数据.布尔委托(比较.等于);
             }
-            if (判别式.Contains("大于"))
+            else if(判别式.Contains("大于"))
             {
                 模式 = "大于";
                 委托 = new 数据.布尔委托(比较.大于);
             }
-            if (判别式.Contains("小于"))
+            else if (判别式.Contains("小于"))
             {
                 模式 = "小于";
                 委托 = new 数据.布尔委托(比较.小于);
             }
-            if (判别式.Contains("包含"))
+            else if (判别式.Contains("包含"))
             {
                 模式 = "包含";
                 委托 = new 数据.布尔委托(比较.包含);
             }
-            if (判别式.Contains("开头是"))
+            else if (判别式.Contains("开头是"))
             {
                 模式 = "开头是";
                 委托 = new 数据.布尔委托(比较.开头是);
-                if (判别式.Contains("结尾是"))
-                {
-                    模式 = "结尾是";
-                    委托 = new 数据.布尔委托(比较.结尾是);
-                }
+            }
+            else if (判别式.Contains("结尾是"))
+            {
+                模式 = "结尾是";
+                委托 = new 数据.布尔委托(比较.结尾是);
             }
 
             List<string> 集合 = new List<string>(判别式.Split(new string[] { 模式 }, StringSplitOptions.RemoveEmptyEntries));

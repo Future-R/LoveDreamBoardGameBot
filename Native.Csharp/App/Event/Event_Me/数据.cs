@@ -14,20 +14,31 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static Dictionary<string, Dictionary<string, string>> 实体 = new Dictionary<string, Dictionary<string, string>>();
 
-        public static string 词典位置 = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"app\dict.ini", Encoding.GetEncoding("gb2312"));
+        public static Dictionary<string, string> 规则 = new Dictionary<string, string>();
 
-        public static List<string> 反义词典 => new List<string>(词典位置.Split(new string[] { "A", Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
+        public static string 词典位置 = AppDomain.CurrentDomain.BaseDirectory + @"app\dict.ini";
+
+        public static string 词典读取 = File.ReadAllText(词典位置, Encoding.GetEncoding("gb2312"));
+
+        public static List<string> 反义词典 => new List<string>(词典读取.Split(new string[] { "A", Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries));
 
         public static string 报错
         {
             get
             {
-                return new string[]{
+                return new string[]
+                {
                     "我懵了。", "哎？", "不对……", "怎么回事？", "什么情况？",
                     "奇怪的错误……", "搞错了吧？" , "……", "又来了……" , "¿",
-                    "菜", "算了吧……" , "唔。", "这是什么操作？"}
-                    [new Random(Guid.NewGuid().GetHashCode()).Next(0, 14)];
+                    "菜", "算了吧……" , "唔。", "[CQ:face,id=14]" , "[CQ:face,id=39]"
+                }
+                [new Random(Guid.NewGuid().GetHashCode()).Next(0, 15)];
             }
+        }
+
+        public static string 临时空间
+        {
+            get;set;
         }
 
         public static int 循环次数

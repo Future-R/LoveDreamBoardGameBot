@@ -127,6 +127,9 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static string 计算(string 算式)
         {
+            算式 = 算式.Replace("×", "*").Replace("x", "*").Replace("X", "*")
+                .Replace("（", "(").Replace("）", ")").Replace("÷", "/");
+            //此处应替换为波兰逆运算
             return new DataTable().Compute(算式.Trim(), "").ToString();
         }
 
