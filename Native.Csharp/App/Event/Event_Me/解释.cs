@@ -38,8 +38,16 @@ namespace Native.Csharp.App.Event.Event_Me
         public static string 执行(string 语句)
         {
             数据.临时空间 = string.Empty;
-            语句 = 变量解释(语句);
-            语句 += 数据.临时空间;
+            if (语句.StartsWith("定义") && 语句.Length > 2)
+            {
+                return 数据.创建模块(语句.Substring(2));
+            }
+            else
+            {
+                语句 = 变量解释(语句);
+                语句 += 数据.临时空间;
+            }
+            
             while (数据.循环次数 <= 65536)
             {
                 数据.循环次数++;
@@ -180,6 +188,18 @@ namespace Native.Csharp.App.Event.Event_Me
                     return 语句.Substring(2);
                 }
                 #endregion
+                #region 获取
+                if (语句.StartsWith("获取"))
+                {
+                    if (语句.Length != 2)
+                    {
+                        数据.写入实体(new List<string>(new string[] { "获取" , "结果" , JSON.获取(语句.Substring(2)) }));
+                        return "";
+                    }
+                    数据.写入实体(new List<string>(new string[] { "获取", "结果", JSON.获取(数据.接口) }));
+                    return "";
+                }
+                #endregion
 
                 //关键字包含
                 #region 赋值
@@ -315,18 +335,22 @@ namespace Native.Csharp.App.Event.Event_Me
                                     {
                                         参数.Add("值");
                                     }
+                                    //if (参数[1] != "值")
+                                    //{
+                                    //    参数.Insert(1 ,"值");
+                                    //}
                                     if (数据.实体[参数[0]].ContainsKey(参数[1]))
                                     {
                                         替换内容 = 数据.实体[参数[0]][参数[1]];
                                     }
-                                }
 
-                                符号栈.Pop();
-                                参数.RemoveRange(0, 1);
-                                while (参数.Count > 0)
-                                {
-                                    替换内容 = 数值.的(替换内容,参数[0]);
-                                    参数.RemoveAt(0);
+                                    符号栈.Pop();
+                                    参数.RemoveRange(0, 1);
+                                    while (参数.Count > 0)
+                                    {
+                                        替换内容 = 数值.的(替换内容, 参数[0]);
+                                        参数.RemoveAt(0);
+                                    }
                                 }
 
                                 return 变量解释(语句.Substring(0, i - 内容栈.Count - 1) + 替换内容 + 语句.Substring(i + 1));

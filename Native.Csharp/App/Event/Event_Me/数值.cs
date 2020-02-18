@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Native.Csharp.App.Event.Event_Me
 {
@@ -10,13 +6,27 @@ namespace Native.Csharp.App.Event.Event_Me
     {
         public static string 的(string 目标文本, string 参数)
         {
-            //的长度的首个X位置的最后X位置的左对齐X的右对齐X的替换X为Y的从X截取的从X截取Y的去头X的去尾Y
+            //的长度的首个X位置的最后X位置的左对齐X的右对齐X的替换X为Y的从X截取的从X截取Y的去头X的去尾Y的向上取整的向下取整的X次方的匹配X
             参数 = 参数.Trim();
-            if (参数.StartsWith("长度"))
+
+            //完全匹配
+            switch (参数)
             {
-                return 目标文本.Length.ToString();
+                case "长度":
+                    return 目标文本.Length.ToString();
+
+                case "向上取整":
+                    return Math.Ceiling(Convert.ToDecimal(目标文本)).ToString();
+
+                case "向下取整":
+                    return Math.Floor(Convert.ToDecimal(目标文本)).ToString();
+
+                default:
+                    break;
             }
-            else if (参数.StartsWith("首个"))
+
+            //开头匹配
+            if (参数.StartsWith("首个"))
             {
                 return (目标文本.IndexOf(参数.Substring(2).TrimEnd('置').TrimEnd('位')) + 1).ToString();
             }
@@ -48,7 +58,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     return 目标文本;
                 }
-                return 目标文本.Replace(目标[0], 目标[1]);
+                return 目标文本.Replace(目标[0], 目标[1]).Replace("换行", Environment.NewLine);
             }
             else if (参数.StartsWith("从"))
             {
@@ -74,8 +84,19 @@ namespace Native.Csharp.App.Event.Event_Me
                 char[] 去除 = 参数.Substring(2).ToCharArray();
                 return 目标文本.TrimEnd(去除);
             }
+            else if (参数.StartsWith("匹配"))
+            {
+                return 比较.相似(目标文本, 参数.Substring(2)).ToString();
+            }
+
+            //结尾匹配
+            if (参数.EndsWith("次方") || 参数.EndsWith("次幂"))
+            {
+                return Math.Pow(Convert.ToDouble(目标文本), Convert.ToDouble(参数.Remove(参数.Length - 2))).ToString();
+            }
 
             return 目标文本;
-        }
+        } 
+
     }
 }

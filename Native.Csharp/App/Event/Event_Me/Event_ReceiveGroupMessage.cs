@@ -24,7 +24,7 @@ namespace Native.Csharp.App.Event.Event_Me
             try
             {
                 string 用户输入 = 消息预处理.处理(e.Message);
-                if (!用户输入.StartsWith(".") || 用户输入.Length < 2 || 用户输入 == ".." || 用户输入 == ".。")//防误触
+                if (!用户输入.StartsWith(".") || 用户输入.Length < 2 || 用户输入.StartsWith("..") || 用户输入.StartsWith(".。"))//防误触
                 {
                     return;
                 }

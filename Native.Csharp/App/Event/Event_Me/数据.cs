@@ -16,11 +16,23 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static Dictionary<string, string> 规则 = new Dictionary<string, string>();
 
+        public static Dictionary<string, List<string>> 模块 = new Dictionary<string, List<string>>();
+
         public static string 词典位置 = AppDomain.CurrentDomain.BaseDirectory + @"app\dict.ini";
 
         public static string 词典读取 = File.ReadAllText(词典位置, Encoding.GetEncoding("gb2312"));
 
         public static List<string> 反义词典 => new List<string>(词典读取.Split(new string[] { "A", Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries));
+
+        public static string 接口
+        {
+            get;set;
+        }
+
+        public static DateTime 上次调用接口的时间
+        {
+            get;set;
+        }
 
         public static string 报错
         {
@@ -101,15 +113,15 @@ namespace Native.Csharp.App.Event.Event_Me
         public static string 读取组件(string 获取语句)
         {
             List<string> 参数 = new List<string>(获取语句.Split(new[] { '的' }, StringSplitOptions.RemoveEmptyEntries));
-            if (数据.实体.ContainsKey(参数[0]))
+            if (实体.ContainsKey(参数[0]))
             {
                 if (参数.Count == 1)
                 {
                     参数.Add("值");
                 }
-                if (数据.实体[参数[0]].ContainsKey(参数[1]))
+                if (实体[参数[0]].ContainsKey(参数[1]))
                 {
-                    return 数据.实体[参数[0]][参数[1]];
+                    return 实体[参数[0]][参数[1]];
                 }
                 else
                 {
@@ -120,6 +132,13 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 return $"没找到{参数[0]}。";
             }
+        }
+
+        public static string 创建模块(string 定义语句)//定义本草纲目：语句1；语句2；语句3
+        {
+            //string 语句 = 定义语句.Substring(0, (定义语句.IndexOf("：")));
+            //List<string> 创建语句 = new List<string>(定义语句.Substring(语句.Length + 2).Split(new[] { '；' }, StringSplitOptions.RemoveEmptyEntries));
+            return "";//先占位
         }
     }
 }

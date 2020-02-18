@@ -19,6 +19,7 @@ namespace Native.Csharp.App.Event.Event_Me
             数据.循环次数 = 0;
             数据.发送次数 = 0;
             数据.临时空间 = string.Empty;
+            数据.接口 = "http://www.dzyong.top:3005/yiqing/history";
         }
     }
 }

@@ -147,6 +147,7 @@
     <Compile Include="App\Event\Event_Me\Event_ReceiveGroupMessage.cs" />
     <Compile Include="App\Event\Event_Me\Event_ReceiveFriendMessage.cs" />
     <Compile Include="App\Event\Event_Me\Event_Variable.cs" />
+    <Compile Include="App\Event\Event_Me\JSON.cs" />
     <Compile Include="App\Event\Event_Me\数值.cs" />
     <Compile Include="App\Event\Event_Me\比较.cs" />
     <Compile Include="App\Event\Event_Me\消息预处理.cs" />
