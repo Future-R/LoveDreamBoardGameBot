@@ -9,11 +9,12 @@ namespace Native.Csharp.App.Event.Event_Me
     {
         public static string 获取(string 接口)
         {
-            //if ((DateTime.Now - 数据.上次调用接口的时间).Minutes < 60)
-            //{
-            //    return "";
-            //}
-            //System.GC.Collect();
+            string 现在的时间 = $"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0, 8).Replace(":", "")}";
+            if (Convert.ToInt32(运算.计算(现在的时间 +"-"+ 数据.上次调用接口的时间)) < 30)//30秒内重复调用接口，返回空值
+            {
+                return "";
+            }
+            System.GC.Collect();
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(接口);
             request.Proxy = null;
             request.KeepAlive = false;
@@ -38,7 +39,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 request.Abort();
             }
 
-            数据.上次调用接口的时间 = DateTime.Now;
+            数据.上次调用接口的时间 = $"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0, 8).Replace(":", "")}";
             return 返回值;
         }
     }

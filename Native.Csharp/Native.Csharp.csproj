@@ -149,11 +149,13 @@
     <Compile Include="App\Event\Event_Me\Event_Variable.cs" />
     <Compile Include="App\Event\Event_Me\JSON.cs" />
     <Compile Include="App\Event\Event_Me\数值.cs" />
+    <Compile Include="App\Event\Event_Me\方法.cs" />
     <Compile Include="App\Event\Event_Me\比较.cs" />
     <Compile Include="App\Event\Event_Me\消息预处理.cs" />
     <Compile Include="App\Event\Event_Me\数据.cs" />
     <Compile Include="App\Event\Event_Me\解释.cs" />
     <Compile Include="App\Event\Event_Me\运算.cs" />
+    <Compile Include="App\Event\Event_Me\集合.cs" />
     <Compile Include="App\Interface\ICqAppDisable.cs" />
     <Compile Include="App\Interface\ICqAppEnable.cs" />
     <Compile Include="App\Interface\ICallMenu.cs" />

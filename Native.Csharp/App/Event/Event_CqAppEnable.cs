@@ -1,5 +1,6 @@
 ﻿using Native.Csharp.App.EventArgs;
 using Native.Csharp.App.Interface;
+using System;
 
 namespace Native.Csharp.App.Event
 {
@@ -8,11 +9,12 @@ namespace Native.Csharp.App.Event
 	/// </summary>
     public class Event_CqAppEnable : ICqAppEnable
     {
+        public static string 启动时间 = $"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0, 8).Replace(":", "")}";
         /// <summary>
-		/// 处理 酷Q 的插件启动事件回调
-		/// </summary>
-		/// <param name="sender">事件的触发对象</param>
-		/// <param name="e">事件的附加参数</param>
+        /// 处理 酷Q 的插件启动事件回调
+        /// </summary>
+        /// <param name="sender">事件的触发对象</param>
+        /// <param name="e">事件的附加参数</param>
         public void CqAppEnable (object sender, CqAppEnableEventArgs e)
         {
             // 当应用被启用后，本方法将被调用。

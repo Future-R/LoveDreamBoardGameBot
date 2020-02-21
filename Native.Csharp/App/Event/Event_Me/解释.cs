@@ -8,11 +8,22 @@ namespace Native.Csharp.App.Event.Event_Me
         public static void 语法分析(string 用户输入)
         {
             //用户输入 = Regex.Replace(用户输入, @"[/n/r]", "");
-            消息预处理.环境初始化();
-            List<string> 语句集 = new List<string>(用户输入.Split(new[] { '。' }, StringSplitOptions.RemoveEmptyEntries));
+            List<string> 语句集 = new List<string>();
+            if (用户输入.StartsWith("！"))
+            {
+                语句集 = new List<string>(用户输入.Substring(1).Split(new[] { '！' }, StringSplitOptions.RemoveEmptyEntries));
+                数据.转义 = false;
+            }
+            else
+            {
+                语句集 = new List<string>(用户输入.Split(new[] { '。' }, StringSplitOptions.RemoveEmptyEntries));
+                数据.转义 = true;
+            }
+            数据.写入实体("输入", "段落", 用户输入);
+
             foreach (var 语句 in 语句集)
             {
-                
+
                 //Task.Factory.StartNew(线程.新任务, 线程.取消资源请求.Token);
                 string 执行结果 = 执行(语句.Trim());
                 if (执行结果 != "")
@@ -38,16 +49,14 @@ namespace Native.Csharp.App.Event.Event_Me
         public static string 执行(string 语句)
         {
             数据.临时空间 = string.Empty;
-            if (语句.StartsWith("定义") && 语句.Length > 2)
-            {
-                return 数据.创建模块(语句.Substring(2));
-            }
-            else
+            数据.写入实体("输入", "语句", 语句);
+
+            if (数据.转义)
             {
                 语句 = 变量解释(语句);
                 语句 += 数据.临时空间;
             }
-            
+
             while (数据.循环次数 <= 65536)
             {
                 数据.循环次数++;
@@ -124,7 +133,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 if (语句.StartsWith("计算"))
                 {
                     string 计算结果 = 运算.计算(语句.Substring(2));
-                    数据.写入实体(new List<string>(new string[] { "计算", "结果", 计算结果 }));
+                    数据.写入实体( "计算", "结果", 计算结果 );
                     return "";
                 }
 
@@ -133,6 +142,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 if (语句.StartsWith("如果"))//如果小明有钱且小明的钱大于0：
                 {
                     string 如果指令 = 语句.Substring(2);
+
                 }
                 #endregion
                 #region 直到
@@ -142,7 +152,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     List<string> 语句集 = new List<string>(
                             语句.Substring(语句.IndexOf("：") + 1)
                             .Split(new[] { '；' }, StringSplitOptions.RemoveEmptyEntries));
-                    
+
                     while (!判定(判别式) && 数据.循环次数 <= 65536)
                     {
                         foreach (var 子语句 in 语句集)
@@ -170,17 +180,17 @@ namespace Native.Csharp.App.Event.Event_Me
                 }
                 #endregion
                 #region 对于
-                if (语句.StartsWith("对于"))
-                {
-                    List<string> 对于语句 = new List<string>(语句.Substring(2).Split(new[] { '，' }, StringSplitOptions.RemoveEmptyEntries));
-                    if (对于语句.Count > 1)
-                    {
-                        if (对于语句[1].StartsWith("若") && 对于语句[2].StartsWith("则"))
-                        {
-                            //此处是规则写入
-                        }
-                    }
-                }
+                //if (语句.StartsWith("对于"))
+                //{
+                //    List<string> 对于语句 = new List<string>(语句.Substring(2).Split(new[] { '，' }, StringSplitOptions.RemoveEmptyEntries));
+                //    if (对于语句.Count > 1)
+                //    {
+                //        if (对于语句[1].StartsWith("若") && 对于语句[2].StartsWith("则"))
+                //        {
+                //            //此处是规则写入
+                //        }
+                //    }
+                //}
                 #endregion
                 #region 回复
                 if (语句.StartsWith("回复"))
@@ -193,10 +203,10 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     if (语句.Length != 2)
                     {
-                        数据.写入实体(new List<string>(new string[] { "获取" , "结果" , JSON.获取(语句.Substring(2)) }));
+                        数据.写入实体( "获取", "结果", JSON.获取(语句.Substring(2)) );
                         return "";
                     }
-                    数据.写入实体(new List<string>(new string[] { "获取", "结果", JSON.获取(数据.接口) }));
+                    数据.写入实体( "获取", "结果", JSON.获取(数据.接口) );
                     return "";
                 }
                 #endregion
@@ -205,16 +215,12 @@ namespace Native.Csharp.App.Event.Event_Me
                 #region 赋值
                 if (语句.Contains("是"))
                 {
-                    if (语句.Contains("的"))
+                    if (!语句.Contains("的")) //在"是"之前补全"的值"
                     {
-                        数据.写入实体(new List<string>(语句.Split(new[] { '是', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        语句 = 语句.Insert(语句.IndexOf("是"), "的值");
                     }
-                    else//不输入组件则默认为“值”组件
-                    {
-                        List<string> 内容 = new List<string>(语句.Split(new[] { '是' }, StringSplitOptions.RemoveEmptyEntries));
-                        内容.Insert(1, "值");
-                        数据.写入实体(内容);
-                    }
+                    数据.写入实体(语句.Substring(0, 语句.IndexOf("的")), 数值.取中间(语句, "的", "是"), 语句.Substring(语句.IndexOf("是") + 1));
+
                     return "";
                 }
                 #endregion
@@ -225,14 +231,14 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '+', '的' }, StringSplitOptions.RemoveEmptyEntries)));
                         写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "+" + 写入参数[2]);
-                        数据.写入实体(写入参数);
+                        数据.写入实体(写入参数[0], 写入参数[1], 写入参数[2]);
                     }
                     else//不输入组件则默认为“值”组件
                     {
                         List<string> 内容 = new List<string>(语句.Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries));
                         内容.Insert(1, "值");
                         内容[2] = 运算.计算(数据.实体[内容[0]][内容[1]] + "+" + 内容[2]);
-                        数据.写入实体(内容);
+                        数据.写入实体(内容[0], 内容[1], 内容[2]);
                     }
                     return "";
                 }
@@ -242,14 +248,14 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '-', '的' }, StringSplitOptions.RemoveEmptyEntries)));
                         写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "-" + 写入参数[2]);
-                        数据.写入实体(写入参数);
+                        数据.写入实体(写入参数[0], 写入参数[1], 写入参数[2]);
                     }
                     else//不输入组件则默认为“值”组件
                     {
                         List<string> 内容 = new List<string>(语句.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries));
                         内容.Insert(1, "值");
                         内容[2] = 运算.计算(数据.实体[内容[0]][内容[1]] + "-" + 内容[2]);
-                        数据.写入实体(内容);
+                        数据.写入实体(内容[0], 内容[1], 内容[2]);
                     }
                     return "";
                 }
@@ -259,14 +265,14 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '*', '的' }, StringSplitOptions.RemoveEmptyEntries)));
                         写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "*" + 写入参数[2]);
-                        数据.写入实体(写入参数);
+                        数据.写入实体(写入参数[0], 写入参数[1], 写入参数[2]);
                     }
                     else//不输入组件则默认为“值”组件
                     {
                         List<string> 内容 = new List<string>(语句.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries));
                         内容.Insert(1, "值");
                         内容[2] = 运算.计算(数据.实体[内容[0]][内容[1]] + "*" + 内容[2]);
-                        数据.写入实体(内容);
+                        数据.写入实体(内容[0], 内容[1], 内容[2]);
                     }
                     return "";
                 }
@@ -276,28 +282,32 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '/', '的' }, StringSplitOptions.RemoveEmptyEntries)));
                         写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "/" + 写入参数[2]);
-                        数据.写入实体(写入参数);
+                        数据.写入实体(写入参数[0], 写入参数[1], 写入参数[2]);
                     }
                     else//不输入组件则默认为“值”组件
                     {
                         List<string> 内容 = new List<string>(语句.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
                         内容.Insert(1, "值");
                         内容[2] = 运算.计算(数据.实体[内容[0]][内容[1]] + "/" + 内容[2]);
-                        数据.写入实体(内容);
+                        数据.写入实体(内容[0], 内容[1], 内容[2]);
                     }
                     return "";
                 }
                 #endregion
 
-
-                return $"不理解“{语句}”。";
+                //判断是否是方法
+                方法.检查方法(语句);
             }
-            return 数据.报错;
+            return "";
         }
 
 
         public static string 变量解释(string 语句)
         {
+            if (语句.Length > 1024)
+            {
+                return "";
+            }
             if (语句.Contains("："))
             {
                 数据.临时空间 = 语句.Substring(语句.IndexOf("："));
@@ -312,6 +322,10 @@ namespace Native.Csharp.App.Event.Event_Me
                 Stack<char> 符号栈 = new Stack<char>(); Stack<char> 内容栈 = new Stack<char>(); string 栈内容 = "";
                 for (int i = 0; i < 语句.Length; i++)
                 {
+                    if (符号栈.Count > 9999 && 内容栈.Count > 9999)
+                    {
+                        return "";
+                    }
                     char 当前字符 = 语句[i];
                     switch (当前字符)
                     {
@@ -426,7 +440,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 模式 = "等于";
                 委托 = new 数据.布尔委托(比较.等于);
             }
-            else if(判别式.Contains("大于"))
+            else if (判别式.Contains("大于"))
             {
                 模式 = "大于";
                 委托 = new 数据.布尔委托(比较.大于);
@@ -461,10 +475,28 @@ namespace Native.Csharp.App.Event.Event_Me
             if (集合[0].EndsWith("不"))
             {
                 集合[0] = 集合[0].TrimEnd('不');
-                return !委托(集合[0], 集合[1]);
+                try
+                {
+                    Convert.ToDecimal(集合[0]);//试图转换集合左值为数字，如果转换成功，大概率是常量
+                    数据.写入实体("常量", "值", 集合[0]);
+                    return !委托("常量的值", 集合[1]);
+                }
+                catch (Exception)
+                {
+                    return !委托(集合[0], 集合[1]);
+                }
             }
 
-            return 委托(集合[0], 集合[1]);
+            try
+            {
+                Convert.ToDecimal(集合[0]);//试图转换集合左值为数字，如果转换成功，大概率是常量
+                数据.写入实体("常量", "值", 集合[0]);
+                return 委托("常量的值", 集合[1]);
+            }
+            catch (Exception)
+            {
+                return 委托(集合[0], 集合[1]);
+            }
         }
     }
 }

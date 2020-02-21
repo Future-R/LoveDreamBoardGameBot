@@ -30,6 +30,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 }
                 数据.私聊 = false;
                 数据.发送目标 = e.FromGroup;
+                消息预处理.环境初始化();
                 解释.语法分析(用户输入.Substring(1));
             }
             catch (Exception ex)

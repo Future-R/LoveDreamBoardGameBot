@@ -24,12 +24,16 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static List<string> 反义词典 => new List<string>(词典读取.Split(new string[] { "A", Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries));
 
+        public static bool 转义
+        {
+            get;set;
+        }
         public static string 接口
         {
             get;set;
         }
 
-        public static DateTime 上次调用接口的时间
+        public static string 上次调用接口的时间
         {
             get;set;
         }
@@ -89,6 +93,27 @@ namespace Native.Csharp.App.Event.Event_Me
             return false;
         }
 
+        public static void 写入实体(string 实体名, string 组件名, string 组件值)
+        {
+            if (!实体.ContainsKey(实体名))//如果没有这个实体就创建实体，并添加对应的组件
+            {
+                实体.Add(实体名, new Dictionary<string, string>());
+                实体[实体名].Add(组件名, 组件值);
+            }
+            else
+            {
+                if (!实体[实体名].ContainsKey(组件名))
+                {
+                    实体[实体名].Add(组件名, 组件值);
+                }
+                else
+                {
+                    实体[实体名][组件名] = 组件值;
+                }
+            }
+        }
+
+        [Obsolete]
         public static void 写入实体(List<string> 参数)
         {
             string 实体名 = 参数[0]; string 组件名 = 参数[1]; string 组件值 = 参数[2];
@@ -125,20 +150,13 @@ namespace Native.Csharp.App.Event.Event_Me
                 }
                 else
                 {
-                    return $"{参数[0]}没有{参数[1]}。";
+                    return 获取语句;
                 }
             }
             else
             {
-                return $"没找到{参数[0]}。";
+                return 获取语句;
             }
-        }
-
-        public static string 创建模块(string 定义语句)//定义本草纲目：语句1；语句2；语句3
-        {
-            //string 语句 = 定义语句.Substring(0, (定义语句.IndexOf("：")));
-            //List<string> 创建语句 = new List<string>(定义语句.Substring(语句.Length + 2).Split(new[] { '；' }, StringSplitOptions.RemoveEmptyEntries));
-            return "";//先占位
         }
     }
 }

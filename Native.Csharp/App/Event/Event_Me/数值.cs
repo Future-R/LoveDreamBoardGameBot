@@ -6,7 +6,7 @@ namespace Native.Csharp.App.Event.Event_Me
     {
         public static string 的(string 目标文本, string 参数)
         {
-            //的长度的首个X位置的最后X位置的左对齐X的右对齐X的替换X为Y的从X截取的从X截取Y的去头X的去尾Y的向上取整的向下取整的X次方的匹配X
+            //的长度的首个X位置的最后X位置的左对齐X的右对齐X的替换X为Y的从X截取的从X截取Y的去头X的去尾Y的向上取整的向下取整的X次方的匹配X的X和Y中间
             参数 = 参数.Trim();
 
             //完全匹配
@@ -94,9 +94,35 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 return Math.Pow(Convert.ToDouble(目标文本), Convert.ToDouble(参数.Remove(参数.Length - 2))).ToString();
             }
+            if (参数.EndsWith("中间") && 参数.Contains("和"))
+            {
+                参数 = 参数.Remove(参数.Length - 2);
+                string[] 子参数 = 参数.Split('和');
+                return 取中间(目标文本, 子参数[0], 子参数[1]);
+            }
 
             return 目标文本;
-        } 
-
+        }
+        public static string 取中间(string 目标文本, string 开头, string 结尾)
+        {
+            string 返回值 = string.Empty;
+            int 头坐标, 尾坐标;
+            try
+            {
+                头坐标 = 目标文本.IndexOf(开头);
+                if (头坐标 == -1)
+                    return 返回值;
+                string 临时文本 = 目标文本.Substring(头坐标 + 开头.Length);
+                尾坐标 = 临时文本.IndexOf(结尾);
+                if (尾坐标 == -1)
+                    return 返回值;
+                返回值 = 临时文本.Remove(尾坐标);
+            }
+            catch (Exception ex)
+            {
+                return "";
+            }
+            return 返回值;
+        }
     }
 }
