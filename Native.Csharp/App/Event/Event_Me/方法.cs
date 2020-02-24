@@ -6,6 +6,10 @@ namespace Native.Csharp.App.Event.Event_Me
     {
         public static void 检查方法(string 语句)
         {
+            if (数据.发送次数 > 9 || 数据.循环次数 > 65535)
+            {
+                return;
+            }
             List<string> 待处理列表 = new List<string>(); List<string> 触发语句列表 = new List<string>();
             foreach (var 键值对 in 数据.实体)
             {

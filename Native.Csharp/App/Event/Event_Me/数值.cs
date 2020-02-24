@@ -64,14 +64,21 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 参数 = 参数.Substring(1);
                 string[] 目标 = 参数.Split(new string[] { "截取" }, StringSplitOptions.RemoveEmptyEntries);
-                switch (目标.Length)
+                try
                 {
-                    case 1:
-                        return 目标文本.Substring(Convert.ToInt32(目标[0]) - 1);
-                    case 2:
-                        return 目标文本.Substring(Convert.ToInt32(目标[0]) - 1, Convert.ToInt32(目标[1]));
-                    default:
-                        return 目标文本;
+                    switch (目标.Length)
+                    {
+                        case 1:
+                            return 目标文本.Substring(Convert.ToInt32(目标[0]) - 1);
+                        case 2:
+                            return 目标文本.Substring(Convert.ToInt32(目标[0]) - 1, Convert.ToInt32(目标[1]));
+                        default:
+                            return 目标文本;
+                    }
+                }
+                catch (Exception)
+                {
+                    return 目标文本;
                 }
             }
             else if (参数.StartsWith("去头"))

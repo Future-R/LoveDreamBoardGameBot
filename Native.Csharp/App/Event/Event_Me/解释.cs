@@ -57,7 +57,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 语句 += 数据.临时空间;
             }
 
-            while (数据.循环次数 <= 65536)
+            if (数据.循环次数 <= 65536)
             {
                 数据.循环次数++;
                 //关键字打头
@@ -297,6 +297,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 //判断是否是方法
                 方法.检查方法(语句);
+                return "";
             }
             return "";
         }
