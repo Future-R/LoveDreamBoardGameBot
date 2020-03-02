@@ -345,11 +345,11 @@ namespace Native.Csharp.App.Event.Event_Me
                         if (语句.Substring(3).Trim().Contains(" "))
                         {
                             次数 = Convert.ToInt32(参数.Substring(0, 参数.IndexOf(' ')));
+                            表达式 = 参数.Substring(参数.IndexOf(' ') + 1);
                         }
                         else
                         {
                             次数 = Convert.ToInt32(参数);
-                            表达式 = 参数.Substring(参数.IndexOf(' ') + 1);
                         }
                         return 人物卡.DND(次数, 表达式);
                     }
@@ -365,6 +365,10 @@ namespace Native.Csharp.App.Event.Event_Me
                 if (语句.ToLower() == "li")
                 {
                     return 人物卡.症状发作(false);
+                }
+                if (语句.ToLower() == "jrrp")
+                {
+                    return 人物卡.今日人品();
                 }
 
                 #endregion

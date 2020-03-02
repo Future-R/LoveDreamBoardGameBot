@@ -1,5 +1,6 @@
 ﻿using System;
 using static Native.Csharp.App.Event.Event_Me.集合;
+using static Native.Csharp.App.Event.Event_Me.数据;
 
 namespace Native.Csharp.App.Event.Event_Me
 {
@@ -345,7 +346,7 @@ namespace Native.Csharp.App.Event.Event_Me
             }
             if (表达式.Length < 5)
             {
-                表达式 = "4D6K3";
+                表达式 = "R4D6K3";
             }
             string 返回值 = 获取昵称() + "DND英雄作成：\n";
             for (int i = 0; i < 次数; i++)
@@ -373,24 +374,28 @@ namespace Native.Csharp.App.Event.Event_Me
             return $"{昵称}疯狂发作-总结症状:\n{总结症状[rd]}";
         }
 
-        static string 获取昵称()
+        public static string 今日人品()
         {
-            string 昵称 = "";
-            if (!数据.私聊)
+            string 昵称 = 获取昵称();
+            string 今天 = (Convert.ToInt32(数据.实体["现在"]["时间"]) / 1000000).ToString();
+            string 返回值 = "";
+            if (数据.实体.ContainsKey(数据.私聊目标.FromQQ.ToString()))
             {
-                Sdk.Cqp.Model.GroupMember 群友 = 数据.娶群友(数据.群聊目标.FromQQ);
-                昵称 = string.IsNullOrWhiteSpace(群友.Card)//取群名片
-                    ? 群友.Nick : 群友.Card;//取QQ昵称
-                if (数据.实体.ContainsKey(数据.群聊目标.FromQQ.ToString()))//取玩家设置昵称
+                if (数据.实体[数据.私聊目标.FromQQ.ToString()].ContainsKey("今日人品"))
                 {
-                    if (数据.实体[数据.群聊目标.FromQQ.ToString()].ContainsKey("昵称"))
+                    if (数据.实体[数据.私聊目标.FromQQ.ToString()]["今日人品"].StartsWith(今天))
                     {
-                        昵称 = 数据.实体[数据.群聊目标.FromQQ.ToString()]["昵称"];
+                        返回值 = 数据.实体[数据.私聊目标.FromQQ.ToString()]["今日人品"];
+                        返回值 = 返回值.Substring(返回值.IndexOf("：") + 1);
+                        return 昵称 + "今日人品是：" + 返回值;
                     }
                 }
-                昵称 += "的";
             }
-            return 昵称;
+            运算.骰子("R2D100K1");
+            数据.写入实体(数据.私聊目标.FromQQ.ToString(), "今日人品", $"{今天}：{数据.读取组件("上次的骰点")}");
+            返回值 = 数据.实体[数据.私聊目标.FromQQ.ToString()]["今日人品"];
+            返回值 = 返回值.Substring(返回值.IndexOf("：") + 1);
+            return 昵称 + "今日人品是：" + 返回值;
         }
 
         static string 补全(int 数字)
@@ -398,7 +403,7 @@ namespace Native.Csharp.App.Event.Event_Me
             string 返回值 = 数字.ToString();
             if (返回值.Length == 1)
             {
-                返回值.Insert(0, "  ");
+                返回值 = 返回值.Insert(0, "  ");
             }
             return 返回值;
         }

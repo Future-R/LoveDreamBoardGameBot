@@ -137,6 +137,10 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static string 骰子(string 表达式)
         {
+            if (!表达式.ToLower().StartsWith("r") && !表达式.ToLower().StartsWith("w"))
+            {
+                表达式 = "R" + 表达式;
+            }
             string 描述 = "";
             bool 展示详情 = true;
             if (表达式.Contains(" "))
@@ -268,7 +272,7 @@ namespace Native.Csharp.App.Event.Event_Me
             Stack<string> 计算结果 = new Stack<string>();
             foreach (var 元素 in 计算表)
             {
-                if (是纯数(元素))
+                if (是纯数(元素) && !"+-.".Contains(元素))
                 {
                     计算结果.Push(元素);
                 }

@@ -108,6 +108,30 @@ namespace Native.Csharp.App.Event.Event_Me
             return Common.CqApi.GetMemberInfo(群聊目标.FromGroup, QQ号, true);
         }
 
+        public static string 获取昵称()
+        {
+            string 昵称 = "";
+            if (!私聊)
+            {
+                GroupMember 群友 = 娶群友(群聊目标.FromQQ);
+                昵称 = string.IsNullOrWhiteSpace(群友.Card)//取群名片
+                    ? 群友.Nick : 群友.Card;//取QQ昵称
+                if (实体.ContainsKey(群聊目标.FromQQ.ToString()))//取玩家设置昵称
+                {
+                    if (实体[群聊目标.FromQQ.ToString()].ContainsKey("昵称"))
+                    {
+                        昵称 = 实体[群聊目标.FromQQ.ToString()]["昵称"];
+                    }
+                }
+            }
+            else
+            {
+                QQInfo 好友 = Common.CqApi.GetQQInfo(私聊目标.FromQQ);
+                昵称 = 好友.Nick;
+            }
+            return 昵称 + "的";
+        }
+
         public static void 写入实体(string 实体名, string 组件名, string 组件值)
         {
             if (!实体.ContainsKey(实体名))//如果没有这个实体就创建实体，并添加对应的组件
