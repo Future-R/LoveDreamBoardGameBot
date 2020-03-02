@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Native.Csharp</RootNamespace>
-    <AssemblyName>com.lovedream.top</AssemblyName>
+    <AssemblyName>com.frm.top</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -148,12 +148,15 @@
     <Compile Include="App\Event\Event_Me\Event_ReceiveFriendMessage.cs" />
     <Compile Include="App\Event\Event_Me\Event_Variable.cs" />
     <Compile Include="App\Event\Event_Me\JSON.cs" />
+    <Compile Include="App\Event\Event_Me\人物卡.cs" />
+    <Compile Include="App\Event\Event_Me\操作.cs" />
     <Compile Include="App\Event\Event_Me\数值.cs" />
     <Compile Include="App\Event\Event_Me\方法.cs" />
     <Compile Include="App\Event\Event_Me\比较.cs" />
     <Compile Include="App\Event\Event_Me\消息预处理.cs" />
     <Compile Include="App\Event\Event_Me\数据.cs" />
     <Compile Include="App\Event\Event_Me\解释.cs" />
+    <Compile Include="App\Event\Event_Me\转义.cs" />
     <Compile Include="App\Event\Event_Me\运算.cs" />
     <Compile Include="App\Event\Event_Me\集合.cs" />
     <Compile Include="App\Interface\ICqAppDisable.cs" />
@@ -188,7 +191,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="com.lovedream.top.json">
+    <None Include="com.frm.top.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />

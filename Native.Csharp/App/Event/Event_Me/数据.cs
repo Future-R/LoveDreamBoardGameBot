@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Native.Csharp.App.EventArgs;
+using Native.Csharp.Sdk.Cqp.Model;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -46,11 +48,15 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     "我懵了。", "哎？", "不对……", "怎么回事？", "什么情况？",
                     "奇怪的错误……", "搞错了吧？" , "……", "又来了……" , "¿",
-                    "菜", "算了吧……" , "唔。", "[CQ:face,id=14]" , "[CQ:face,id=39]"
+                    "菜", "算了吧……" , "唔。", "瞎输啥啊……" , "[CQ:face,id=14]" , "[CQ:face,id=39]"
                 }
-                [new Random(Guid.NewGuid().GetHashCode()).Next(0, 15)];
+                [new Random(Guid.NewGuid().GetHashCode()).Next(0, 16)];
             }
         }
+
+        public const string 帮助 = 
+            @"桌游姬方若茗V0.1.0229
+帮助文档：https://shimo.im/docs/dqcWQvHjk38QtRq3/";
 
         public static string 临时空间
         {
@@ -67,9 +73,13 @@ namespace Native.Csharp.App.Event.Event_Me
             get;set;
         }
 
-        public static long 发送目标
+        public static CqGroupMessageEventArgs 群聊目标
         {
             get;set;
+        }
+        public static CqPrivateMessageEventArgs 私聊目标
+        {
+            get; set;
         }
 
         public enum 真假
@@ -91,6 +101,11 @@ namespace Native.Csharp.App.Event.Event_Me
         public static bool 错(string 参数1, string 参数2)
         {
             return false;
+        }
+
+        public static GroupMember 娶群友(long QQ号)
+        {
+            return Common.CqApi.GetMemberInfo(群聊目标.FromGroup, QQ号, true);
         }
 
         public static void 写入实体(string 实体名, string 组件名, string 组件值)
@@ -138,6 +153,10 @@ namespace Native.Csharp.App.Event.Event_Me
         public static string 读取组件(string 获取语句)
         {
             List<string> 参数 = new List<string>(获取语句.Split(new[] { '的' }, StringSplitOptions.RemoveEmptyEntries));
+            if (参数[0] == "我")
+            {
+                参数[0] = 私聊目标.FromQQ.ToString();
+            }
             if (实体.ContainsKey(参数[0]))
             {
                 if (参数.Count == 1)

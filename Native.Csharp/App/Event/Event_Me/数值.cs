@@ -110,6 +110,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
             return 目标文本;
         }
+
         public static string 取中间(string 目标文本, string 开头, string 结尾)
         {
             string 返回值 = string.Empty;

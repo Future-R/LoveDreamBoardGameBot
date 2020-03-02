@@ -1,10 +1,6 @@
 ﻿using Native.Csharp.App.EventArgs;
 using Native.Csharp.App.Interface;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Native.Csharp.App.Event.Event_Me
 {
@@ -29,7 +25,8 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
                 }
                 数据.私聊 = false;
-                数据.发送目标 = e.FromGroup;
+                数据.群聊目标 = e;
+                数据.私聊目标 = e;
                 消息预处理.环境初始化();
                 解释.语法分析(用户输入.Substring(1));
             }

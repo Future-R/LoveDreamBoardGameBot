@@ -24,13 +24,13 @@
             "function": "_eventGroupMsg",
             "priority": 20000
         },
-        //{
-        //    "id": 3,
-        //    "type": 4,
-        //    "name": "讨论组消息处理",
-        //    "function": "_eventDiscussMsg",
-        //    "priority": 30000
-        //},
+        {
+            "id": 3,
+            "type": 4,
+            "name": "讨论组消息处理",
+            "function": "_eventDiscussMsg",
+            "priority": 20000
+        },
         //{
         //    "id": 4,
         //    "type": 11,
@@ -128,7 +128,7 @@
         //20,  //[敏感]取Cookies	getCookies / getCsrfToken
         //30,  //接收语音			getRecord
         101, //发送群消息			sendGroupMsg
-        //103, //发送讨论组消息		sendDiscussMsg
+        103, //发送讨论组消息		sendDiscussMsg
         106, //发送私聊消息		sendPrivateMsg
         //110, //发送赞				sendLike
         //120, //置群员移除			setGroupKick

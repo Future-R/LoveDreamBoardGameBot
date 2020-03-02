@@ -57,14 +57,14 @@ namespace Native.Csharp.App.Core
 		{
 			// 请勿随意修改
 			// 
-			Common.AppName = "恋梦桌游姬";
-			Common.AppVersion = Version.Parse ("1.2.0");		
+			Common.AppName = "方若茗桌游姬";
+			Common.AppVersion = Version.Parse ("0.1.0");		
 
 			//
-			// 当前项目名称: com.lovedream.top
+			// 当前项目名称: com.frm.top
 			// Api版本: 9
 
-			return string.Format ("{0},{1}", 9, "com.lovedream.top");
+			return string.Format ("{0},{1}", 9, "com.frm.top");
 		}
 
 		/// <summary>
@@ -141,6 +141,15 @@ namespace Native.Csharp.App.Core
 			if (Common.UnityContainer.IsRegistered<IReceiveGroupMessage> ("群消息处理") == true)
 			{
 				ReceiveGroupMessage_2 = Common.UnityContainer.Resolve<IReceiveGroupMessage> ("群消息处理").ReceiveGroupMessage;
+			}
+			
+			/*
+			 * Id: 3
+			 * Name: 讨论组消息处理
+			 */
+			if (Common.UnityContainer.IsRegistered<IReceiveDiscussMessage> ("讨论组消息处理") == true)
+			{
+				ReceiveDiscussMessage_3 = Common.UnityContainer.Resolve<IReceiveDiscussMessage> ("讨论组消息处理").ReceiveDiscussMessage;
 			}
 			
 			/*
@@ -254,6 +263,27 @@ namespace Native.Csharp.App.Core
 				if (ReceiveGroupMessage_2 != null)
 				{
 					ReceiveGroupMessage_2 (null, args);
+				}
+			}
+			return Convert.ToInt32 (args.Handler);
+		}
+
+		/*
+		 * Id: 3
+		 * Type: 4
+		 * Name: 讨论组消息处理
+		 * Function: _eventDiscussMsg
+		 */
+		public static event EventHandler<CqDiscussMessageEventArgs> ReceiveDiscussMessage_3;
+		[DllExport (ExportName = "_eventDiscussMsg", CallingConvention = CallingConvention.StdCall)]
+		private static int Evnet__eventDiscussMsg (int subType, int msgId, long fromDiscuss, long fromQQ, IntPtr msg, int font)
+		{
+			CqDiscussMessageEventArgs args = new CqDiscussMessageEventArgs (3, msgId, fromDiscuss, fromQQ, msg.ToString (_defaultEncoding));
+			if (subType == 1)
+			{
+				if (ReceiveDiscussMessage_3 != null)
+				{
+					ReceiveDiscussMessage_3 (null, args);
 				}
 			}
 			return Convert.ToInt32 (args.Handler);

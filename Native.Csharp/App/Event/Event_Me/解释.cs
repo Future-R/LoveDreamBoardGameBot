@@ -7,7 +7,42 @@ namespace Native.Csharp.App.Event.Event_Me
     {
         public static void 语法分析(string 用户输入)
         {
-            //用户输入 = Regex.Replace(用户输入, @"[/n/r]", "");
+            if (用户输入 == "帮助" || 用户输入.ToLower() == "help")
+            {
+                Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 数据.帮助);
+                return;
+            }
+            if (用户输入.StartsWith("开启"))
+            {
+                if (用户输入.Length == 2)
+                {
+                    操作.开关(数据.群聊目标.FromGroup, false);
+                }
+                else if (用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString() ||
+                    用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString().Substring(Common.CqApi.GetLoginQQ().ToString().Length - 4, 4))
+                {
+                    操作.开关(数据.群聊目标.FromGroup, false);
+                }
+                return;
+            }
+            if (用户输入.StartsWith("关闭"))
+            {
+                if (用户输入.Length == 2)
+                {
+                    操作.开关(数据.群聊目标.FromGroup, true);
+                }
+                else if (用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString() ||
+                    用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString().Substring(Common.CqApi.GetLoginQQ().ToString().Length - 4, 4))
+                {
+                    操作.开关(数据.群聊目标.FromGroup, true);
+                }
+                return;
+            }
+            if (!数据.私聊 && 操作.机器人开关.Contains(数据.群聊目标.FromGroup))
+            {
+                return;
+            }
+            用户输入 = 转义.输入(用户输入);
             List<string> 语句集 = new List<string>();
             if (用户输入.StartsWith("！"))
             {
@@ -31,16 +66,16 @@ namespace Native.Csharp.App.Event.Event_Me
                     数据.发送次数++;
                     if (数据.发送次数 > 9)
                     {
-                        Common.CqApi.SendPrivateMessage(数据.发送目标, "不干了！");
+                        Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, "不干了！");
                         return;
                     }
                     if (数据.私聊)
                     {
-                        Common.CqApi.SendPrivateMessage(数据.发送目标, 执行结果);
+                        Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 转义.输出(执行结果));
                     }
                     else
                     {
-                        Common.CqApi.SendGroupMessage(数据.发送目标, 执行结果);
+                        Common.CqApi.SendGroupMessage(数据.群聊目标.FromGroup, 转义.输出(执行结果));
                     }
                 }
             }
@@ -61,6 +96,27 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 数据.循环次数++;
                 //关键字打头
+                if (语句.StartsWith("设"))
+                {
+                    if (语句.Contains("为"))
+                    {
+                        语句 = 语句.Substring(1);
+                        if (!语句.Contains("的")) //在"为"之前补全"的值"
+                        {
+                            语句 = 语句.Insert(语句.IndexOf("为"), "的值");
+                        }
+                        if (语句.Substring(0, 语句.IndexOf("的")) == "我")
+                        {
+                            数据.写入实体(数据.私聊目标.FromQQ.ToString(), 数值.取中间(语句, "的", "为"), 语句.Substring(语句.IndexOf("为") + 1));
+                        }
+                        else
+                        {
+                            数据.写入实体(语句.Substring(0, 语句.IndexOf("的")), 数值.取中间(语句, "的", "为"), 语句.Substring(语句.IndexOf("为") + 1));
+                        }
+
+                        return "";
+                    }
+                }
                 #region 关系式
                 if (语句.StartsWith("已知"))
                 {
@@ -167,11 +223,11 @@ namespace Native.Csharp.App.Event.Event_Me
                                 }
                                 if (数据.私聊)
                                 {
-                                    Common.CqApi.SendPrivateMessage(数据.发送目标, 执行结果);
+                                    Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 转义.输出(执行结果));
                                 }
                                 else
                                 {
-                                    Common.CqApi.SendGroupMessage(数据.发送目标, 执行结果);
+                                    Common.CqApi.SendGroupMessage(数据.群聊目标.FromGroup, 转义.输出(执行结果));
                                 }
                             }
                         }
@@ -203,12 +259,114 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     if (语句.Length != 2)
                     {
-                        数据.写入实体( "获取", "结果", JSON.获取(语句.Substring(2)) );
+                        数据.写入实体( "获取", "结果", 转义.内部输入(JSON.获取(语句.Substring(2))) );
                         return "";
                     }
-                    数据.写入实体( "获取", "结果", JSON.获取(数据.接口) );
+                    数据.写入实体( "获取", "结果", 转义.内部输入(JSON.获取(数据.接口)) );
                     return "";
                 }
+                #endregion
+                #region 骰子
+                if (语句.StartsWith("骰子"))
+                {
+                    语句 = "r" + 语句.Substring(2);
+                }
+                if (语句.ToLower().StartsWith("r") || 语句.ToLower().StartsWith("w"))
+                {
+                    return 运算.骰子(语句);
+                }
+                
+                if (语句.ToLower().StartsWith("set"))
+                {
+                    if (语句.Length > 3)
+                    {
+                        if (运算.是纯数(语句.Substring(3).Trim()) && !语句.Substring(3).Contains("."))
+                        {
+                            if (Convert.ToDecimal(语句.Substring(3).Trim()) > 1000000 && -1000000 > Convert.ToDecimal(语句.Substring(3).Trim()))
+                            {
+                                return 数据.报错 + "\n还踢球？";
+                            }
+                            数据.写入实体(数据.私聊目标.FromQQ.ToString(), "默认骰", 语句.Substring(3).Trim());
+                            return $"默认骰设置为 {语句.Substring(3).Trim()}";
+                        }
+                        else
+                        {
+                            return 数据.报错+"\n默认骰必须是整数！";
+                        }
+                    }
+                    else//移除
+                    {
+                        数据.实体[数据.私聊目标.FromQQ.ToString()].Remove("默认骰");
+                    }
+                }
+                if (语句.ToLower().StartsWith("nn"))
+                {
+                    if (语句.Length > 2)
+                    {
+                        数据.写入实体(数据.私聊目标.FromQQ.ToString(), "昵称", 语句.Substring(2).Trim());
+                        return $"昵称设置为{语句.Substring(2).Trim()}";
+                    }
+                    else//移除
+                    {
+                        数据.实体[数据.私聊目标.FromQQ.ToString()].Remove("昵称");
+                        return "移除昵称成功！";
+                    }
+                    
+                }
+                if (语句.ToLower().StartsWith("coc7d") || 语句.ToLower().StartsWith("cocd"))
+                {
+                    return 人物卡.COC7D();
+                }
+                if (语句.ToLower().StartsWith("coc"))
+                {
+                    if (语句.ToLower() == "coc")
+                    {
+                        语句 = "COC1";
+                    }
+                    try
+                    {
+                        int 次数 = Convert.ToInt32(语句.Substring(3).Trim());
+                        return 人物卡.COC7(次数);
+                    }
+                    catch (Exception)
+                    {
+                        return "错误：格式为COC [次数]";
+                    }
+                }
+                if (语句.ToLower().StartsWith("dnd"))
+                {
+                    if (语句.ToLower() == "dnd")
+                    {
+                        语句 = "DND1";
+                    }
+                    try
+                    {
+                        int 次数 = 1; string 参数 = 语句.Substring(3).Trim(); string 表达式 = "";
+                        if (语句.Substring(3).Trim().Contains(" "))
+                        {
+                            次数 = Convert.ToInt32(参数.Substring(0, 参数.IndexOf(' ')));
+                        }
+                        else
+                        {
+                            次数 = Convert.ToInt32(参数);
+                            表达式 = 参数.Substring(参数.IndexOf(' ') + 1);
+                        }
+                        return 人物卡.DND(次数, 表达式);
+                    }
+                    catch (Exception)
+                    {
+                        return "错误：格式为DND [次数*] [表达式*]";
+                    }
+                }
+                if (语句.ToLower() == "ti")
+                {
+                    return 人物卡.症状发作(true);
+                }
+                if (语句.ToLower() == "li")
+                {
+                    return 人物卡.症状发作(false);
+                }
+
                 #endregion
 
                 //关键字包含
@@ -219,7 +377,14 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         语句 = 语句.Insert(语句.IndexOf("是"), "的值");
                     }
-                    数据.写入实体(语句.Substring(0, 语句.IndexOf("的")), 数值.取中间(语句, "的", "是"), 语句.Substring(语句.IndexOf("是") + 1));
+                    if (语句.Substring(0, 语句.IndexOf("的")) == "我")
+                    {
+                        数据.写入实体(数据.私聊目标.FromQQ.ToString(), 数值.取中间(语句, "的", "是"), 语句.Substring(语句.IndexOf("是") + 1));
+                    }
+                    else
+                    {
+                        数据.写入实体(语句.Substring(0, 语句.IndexOf("的")), 数值.取中间(语句, "的", "是"), 语句.Substring(语句.IndexOf("是") + 1));
+                    }
 
                     return "";
                 }
@@ -230,6 +395,10 @@ namespace Native.Csharp.App.Event.Event_Me
                     if (语句.Contains("的"))
                     {
                         List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '+', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        if (写入参数[0] == "我")
+                        {
+                            写入参数[0] = 数据.私聊目标.FromQQ.ToString();
+                        }
                         写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "+" + 写入参数[2]);
                         数据.写入实体(写入参数[0], 写入参数[1], 写入参数[2]);
                     }
@@ -247,6 +416,10 @@ namespace Native.Csharp.App.Event.Event_Me
                     if (语句.Contains("的"))
                     {
                         List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '-', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        if (写入参数[0] == "我")
+                        {
+                            写入参数[0] = 数据.私聊目标.FromQQ.ToString();
+                        }
                         写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "-" + 写入参数[2]);
                         数据.写入实体(写入参数[0], 写入参数[1], 写入参数[2]);
                     }
@@ -264,6 +437,10 @@ namespace Native.Csharp.App.Event.Event_Me
                     if (语句.Contains("的"))
                     {
                         List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '*', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        if (写入参数[0] == "我")
+                        {
+                            写入参数[0] = 数据.私聊目标.FromQQ.ToString();
+                        }
                         写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "*" + 写入参数[2]);
                         数据.写入实体(写入参数[0], 写入参数[1], 写入参数[2]);
                     }
@@ -281,6 +458,10 @@ namespace Native.Csharp.App.Event.Event_Me
                     if (语句.Contains("的"))
                     {
                         List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '/', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        if (写入参数[0] == "我")
+                        {
+                            写入参数[0] = 数据.私聊目标.FromQQ.ToString();
+                        }
                         写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "/" + 写入参数[2]);
                         数据.写入实体(写入参数[0], 写入参数[1], 写入参数[2]);
                     }
@@ -305,11 +486,11 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static string 变量解释(string 语句)
         {
-            if (语句.Length > 1024)
+            if (语句.Length > 4096)
             {
                 return "";
             }
-            if (语句.Contains("："))
+            if (语句.Contains("：") && 语句.Contains("直到"))
             {
                 数据.临时空间 = 语句.Substring(语句.IndexOf("："));
                 语句 = 语句.Substring(0, 语句.IndexOf("："));

@@ -31,6 +31,22 @@ namespace Native.Csharp.App.Event.Event_Me
                 数据.上次调用接口的时间 = Event_CqAppEnable.启动时间;
             }
             数据.写入实体("现在","时间", $"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0, 8).Replace(":", "")}");
+            if (数据.实体.ContainsKey("COC"))//初始化COC的恐惧症和狂躁症
+            {
+                if (!数据.实体["COC"].ContainsKey("恐惧症"))
+                {
+                    数据.写入实体("COC","恐惧症", 转义.内部输入(人物卡.恐惧症));
+                }
+                if (!数据.实体["COC"].ContainsKey("狂躁症"))
+                {
+                    数据.写入实体("COC", "狂躁症", 转义.内部输入(人物卡.狂躁症));
+                }
+            }
+            else
+            {
+                数据.写入实体("COC", "恐惧症", 转义.内部输入(人物卡.恐惧症));
+                数据.写入实体("COC", "狂躁症", 转义.内部输入(人物卡.狂躁症));
+            }
         }
     }
 }
