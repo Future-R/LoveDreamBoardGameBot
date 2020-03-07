@@ -297,7 +297,12 @@ namespace Native.Csharp.App.Event.Event_Me
                             参数2 = Convert.ToDecimal(计算结果.Pop());
                             参数1 = Convert.ToDecimal(计算结果.Pop());
                             返回结果 = new DataTable().Compute($"{参数1}{元素}{参数2}", "").ToString();
-                            计算过程 += "=" + 返回结果;
+                            计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
+                                [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
+                                Replace($"{参数1}{元素}{参数2}", 返回结果).
+                                Replace($"({参数1}){元素}{参数2}", 返回结果).
+                                Replace($"{参数1}{元素}({参数2})", 返回结果).
+                                Replace($"({参数1}){元素}({参数2})", 返回结果);
                             break;
 
                         case ".":
@@ -310,7 +315,12 @@ namespace Native.Csharp.App.Event.Event_Me
                             参数2 = Convert.ToDecimal(计算结果.Pop());
                             参数1 = Convert.ToDecimal(计算结果.Pop());
                             返回结果 = Math.Pow(Convert.ToDouble(参数1), Convert.ToDouble(参数2)).ToString();
-                            计算过程 += "=" + 返回结果;
+                            计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
+                                [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
+                                Replace($"{参数1}{元素}{参数2}", 返回结果).
+                                Replace($"({参数1}){元素}{参数2}",返回结果).
+                                Replace($"{参数1}{元素}({参数2})", 返回结果).
+                                Replace($"({参数1}){元素}({参数2})", 返回结果);
                             break;
 
                         case "D":
@@ -338,16 +348,25 @@ namespace Native.Csharp.App.Event.Event_Me
                             {
                                 计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                 [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
-                                Replace($"{参数1}D{参数2}", $"{骰池算式}")
+                                Replace($"{参数1}D{参数2}", $"{骰池算式}").
+                                Replace($"({参数1}){元素}{参数2}", $"{骰池算式}").
+                                Replace($"{参数1}{元素}({参数2})", $"{骰池算式}").
+                                Replace($"({参数1}){元素}({参数2})", $"{骰池算式}")
                                 + "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                 [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
-                                Replace($"{参数1}D{参数2}", 返回结果);
+                                Replace($"{参数1}D{参数2}", 返回结果).
+                                Replace($"({参数1}){元素}{参数2}", 返回结果).
+                                Replace($"{参数1}{元素}({参数2})", 返回结果).
+                                Replace($"({参数1}){元素}({参数2})", 返回结果);
                             }
                             else
                             {
                                 计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                 [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
-                                Replace($"{参数1}D{参数2}", 返回结果);
+                                Replace($"{参数1}D{参数2}", 返回结果).
+                                Replace($"({参数1}){元素}{参数2}", 返回结果).
+                                Replace($"{参数1}{元素}({参数2})", 返回结果).
+                                Replace($"({参数1}){元素}({参数2})", 返回结果);
                             }
                             
                             //计算过程 += $"【{参数1}D{参数2}】=({骰池算式})={返回结果};{Environment.NewLine}";
@@ -402,16 +421,25 @@ namespace Native.Csharp.App.Event.Event_Me
                             {
                                 计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                     [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
-                                    Replace($"{参数1}A{参数2}", $"{加骰结果} }}")
+                                    Replace($"{参数1}A{参数2}", $"{加骰结果} }}").
+                                    Replace($"({参数1}){元素}{参数2}", $"{加骰结果} }}").
+                                    Replace($"{参数1}{元素}({参数2})", $"{加骰结果} }}").
+                                    Replace($"({参数1}){元素}({参数2})", $"{加骰结果} }}")
                                     + "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                     [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
-                                    Replace($"{参数1}A{参数2}", 返回结果);
+                                    Replace($"{参数1}A{参数2}", 返回结果).
+                                    Replace($"({参数1}){元素}{参数2}", 返回结果).
+                                    Replace($"{参数1}{元素}({参数2})", 返回结果).
+                                    Replace($"({参数1}){元素}({参数2})", 返回结果);
                             }
                             else
                             {
                                 计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                     [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
-                                    Replace($"{参数1}A{参数2}", 返回结果);
+                                    Replace($"{参数1}A{参数2}", 返回结果).
+                                    Replace($"({参数1}){元素}{参数2}", 返回结果).
+                                    Replace($"{参数1}{元素}({参数2})", 返回结果).
+                                    Replace($"({参数1}){元素}({参数2})", 返回结果);
                             }
                             break;
 
@@ -640,9 +668,9 @@ namespace Native.Csharp.App.Event.Event_Me
                 new Regex("[\\s]+").Replace(预处理结果, " ").Trim().Split(' ').ToList();//合并复数空格，去除首末空格
             int 遍历位置 = -1; List<string> 临时修改中继表达式 = new List<string>(中继表达式);
             //判断-号是否是负号，如果是负号则在-号前插入0；
-            //判断D和A前是否为数字，如果不是，则在前面加1；
-            //判断D后是否为数字，如果不是，则在前面加骰子面；
-            //判断BP后是否为数字，如果不是，则在前面加1；
+            //判断D和A前是否为数字，如果不是，且不是括号，则在前面加1；
+            //判断D后是否为数字，如果不是，且不是括号，则在前面加骰子面；
+            //判断BP后是否为数字，如果不是，且不是括号，则在前面加1；
             foreach (var 元素 in 中继表达式)
             {
                 遍历位置++;
@@ -655,8 +683,11 @@ namespace Native.Csharp.App.Event.Event_Me
                     }
                     else if (!是纯数(临时修改中继表达式[遍历位置 - 1]) || "+-".Contains(临时修改中继表达式[遍历位置 - 1]))
                     {
-                        临时修改中继表达式.Insert(遍历位置, "0");
-                        遍历位置++;
+                        if (!"()".Contains(临时修改中继表达式[遍历位置 - 1]))
+                        {
+                            临时修改中继表达式.Insert(遍历位置, "0");
+                            遍历位置++;
+                        }
                     }
                 }
 
@@ -669,6 +700,11 @@ namespace Native.Csharp.App.Event.Event_Me
                     }
                     else if (!是纯数(临时修改中继表达式[遍历位置 - 1]) || "+-".Contains(临时修改中继表达式[遍历位置 - 1]))
                     {
+                        if (!"()".Contains(临时修改中继表达式[遍历位置 - 1]))
+                        {
+                            临时修改中继表达式.Insert(遍历位置, "1");
+                            遍历位置++;
+                        }
                         临时修改中继表达式.Insert(遍历位置, "1");
                         遍历位置++;
                     }
@@ -681,7 +717,11 @@ namespace Native.Csharp.App.Event.Event_Me
                         }
                         else if (!是纯数(临时修改中继表达式[遍历位置 + 1]) || "+-".Contains(临时修改中继表达式[遍历位置 + 1]))
                         {
-                            临时修改中继表达式.Insert(遍历位置 + 1, 骰子面);
+                            if (!"()".Contains(临时修改中继表达式[遍历位置 + 1]))
+                            {
+                                临时修改中继表达式.Insert(遍历位置 + 1, 骰子面);
+                                遍历位置++;
+                            }
                             遍历位置++;
                         }
                     }
@@ -695,6 +735,11 @@ namespace Native.Csharp.App.Event.Event_Me
                     }
                     else if (!是纯数(临时修改中继表达式[遍历位置 + 1]) || "+-".Contains(临时修改中继表达式[遍历位置 + 1]))
                     {
+                        if (!"()".Contains(临时修改中继表达式[遍历位置 - 1]))
+                        {
+                            临时修改中继表达式.Insert(遍历位置 + 1, "1");
+                            遍历位置++;
+                        }
                         临时修改中继表达式.Insert(遍历位置 + 1, "1");
                         遍历位置++;
                     }
