@@ -41,7 +41,7 @@ namespace Native.Csharp.App.Event
             container.RegisterType<IReceiveGroupPrivateMessage, Event_ReceiveFriendMessage>("私聊消息处理");
 
             //注册【讨论组回复】
-            container.RegisterType<IReceiveGroupMessage, Event_ReceiveGroupMessage>("讨论组消息处理");
+            container.RegisterType<IReceiveDiscussMessage, Event_ReceiveFriendMessage>("讨论组消息处理");
 
             ////注册【数据库仓储】
             //container.RegisterInstance<IRepository>(new SqlRepository(Config.Config.SQLConnectStr));

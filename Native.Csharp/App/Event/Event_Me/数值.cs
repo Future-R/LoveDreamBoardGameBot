@@ -126,7 +126,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     return 返回值;
                 返回值 = 临时文本.Remove(尾坐标);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return "";
             }

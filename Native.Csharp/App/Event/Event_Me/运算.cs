@@ -129,10 +129,12 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static string 计算(string 算式)
         {
-            算式 = 算式.Replace("×", "*").Replace("x", "*").Replace("X", "*")
-                .Replace("（", "(").Replace("）", ")").Replace("÷", "/");
-            //此处应替换为波兰逆运算
-            return new DataTable().Compute(算式.Trim(), "").ToString();
+            运算.骰子(算式);
+            return 数据.读取组件("上次的骰点");
+            //算式 = 算式.Replace("×", "*").Replace("x", "*").Replace("X", "*")
+            //    .Replace("（", "(").Replace("）", ")").Replace("÷", "/");
+            ////此处应替换为波兰逆运算
+            //return new DataTable().Compute(算式.Trim(), "").ToString();
         }
 
         public static string 骰子(string 表达式)
@@ -159,6 +161,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     if (!数据.私聊)
                     {
                         数据.私聊 = true;
+                        数据.群聊目标 = 数据.私聊目标;
                     }
                 }
             }
@@ -231,24 +234,16 @@ namespace Native.Csharp.App.Event.Event_Me
                 表达式 = 表达式.Insert(1, "1") + 骰子面;
             }
             表达式 = 表达式.Substring(1);//去掉开头的R或W
-            List<string> 中缀分词 = 中缀分词补全(表达式, 骰子面); ;
-            if (数据.私聊)
+            List<string> 中缀分词 = 中缀分词补全(表达式, 骰子面);
+
+            string 昵称 = 数据.获取昵称();
+            if (数据.私聊 && 数据.群聊目标 != null)
             {
                 返回值 += "你骰出了";
             }
             else
             {
-                Sdk.Cqp.Model.GroupMember 群友 = 数据.娶群友(数据.群聊目标.FromQQ);
-                string 昵称 = string.IsNullOrWhiteSpace(群友.Card)
-                    ? 群友.Nick : 群友.Card;//取群名片/QQ昵称
-                if (数据.实体.ContainsKey(数据.群聊目标.FromQQ.ToString()))//取玩家设置昵称
-                {
-                    if (数据.实体[数据.群聊目标.FromQQ.ToString()].ContainsKey("昵称"))
-                    {
-                        昵称 = 数据.实体[数据.群聊目标.FromQQ.ToString()]["昵称"];
-                    }
-                }
-                返回值 += $"{昵称}骰出了";
+                返回值 += $"{昵称.TrimEnd('的')}骰出了";
             }
             string 计算结果 = 后缀计算(中缀转后缀(中缀分词), string.Join("", 中缀分词.ToArray()), 骰池面, 加骰值, 展示详情);
             if (计算结果.StartsWith("错误"))
@@ -256,14 +251,14 @@ namespace Native.Csharp.App.Event.Event_Me
                 return 计算结果;
             }
             if (计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1] ==
-                计算(计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1]))
+                new DataTable().Compute(计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1],"").ToString())
             {
                 数据.写入实体("上次", "骰点", 计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1]);
                 return 返回值 + 计算结果;
             }
-            数据.写入实体("上次", "骰点", 计算(计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1]));
+            数据.写入实体("上次", "骰点", new DataTable().Compute(计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1],"").ToString());
             return 返回值 + 计算结果 + "=" +
-                计算(计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1]);
+                new DataTable().Compute(计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1],"").ToString();
 
         }
 
@@ -281,11 +276,30 @@ namespace Native.Csharp.App.Event.Event_Me
                     string 返回结果 = ""; decimal 参数1 = 0; decimal 参数2 = 0;
                     switch (元素)
                     {
+                        //case "↑":
+                        //case "↓":
+                        //    参数1 = Convert.ToDecimal(计算结果.Pop());
+                        //    if (元素 == "↑")
+                        //    {
+                        //        返回结果 = Math.Ceiling(Convert.ToDecimal(参数1)).ToString();
+                        //    }
+                        //    else
+                        //    {
+                        //        返回结果 = Math.Floor(Convert.ToDecimal(参数1)).ToString();
+                        //    }
+                        //    break;
+
                         case "+":
                         case "-":
                         case "*":
                         case "/":
                         case "%":
+                            参数2 = Convert.ToDecimal(计算结果.Pop());
+                            参数1 = Convert.ToDecimal(计算结果.Pop());
+                            返回结果 = new DataTable().Compute($"{参数1}{元素}{参数2}", "").ToString();
+                            计算过程 += "=" + 返回结果;
+                            break;
+
                         case ".":
                             参数2 = Convert.ToDecimal(计算结果.Pop());
                             参数1 = Convert.ToDecimal(计算结果.Pop());
@@ -293,7 +307,10 @@ namespace Native.Csharp.App.Event.Event_Me
                             break;
 
                         case "^":
+                            参数2 = Convert.ToDecimal(计算结果.Pop());
+                            参数1 = Convert.ToDecimal(计算结果.Pop());
                             返回结果 = Math.Pow(Convert.ToDouble(参数1), Convert.ToDouble(参数2)).ToString();
+                            计算过程 += "=" + 返回结果;
                             break;
 
                         case "D":
@@ -441,7 +458,6 @@ namespace Native.Csharp.App.Event.Event_Me
                                 骰池 += new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(10)) + " ";
                             }
                             List<string> 骰池表 = new List<string>(骰池.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
-                            decimal 换位结果 = 0;
                             string 待替换 = (参数1 % 100).ToString();
                             string 个位数 = (待替换.Length == 1) ? 待替换 : 待替换.Substring(1,1);
                             骰池表.Add(待替换.Substring(0, 1));//先加进来排序，一会儿处理完删掉
@@ -509,6 +525,11 @@ namespace Native.Csharp.App.Event.Event_Me
                     优先级 = 4;
                     break;
 
+                case "↑":
+                case "↓":
+                    优先级 = 5;
+                    break;
+
                 default:
                     break;
             }
@@ -525,7 +546,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     break;
                 }
-                if (是纯数(元素) && !"+-".Contains(元素))//是数字就直接推入结果栈
+                if (是纯数(元素) && !"+-.".Contains(元素))//是数字就直接推入结果栈
                 {
                     结果栈.Push(元素);
                 }
@@ -568,21 +589,6 @@ namespace Native.Csharp.App.Event.Event_Me
                                 break;
 
                             default://是用户自定义的符号
-                                //if (符号栈.Peek() == "=")//上一个符号是=时，这里应是用户定义的骰子面
-                                //{
-                                //    结果栈.Push("面:" + 元素);
-                                //}
-                                //else//否则检查是否是自定义骰子
-                                //{
-                                //    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + 元素 + ".ini"))
-                                //    {
-                                //        符号栈.Push("骰:" + 元素);
-                                //    }
-                                //    else//不存在的话报错返回
-                                //    {
-                                //        return $"错误：{元素}不是自定义骰子！";
-                                //    }
-                                //}
                                 break;
                         }
                     }
@@ -636,7 +642,7 @@ namespace Native.Csharp.App.Event.Event_Me
             //判断-号是否是负号，如果是负号则在-号前插入0；
             //判断D和A前是否为数字，如果不是，则在前面加1；
             //判断D后是否为数字，如果不是，则在前面加骰子面；
-            //判断P后是否为数字，如果不是，则在前面加1；
+            //判断BP后是否为数字，如果不是，则在前面加1；
             foreach (var 元素 in 中继表达式)
             {
                 遍历位置++;

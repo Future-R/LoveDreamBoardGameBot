@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 
 namespace Native.Csharp.App.Event.Event_Me
 {
@@ -12,32 +13,46 @@ namespace Native.Csharp.App.Event.Event_Me
                 Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 数据.帮助);
                 return;
             }
-            if (用户输入.StartsWith("开启"))
+            if (用户输入 == "开发模式")
             {
-                if (用户输入.Length == 2)
-                {
-                    操作.开关(数据.群聊目标.FromGroup, false);
-                }
-                else if (用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString() ||
-                    用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString().Substring(Common.CqApi.GetLoginQQ().ToString().Length - 4, 4))
-                {
-                    操作.开关(数据.群聊目标.FromGroup, false);
-                }
+                数据.开发模式 = true;
                 return;
             }
-            if (用户输入.StartsWith("关闭"))
+            if (用户输入 == "用户模式")
             {
-                if (用户输入.Length == 2)
-                {
-                    操作.开关(数据.群聊目标.FromGroup, true);
-                }
-                else if (用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString() ||
-                    用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString().Substring(Common.CqApi.GetLoginQQ().ToString().Length - 4, 4))
-                {
-                    操作.开关(数据.群聊目标.FromGroup, true);
-                }
+                数据.开发模式 = false;
                 return;
             }
+            if (!数据.私聊)
+            {
+                if (用户输入.StartsWith("开启"))
+                {
+                    if (用户输入.Length == 2)
+                    {
+                        操作.开关(数据.群聊目标.FromGroup, false);
+                    }
+                    else if (用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString() ||
+                        用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString().Substring(Common.CqApi.GetLoginQQ().ToString().Length - 4, 4))
+                    {
+                        操作.开关(数据.群聊目标.FromGroup, false);
+                    }
+                    return;
+                }
+                if (用户输入.StartsWith("关闭"))
+                {
+                    if (用户输入.Length == 2)
+                    {
+                        操作.开关(数据.群聊目标.FromGroup, true);
+                    }
+                    else if (用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString() ||
+                        用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString().Substring(Common.CqApi.GetLoginQQ().ToString().Length - 4, 4))
+                    {
+                        操作.开关(数据.群聊目标.FromGroup, true);
+                    }
+                    return;
+                }
+            }
+
             if (!数据.私聊 && 操作.机器人开关.Contains(数据.群聊目标.FromGroup))
             {
                 return;
@@ -69,7 +84,11 @@ namespace Native.Csharp.App.Event.Event_Me
                         Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, "不干了！");
                         return;
                     }
-                    if (数据.私聊)
+                    if (数据.群聊目标 == null)//只有讨论组方法将群聊设为null
+                    {
+                        Common.CqApi.SendDiscussMessage(数据.讨论组目标.FromDiscuss, 转义.输出(执行结果));
+                    }
+                    else if (数据.私聊)
                     {
                         Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 转义.输出(执行结果));
                     }
@@ -189,17 +208,17 @@ namespace Native.Csharp.App.Event.Event_Me
                 if (语句.StartsWith("计算"))
                 {
                     string 计算结果 = 运算.计算(语句.Substring(2));
-                    数据.写入实体( "计算", "结果", 计算结果 );
+                    数据.写入实体("计算", "结果", 计算结果);
                     return "";
                 }
 
                 #endregion
                 #region 如果
-                if (语句.StartsWith("如果"))//如果小明有钱且小明的钱大于0：
-                {
-                    string 如果指令 = 语句.Substring(2);
+                //if (语句.StartsWith("如果"))//如果小明有钱且小明的钱大于0：
+                //{
+                //    string 如果指令 = 语句.Substring(2);
 
-                }
+                //}
                 #endregion
                 #region 直到
                 if (语句.StartsWith("直到"))
@@ -221,7 +240,11 @@ namespace Native.Csharp.App.Event.Event_Me
                                 {
                                     return "不干了！";
                                 }
-                                if (数据.私聊)
+                                if (数据.群聊目标 == null)
+                                {
+                                    Common.CqApi.SendDiscussMessage(数据.讨论组目标.FromDiscuss, 转义.输出(执行结果));
+                                }
+                                else if (数据.私聊)
                                 {
                                     Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 转义.输出(执行结果));
                                 }
@@ -259,10 +282,10 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     if (语句.Length != 2)
                     {
-                        数据.写入实体( "获取", "结果", 转义.内部输入(JSON.获取(语句.Substring(2))) );
+                        数据.写入实体("获取", "结果", 转义.内部输入(JSON.获取(语句.Substring(2))));
                         return "";
                     }
-                    数据.写入实体( "获取", "结果", 转义.内部输入(JSON.获取(数据.接口)) );
+                    数据.写入实体("获取", "结果", 转义.内部输入(JSON.获取(数据.接口)));
                     return "";
                 }
                 #endregion
@@ -275,7 +298,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     return 运算.骰子(语句);
                 }
-                
+
                 if (语句.ToLower().StartsWith("set"))
                 {
                     if (语句.Length > 3)
@@ -291,7 +314,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         }
                         else
                         {
-                            return 数据.报错+"\n默认骰必须是整数！";
+                            return 数据.报错 + "\n默认骰必须是整数！";
                         }
                     }
                     else//移除
@@ -311,11 +334,31 @@ namespace Native.Csharp.App.Event.Event_Me
                         数据.实体[数据.私聊目标.FromQQ.ToString()].Remove("昵称");
                         return "移除昵称成功！";
                     }
-                    
+
+                }
+                if (语句.ToLower().StartsWith("coc6d"))
+                {
+                    return 人物卡.COC6D();
                 }
                 if (语句.ToLower().StartsWith("coc7d") || 语句.ToLower().StartsWith("cocd"))
                 {
                     return 人物卡.COC7D();
+                }
+                if (语句.ToLower().StartsWith("coc6"))
+                {
+                    if (语句.ToLower() == "coc6")
+                    {
+                        语句 = "COC61";
+                    }
+                    try
+                    {
+                        int 次数 = Convert.ToInt32(语句.Substring(4).Trim());
+                        return 人物卡.COC6(次数);
+                    }
+                    catch (Exception)
+                    {
+                        return "错误：格式为COC [次数]";
+                    }
                 }
                 if (语句.ToLower().StartsWith("coc"))
                 {
@@ -396,87 +439,233 @@ namespace Native.Csharp.App.Event.Event_Me
                 #region 加减乘除
                 if (语句.Contains("+"))
                 {
+                    List<string> 内容 = new List<string>();
                     if (语句.Contains("的"))
                     {
-                        List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '+', '的' }, StringSplitOptions.RemoveEmptyEntries)));
-                        if (写入参数[0] == "我")
+                        内容 = new List<string>(new List<string>(语句.Split(new[] { '+', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        if (内容[0] == "我")
                         {
-                            写入参数[0] = 数据.私聊目标.FromQQ.ToString();
+                            内容[0] = 数据.私聊目标.FromQQ.ToString();
                         }
-                        写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "+" + 写入参数[2]);
-                        数据.写入实体(写入参数[0], 写入参数[1], 写入参数[2]);
+                        if (!数据.实体.ContainsKey(内容[0]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        else if (!数据.实体[内容[0]].ContainsKey(内容[1]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        内容[2] = new DataTable().Compute(数据.实体[内容[0]][内容[1]] + "+" + 内容[2], "").ToString();
+                        数据.写入实体(内容[0], 内容[1], 内容[2]);
                     }
                     else//不输入组件则默认为“值”组件
                     {
-                        List<string> 内容 = new List<string>(语句.Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries));
+                        内容 = new List<string>(语句.Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries));
                         内容.Insert(1, "值");
-                        内容[2] = 运算.计算(数据.实体[内容[0]][内容[1]] + "+" + 内容[2]);
+                        if (!数据.实体.ContainsKey(内容[0]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        else if (!数据.实体[内容[0]].ContainsKey(内容[1]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        内容[2] = new DataTable().Compute(数据.实体[内容[0]][内容[1]] + "+" + 内容[2], "").ToString();
                         数据.写入实体(内容[0], 内容[1], 内容[2]);
                     }
-                    return "";
+                    if (内容[0] == 数据.私聊目标.FromQQ.ToString())
+                    {
+                        内容[0] = 数据.获取昵称().TrimEnd('的');
+                    }
+                    if (数据.开发模式)
+                    {
+                        return "";
+                    }
+                    return $"{内容[0]}的{内容[1]}={内容[2]}";
                 }
                 if (语句.Contains("-"))
                 {
+                    List<string> 内容 = new List<string>();
                     if (语句.Contains("的"))
                     {
-                        List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '-', '的' }, StringSplitOptions.RemoveEmptyEntries)));
-                        if (写入参数[0] == "我")
+                        内容 = new List<string>(new List<string>(语句.Split(new[] { '-', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        if (内容[0] == "我")
                         {
-                            写入参数[0] = 数据.私聊目标.FromQQ.ToString();
+                            内容[0] = 数据.私聊目标.FromQQ.ToString();
                         }
-                        写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "-" + 写入参数[2]);
-                        数据.写入实体(写入参数[0], 写入参数[1], 写入参数[2]);
+                        if (!数据.实体.ContainsKey(内容[0]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        else if (!数据.实体[内容[0]].ContainsKey(内容[1]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        内容[2] = new DataTable().Compute(数据.实体[内容[0]][内容[1]] + "-" + 内容[2], "").ToString();
+                        数据.写入实体(内容[0], 内容[1], 内容[2]);
                     }
                     else//不输入组件则默认为“值”组件
                     {
-                        List<string> 内容 = new List<string>(语句.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries));
+                        内容 = new List<string>(语句.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries));
                         内容.Insert(1, "值");
-                        内容[2] = 运算.计算(数据.实体[内容[0]][内容[1]] + "-" + 内容[2]);
+                        if (!数据.实体.ContainsKey(内容[0]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        else if (!数据.实体[内容[0]].ContainsKey(内容[1]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        内容[2] = new DataTable().Compute(数据.实体[内容[0]][内容[1]] + "-" + 内容[2], "").ToString();
                         数据.写入实体(内容[0], 内容[1], 内容[2]);
                     }
-                    return "";
+                    if (内容[0] == 数据.私聊目标.FromQQ.ToString())
+                    {
+                        内容[0] = 数据.获取昵称().TrimEnd('的');
+                    }
+                    if (数据.开发模式)
+                    {
+                        return "";
+                    }
+                    return $"{内容[0]}的{内容[1]}={内容[2]}";
                 }
                 if (语句.Contains("*"))
                 {
+                    List<string> 内容 = new List<string>();
                     if (语句.Contains("的"))
                     {
-                        List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '*', '的' }, StringSplitOptions.RemoveEmptyEntries)));
-                        if (写入参数[0] == "我")
+                        内容 = new List<string>(new List<string>(语句.Split(new[] { '*', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        if (内容[0] == "我")
                         {
-                            写入参数[0] = 数据.私聊目标.FromQQ.ToString();
+                            内容[0] = 数据.私聊目标.FromQQ.ToString();
                         }
-                        写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "*" + 写入参数[2]);
-                        数据.写入实体(写入参数[0], 写入参数[1], 写入参数[2]);
+                        if (!数据.实体.ContainsKey(内容[0]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        else if (!数据.实体[内容[0]].ContainsKey(内容[1]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        内容[2] = new DataTable().Compute(数据.实体[内容[0]][内容[1]] + "*" + 内容[2], "").ToString();
+                        数据.写入实体(内容[0], 内容[1], 内容[2]);
                     }
                     else//不输入组件则默认为“值”组件
                     {
-                        List<string> 内容 = new List<string>(语句.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries));
+                        内容 = new List<string>(语句.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries));
                         内容.Insert(1, "值");
-                        内容[2] = 运算.计算(数据.实体[内容[0]][内容[1]] + "*" + 内容[2]);
+                        if (!数据.实体.ContainsKey(内容[0]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        else if (!数据.实体[内容[0]].ContainsKey(内容[1]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        内容[2] = new DataTable().Compute(数据.实体[内容[0]][内容[1]] + "*" + 内容[2], "").ToString();
                         数据.写入实体(内容[0], 内容[1], 内容[2]);
                     }
-                    return "";
+                    if (内容[0] == 数据.私聊目标.FromQQ.ToString())
+                    {
+                        内容[0] = 数据.获取昵称().TrimEnd('的');
+                    }
+                    if (数据.开发模式)
+                    {
+                        return "";
+                    }
+                    return $"{内容[0]}的{内容[1]}={内容[2]}";
                 }
                 if (语句.Contains("/"))
                 {
+                    List<string> 内容 = new List<string>();
                     if (语句.Contains("的"))
                     {
-                        List<string> 写入参数 = new List<string>(new List<string>(语句.Split(new[] { '/', '的' }, StringSplitOptions.RemoveEmptyEntries)));
-                        if (写入参数[0] == "我")
+                        内容 = new List<string>(new List<string>(语句.Split(new[] { '/', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        if (内容[0] == "我")
                         {
-                            写入参数[0] = 数据.私聊目标.FromQQ.ToString();
+                            内容[0] = 数据.私聊目标.FromQQ.ToString();
                         }
-                        写入参数[2] = 运算.计算(数据.实体[写入参数[0]][写入参数[1]] + "/" + 写入参数[2]);
-                        数据.写入实体(写入参数[0], 写入参数[1], 写入参数[2]);
+                        if (!数据.实体.ContainsKey(内容[0]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        else if (!数据.实体[内容[0]].ContainsKey(内容[1]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        内容[2] = new DataTable().Compute(数据.实体[内容[0]][内容[1]] + "/" + 内容[2], "").ToString();
+                        数据.写入实体(内容[0], 内容[1], 内容[2]);
                     }
                     else//不输入组件则默认为“值”组件
                     {
-                        List<string> 内容 = new List<string>(语句.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
+                        内容 = new List<string>(语句.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
                         内容.Insert(1, "值");
-                        内容[2] = 运算.计算(数据.实体[内容[0]][内容[1]] + "/" + 内容[2]);
+                        if (!数据.实体.ContainsKey(内容[0]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        else if (!数据.实体[内容[0]].ContainsKey(内容[1]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        内容[2] = new DataTable().Compute(数据.实体[内容[0]][内容[1]] + "/" + 内容[2], "").ToString();
                         数据.写入实体(内容[0], 内容[1], 内容[2]);
                     }
-                    return "";
+                    if (内容[0] == 数据.私聊目标.FromQQ.ToString())
+                    {
+                        内容[0] = 数据.获取昵称().TrimEnd('的');
+                    }
+                    if (数据.开发模式)
+                    {
+                        return "";
+                    }
+                    return $"{内容[0]}的{内容[1]}={内容[2]}";
+                }
+                if (语句.Contains("^"))
+                {
+                    List<string> 内容 = new List<string>();
+                    if (语句.Contains("的"))
+                    {
+                        内容 = new List<string>(new List<string>(语句.Split(new[] { '^', '的' }, StringSplitOptions.RemoveEmptyEntries)));
+                        if (内容[0] == "我")
+                        {
+                            内容[0] = 数据.私聊目标.FromQQ.ToString();
+                        }
+                        if (!数据.实体.ContainsKey(内容[0]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        else if (!数据.实体[内容[0]].ContainsKey(内容[1]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        内容[2] = Math.Pow(Convert.ToDouble(数据.实体[内容[0]][内容[1]]), Convert.ToDouble(内容[2])).ToString();
+                        数据.写入实体(内容[0], 内容[1], 内容[2]);
+                    }
+                    else//不输入组件则默认为“值”组件
+                    {
+                        内容 = new List<string>(语句.Split(new[] { '^' }, StringSplitOptions.RemoveEmptyEntries));
+                        内容.Insert(1, "值");
+                        if (!数据.实体.ContainsKey(内容[0]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        else if (!数据.实体[内容[0]].ContainsKey(内容[1]))
+                        {
+                            数据.写入实体(内容[0], 内容[1], "0");
+                        }
+                        内容[2] = Math.Pow(Convert.ToDouble(数据.实体[内容[0]][内容[1]]), Convert.ToDouble(内容[2])).ToString();
+                        数据.写入实体(内容[0], 内容[1], 内容[2]);
+                    }
+                    if (内容[0] == 数据.私聊目标.FromQQ.ToString())
+                    {
+                        内容[0] = 数据.获取昵称().TrimEnd('的');
+                    }
+                    if (数据.开发模式)
+                    {
+                        return "";
+                    }
+                    return $"{内容[0]}的{内容[1]}={内容[2]}";
                 }
                 #endregion
 
@@ -529,16 +718,16 @@ namespace Native.Csharp.App.Event.Event_Me
 
                                 string 替换内容 = "";
                                 List<string> 参数 = new List<string>(栈内容.Split(new[] { '的' }, StringSplitOptions.RemoveEmptyEntries));
+                                if (参数[0] == "我")
+                                {
+                                    参数[0] = 数据.私聊目标.FromQQ.ToString();
+                                }
                                 if (数据.实体.ContainsKey(参数[0]))
                                 {
                                     if (参数.Count == 1)
                                     {
                                         参数.Add("值");
                                     }
-                                    //if (参数[1] != "值")
-                                    //{
-                                    //    参数.Insert(1 ,"值");
-                                    //}
                                     if (数据.实体[参数[0]].ContainsKey(参数[1]))
                                     {
                                         替换内容 = 数据.实体[参数[0]][参数[1]];

@@ -9,6 +9,8 @@ namespace Native.Csharp.App.Event.Event_Me
 {
     public class 数据
     {
+        public static bool 开发模式 = false;
+
         public static bool 私聊
         {
             get;set;
@@ -54,9 +56,21 @@ namespace Native.Csharp.App.Event.Event_Me
             }
         }
 
-        public const string 帮助 = 
+        public const string 帮助 =
             @"桌游姬方若茗V0.1.0229
-帮助文档：https://shimo.im/docs/dqcWQvHjk38QtRq3/";
+帮助文档：https://shimo.im/docs/dqcWQvHjk38QtRq3/
+<部分指令>(*号表示必填参数)
+.rd [掷骰表达式*] [原因]			普通掷骰
+.nn [名称]					设置/删除昵称
+.w/ww XaY						骰池
+.set [1-99999之间的整数]			设置默认骰
+.dnd [个数]					DND人物作成
+.coc7/6 [个数]					COC7/6人物作成
+.coc7/6d					详细版COC7/6人物作成
+.ti/li					疯狂发作-临时/总结症状
+.jrrp [on/off]				今日人品检定
+.help						显示帮助
+.开启/关闭 [机器人QQ号/QQ号后4位]		机器人开启或关闭";
 
         public static string 临时空间
         {
@@ -78,6 +92,10 @@ namespace Native.Csharp.App.Event.Event_Me
             get;set;
         }
         public static CqPrivateMessageEventArgs 私聊目标
+        {
+            get; set;
+        }
+        public static CqDiscussMessageEventArgs 讨论组目标
         {
             get; set;
         }
@@ -111,7 +129,7 @@ namespace Native.Csharp.App.Event.Event_Me
         public static string 获取昵称()
         {
             string 昵称 = "";
-            if (!私聊)
+            if (!私聊 && 群聊目标 != null)
             {
                 GroupMember 群友 = 娶群友(群聊目标.FromQQ);
                 昵称 = string.IsNullOrWhiteSpace(群友.Card)//取群名片

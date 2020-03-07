@@ -14,7 +14,12 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 return "";
             }
-            System.GC.Collect();
+            接口 = 转义.输出(接口);//取消转义
+            接口 = System.Web.HttpUtility.UrlEncode(接口);
+            //接口 = System.Web.HttpUtility.UrlEncode(接口, Encoding.GetEncoding("GB2312"));//将简体汉字转换为Url编码
+            //接口 = System.Web.HttpUtility.UrlEncode(接口, Encoding.GetEncoding("BIG5"));//将繁体汉字转换为Url
+            接口 = 接口.Replace("%3a", ":").Replace("%2f", "/").Replace("%3f", "?").Replace("%3d", "=").Replace("%26amp%3b", "&");
+            GC.Collect();
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(接口);
             request.Proxy = null;
             request.KeepAlive = false;

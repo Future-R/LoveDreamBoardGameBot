@@ -13,7 +13,9 @@ namespace Native.Csharp.App.Event.Event_Me
 
             //str += ex.Message + "\n";//异常消息
             //str += ex.StackTrace + "\n";//提示出错位置，不会定位到方法内部去
-            str += "\n"
+            if (数据.开发模式)
+            {
+                str += "\n"
                 + 数据.实体["输入"]["语句"] + "\n"
                 + ex.ToString().
                     Replace("Native.Csharp.App.Event.Event_Me.", "").
@@ -27,6 +29,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     Replace("Event_ReceiveGroupMessage.ReceiveGroupMessage(Object sender, CqGroupMessageEventArgs e)", "主程序").
                     Replace("Event_ReceiveFriendMessage.ReceiveGroupMessage(Object sender, CqGroupMessageEventArgs e)", "主程序").
                     Replace("Event_ReceiveFriendMessage.ReceiveFriendMessage(Object sender, CqPrivateMessageEventArgs e)", "主程序");//将方法内部和外部所有出错的位置提示出来
+            }
             return str;
         }
     }

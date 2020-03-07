@@ -235,7 +235,7 @@ namespace Native.Csharp.App.Event.Event_Me
     "臆盲症（Typhlomania）：病理性的失明。" + "#" +
     "嗜外狂（Xenomania）：痴迷于异国的事物。" + "#" +
     "喜兽癖（Zoomania）：对待动物的态度近乎疯狂地友好。";
-#endregion
+        #endregion
         public static string COC7D()
         {
             string 昵称 = 获取昵称();
@@ -287,7 +287,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 体格 = 2;
             }
 
-            return $@"{昵称}COC7人物作成：
+            return $@"{昵称}COC7版人物作成：
 力量STR=3D6*5={力量STR}/{力量STR / 2}/{力量STR / 5}
 体质CON=3D6*5={体质CON}/{体质CON / 2}/{体质CON / 5}
 体型SIZ=(2D6+6)*5={体型SIZ}/{体型SIZ / 2}/{体型SIZ / 5}
@@ -306,6 +306,60 @@ namespace Native.Csharp.App.Event.Event_Me
 移动力MOV={移动力MOV}";
         }
 
+        public static string COC6D()
+        {
+            string 昵称 = 获取昵称();
+            int 力量STR = 骰点("3D6");
+            int 体质CON = 骰点("3D6");
+            int 体型SIZ = 骰点("2D6+6");
+            int 敏捷DEX = 骰点("3D6");
+            int 外貌APP = 骰点("3D6");
+            int 智力INT = 骰点("2D6+6");
+            int 意志POW = 骰点("3D6");
+            int 教育EDU = 骰点("3D6+3");
+
+            string 伤害奖励DB = "不可名状";
+            if (力量STR + 体型SIZ >= 2 && 力量STR + 体型SIZ <= 12)
+            {
+                伤害奖励DB = "-1D6";
+            }
+            else if (力量STR + 体型SIZ >= 13 && 力量STR + 体型SIZ <= 16)
+            {
+                伤害奖励DB = "-1D4";
+            }
+            else if (力量STR + 体型SIZ >= 17 && 力量STR + 体型SIZ <= 24)
+            {
+                伤害奖励DB = "0";
+            }
+            else if (力量STR + 体型SIZ >= 25 && 力量STR + 体型SIZ <= 32)
+            {
+                伤害奖励DB = "1D4";
+            }
+            else if (力量STR + 体型SIZ >= 33 && 力量STR + 体型SIZ <= 40)
+            {
+                伤害奖励DB = "1D6";
+            }
+
+            return $@"{昵称}COC6版人物作成：
+力量STR=3D6={力量STR}
+体质CON=3D6={体质CON}
+体型SIZ=2D6+6={体型SIZ}
+敏捷DEX=3D6={敏捷DEX}
+外貌APP=3D6={外貌APP}
+智力INT=2D6+6={智力INT}
+意志POW=3D6={意志POW}
+教育EDU=3D6+3={教育EDU}
+共计:{力量STR + 体质CON + 体型SIZ + 敏捷DEX + 外貌APP + 智力INT + 意志POW + 教育EDU}
+理智SAN=POW*5={意志POW * 5}
+灵感IDEA=INT*5={智力INT * 5}
+幸运LUCK=POW*5={意志POW * 5}
+知识KNOW=EDU*5={教育EDU * 5}
+生命值HP=(CON+SIZ)/2={(体质CON + 体型SIZ) / 2}
+魔法值MP=POW={意志POW}
+伤害奖励DB={伤害奖励DB}
+资产=1D10={骰点("1D10")}";
+        }
+
         public static string COC7(int 次数)
         {
             if (次数 > 10)
@@ -316,20 +370,47 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 次数 = 1;
             }
-            string 返回值 = 获取昵称() + "COC7人物作成：\n";
+            string 返回值 = 获取昵称() + "COC7人物作成：";
             for (int i = 0; i < 次数; i++)
             {
-                int 力量STR = 骰点("R3D6*5");
-                int 体质CON = 骰点("R3D6*5");
-                int 体型SIZ = 骰点("R(2D6+6)*5");
-                int 敏捷DEX = 骰点("R3D6*5");
-                int 外貌APP = 骰点("R3D6*5");
-                int 智力INT = 骰点("R(2D6+6)*5");
-                int 意志POW = 骰点("R3D6*5");
-                int 教育EDU = 骰点("R(2D6+6)*5");
-                int 幸运LUCK = 骰点("R3D6*5");
-                返回值 += $"力量:{力量STR} 体质:{体质CON} 体型:{体型SIZ} 敏捷:{敏捷DEX} 外貌:{外貌APP} 智力:{智力INT} 意志:{意志POW} 教育:{教育EDU} 幸运:{幸运LUCK} ";
-                返回值 += $"共计:{力量STR + 体质CON + 体型SIZ + 敏捷DEX + 外貌APP + 智力INT + 意志POW + 教育EDU + 幸运LUCK}\n";
+                int 力量STR = 骰点("3D6*5");
+                int 体质CON = 骰点("3D6*5");
+                int 体型SIZ = 骰点("(2D6+6)*5");
+                int 敏捷DEX = 骰点("3D6*5");
+                int 外貌APP = 骰点("3D6*5");
+                int 智力INT = 骰点("(2D6+6)*5");
+                int 意志POW = 骰点("3D6*5");
+                int 教育EDU = 骰点("(2D6+6)*5");
+                int 幸运LUCK = 骰点("3D6*5");
+                返回值 += $"\n力量:{力量STR} 体质:{体质CON} 体型:{体型SIZ} 敏捷:{敏捷DEX} 外貌:{外貌APP} 智力:{智力INT} 意志:{意志POW} 教育:{教育EDU} 幸运:{幸运LUCK} ";
+                返回值 += $"共计:{力量STR + 体质CON + 体型SIZ + 敏捷DEX + 外貌APP + 智力INT + 意志POW + 教育EDU + 幸运LUCK}";
+            }
+            return 返回值;
+        }
+
+        public static string COC6(int 次数)
+        {
+            if (次数 > 10)
+            {
+                次数 = 10;
+            }
+            if (次数 < 1)
+            {
+                次数 = 1;
+            }
+            string 返回值 = 获取昵称() + "COC6人物作成：";
+            for (int i = 0; i < 次数; i++)
+            {
+                int 力量STR = 骰点("3D6");
+                int 体质CON = 骰点("3D6");
+                int 体型SIZ = 骰点("2D6+6");
+                int 敏捷DEX = 骰点("3D6");
+                int 外貌APP = 骰点("3D6");
+                int 智力INT = 骰点("2D6+6");
+                int 意志POW = 骰点("3D6");
+                int 教育EDU = 骰点("3D6+3");
+                返回值 += $"\n力量:{力量STR} 体质:{体质CON} 体型:{体型SIZ} 敏捷:{敏捷DEX} 外貌:{外貌APP} 智力:{智力INT} 意志:{意志POW} 教育:{教育EDU} ";
+                返回值 += $"共计:{力量STR + 体质CON + 体型SIZ + 敏捷DEX + 外貌APP + 智力INT + 意志POW + 教育EDU}";
             }
             return 返回值;
         }
@@ -411,7 +492,7 @@ namespace Native.Csharp.App.Event.Event_Me
         static int 骰点(string 表达式)
         {
             运算.骰子(表达式);
-            return Convert.ToInt32(数据.读取组件("上次的骰点"));
+            return Convert.ToInt32(读取组件("上次的骰点"));
         }
     }
 }
