@@ -28,6 +28,8 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static List<string> 反义词典 => new List<string>(词典读取.Split(new string[] { "A", Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries));
 
+        public static Dictionary<string, string> DND核心法术 = null;
+
         public static bool 转义
         {
             get;set;

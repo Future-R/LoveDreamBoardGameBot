@@ -322,6 +322,19 @@ namespace Native.Csharp.App.Event.Event_Me
                         数据.实体[数据.私聊目标.FromQQ.ToString()].Remove("默认骰");
                     }
                 }
+
+                if (语句.ToLower().StartsWith("dnd查询") && 语句.ToLower() != "dnd查询")
+                {
+                    string 参数 = 语句.Substring(5).Trim().ToLower();
+                    if (数据.DND核心法术.ContainsKey(参数))
+                    {
+                        return 数据.DND核心法术[参数];
+                    }
+                    else
+                    {
+                        return $"找不到名为{参数}的DND3R核心法术！";
+                    }
+                }
                 if (语句.ToLower().StartsWith("nn"))
                 {
                     if (语句.Length > 2)
