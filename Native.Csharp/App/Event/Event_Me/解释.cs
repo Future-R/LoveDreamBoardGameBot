@@ -214,11 +214,42 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 #endregion
                 #region 如果
-                //if (语句.StartsWith("如果"))//如果小明有钱且小明的钱大于0：
-                //{
-                //    string 如果指令 = 语句.Substring(2);
+                if (语句.StartsWith("如果"))
+                {
+                    string 判别式 = 语句.Substring(2, 语句.IndexOf("：") - 2);
+                    List<string> 语句集 = new List<string>(
+                            语句.Substring(语句.IndexOf("：") + 1)
+                            .Split(new[] { '；' }, StringSplitOptions.RemoveEmptyEntries));
 
-                //}
+                    if (判定(判别式))
+                    {
+                        foreach (var 子语句 in 语句集)
+                        {
+                            string 执行结果 = 执行(子语句.Trim());
+                            if (执行结果 != "")
+                            {
+                                数据.发送次数++;
+                                if (数据.发送次数 > 9)
+                                {
+                                    return "不干了！";
+                                }
+                                if (数据.群聊目标 == null)
+                                {
+                                    Common.CqApi.SendDiscussMessage(数据.讨论组目标.FromDiscuss, 转义.输出(执行结果));
+                                }
+                                else if (数据.私聊)
+                                {
+                                    Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 转义.输出(执行结果));
+                                }
+                                else
+                                {
+                                    Common.CqApi.SendGroupMessage(数据.群聊目标.FromGroup, 转义.输出(执行结果));
+                                }
+                            }
+                        }
+                    }
+                    return "";
+                }
                 #endregion
                 #region 直到
                 if (语句.StartsWith("直到"))
@@ -852,6 +883,11 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 模式 = "结尾是";
                 委托 = new 数据.布尔委托(比较.结尾是);
+            }
+            else if (判别式.Contains("="))
+            {
+                模式 = "=";
+                委托 = new 数据.布尔委托(比较.等于);
             }
 
             List<string> 集合 = new List<string>(判别式.Split(new string[] { 模式 }, StringSplitOptions.RemoveEmptyEntries));

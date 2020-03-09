@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Native.Csharp.App.Event.Event_Me
 {
@@ -42,6 +43,10 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 return 目标文本.PadLeft(Convert.ToInt32(参数.Substring(3))).ToString();
             }
+            else if (参数.StartsWith("正则"))
+            {
+                return Regex.Match(目标文本,参数.Substring(2)).Value;
+            }
             else if (参数.StartsWith("替换"))
             {
                 参数 = 参数.Substring(2);
@@ -58,7 +63,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     return 目标文本;
                 }
-                return 目标文本.Replace(目标[0], 目标[1]).Replace("换行", Environment.NewLine);
+                return 目标文本.Replace(目标[0], 目标[1]).Replace("“换行”", Environment.NewLine);
             }
             else if (参数.StartsWith("从"))
             {

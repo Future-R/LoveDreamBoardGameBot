@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Native.Csharp.Sdk.Cqp.Model;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -32,6 +33,9 @@ namespace Native.Csharp.App.Event.Event_Me
                 数据.上次调用接口的时间 = Event_CqAppEnable.启动时间;
             }
             数据.写入实体("现在","时间", $"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0, 8).Replace(":", "")}");
+            数据.写入实体("用户", "QQ", 数据.私聊目标.FromQQ.ToString());
+            QQInfo 好友 = Common.CqApi.GetQQInfo(数据.私聊目标.FromQQ);
+            数据.写入实体("用户", "昵称", 数据.获取昵称().TrimEnd('的'));
             if (数据.实体.ContainsKey("COC"))//初始化COC的恐惧症和狂躁症
             {
                 if (!数据.实体["COC"].ContainsKey("恐惧症"))
