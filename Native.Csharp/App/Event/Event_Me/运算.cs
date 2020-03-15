@@ -167,7 +167,7 @@ namespace Native.Csharp.App.Event.Event_Me
             }
 
             //提供默认值
-            string 骰子面 = "100"; string 骰池面 = "10"; string 加骰值 = "8";
+            string 骰子面 = "100"; string 骰池面 = "10"; string 成功值 = "8";
             //读取玩家设置
             if (是纯数(数据.读取组件("我的默认骰")))
             {
@@ -179,7 +179,7 @@ namespace Native.Csharp.App.Event.Event_Me
             }
             if (是纯数(数据.读取组件("我的加骰值")))
             {
-                加骰值 = 数据.读取组件("我的加骰值");
+                成功值 = 数据.读取组件("我的成功值");
             }
 
             //wod骰补全
@@ -245,24 +245,24 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 返回值 += $"{昵称.TrimEnd('的')}骰出了";
             }
-            string 计算结果 = 后缀计算(中缀转后缀(中缀分词), string.Join("", 中缀分词.ToArray()), 骰池面, 加骰值, 展示详情);
+            string 计算结果 = 后缀计算(中缀转后缀(中缀分词), string.Join("", 中缀分词.ToArray()), 骰池面, 成功值, 展示详情);
             if (计算结果.StartsWith("错误"))
             {
                 return 计算结果;
             }
             if (计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1] ==
-                new DataTable().Compute(计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1],"").ToString())
+                new DataTable().Compute(计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1], "").ToString())
             {
                 数据.写入实体("上次", "骰点", 计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1]);
                 return 返回值 + 计算结果;
             }
-            数据.写入实体("上次", "骰点", new DataTable().Compute(计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1],"").ToString());
+            数据.写入实体("上次", "骰点", new DataTable().Compute(计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1], "").ToString());
             return 返回值 + 计算结果 + "=" +
-                new DataTable().Compute(计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1],"").ToString();
+                new DataTable().Compute(计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[计算结果.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1], "").ToString();
 
         }
 
-        public static string 后缀计算(List<string> 计算表, string 计算过程, string 骰池面, string 加骰值, bool 骰池详情)
+        public static string 后缀计算(List<string> 计算表, string 计算过程, string 骰池面, string 成功值, bool 骰池详情)
         {
             Stack<string> 计算结果 = new Stack<string>();
             foreach (var 元素 in 计算表)
@@ -318,7 +318,7 @@ namespace Native.Csharp.App.Event.Event_Me
                             计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                 [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
                                 Replace($"{参数1}{元素}{参数2}", 返回结果).
-                                Replace($"({参数1}){元素}{参数2}",返回结果).
+                                Replace($"({参数1}){元素}{参数2}", 返回结果).
                                 Replace($"{参数1}{元素}({参数2})", 返回结果).
                                 Replace($"({参数1}){元素}({参数2})", 返回结果);
                             break;
@@ -326,7 +326,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         case "D":
                             参数2 = Convert.ToDecimal(计算结果.Pop());
                             参数1 = Convert.ToDecimal(计算结果.Pop());
-                            if (参数1 > 999 || 参数2 > 65535 || 参数1 < 1 || 参数2 < -65535)
+                            if (参数1 > 4096 || 参数2 > 65535 || 参数1 < 1 || 参数2 < -65535)
                             {
                                 return $"错误：{参数1}{元素}{参数2}非法！";
                             }
@@ -368,57 +368,62 @@ namespace Native.Csharp.App.Event.Event_Me
                                 Replace($"{参数1}{元素}({参数2})", 返回结果).
                                 Replace($"({参数1}){元素}({参数2})", 返回结果);
                             }
-                            
+
                             //计算过程 += $"【{参数1}D{参数2}】=({骰池算式})={返回结果};{Environment.NewLine}";
                             break;
 
                         case "A":
-                            参数2 = Convert.ToDecimal(计算结果.Pop());
-                            参数1 = Convert.ToDecimal(计算结果.Pop());
-                            if (参数1 > 999 || 参数2 > 99 || 参数1 < 1 || 参数2 < 1)
+                            参数2 = Convert.ToDecimal(计算结果.Pop());//加骰值
+                            参数1 = Convert.ToDecimal(计算结果.Pop());//枚数
+                            if (参数2 > 999 || 参数1 < 1 || 参数2 < 2)
                             {
                                 return $"错误：{参数1}{元素}{参数2}非法！";
                             }
+                            if (参数1 > 4096 && 骰池详情)
+                            {
+                                return $"错误：{参数1}{元素}{参数2}结果太长了无法显示！";
+                            }
 
                             bool 加骰 = true; string 加骰结果 = "{ "; int 成功数 = 0; int 加骰数 = 0; decimal 临时参数1 = 参数1;
-                            while (加骰)
-                            {
-                                加骰结果 += "+(";
-                                加骰 = false;
-                                if (加骰数 > 临时参数1)
-                                {
-                                    临时参数1 = 加骰数 - 临时参数1;
-                                }
-                                else if (加骰数 != 0)
-                                {
-                                    临时参数1 = 加骰数;
-                                }
-                                for (int i = 0; i < 临时参数1; i++)
-                                {
-                                    if (加骰数 > 999)
-                                    {
-                                        return $"错误：一个不可名状的内容。";
-                                    }
-                                    int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(骰池面)) + 1;
-                                    加骰结果 += rd.ToString() + ",";
-                                    if (rd >= 参数2)
-                                    {
-                                        加骰数++;
-                                        加骰 = true;
-                                    }
-                                    if (rd >= Convert.ToDecimal(加骰值))
-                                    {
-                                        成功数++;
-                                    }
-                                }
-                                加骰结果 += ")";
-                                加骰结果 = 加骰结果.Remove(加骰结果.Length - 2, 1);
-                            }
-                            加骰结果 = 加骰结果.Remove(2,1);
-                            返回结果 = 成功数.ToString();
-
                             if (骰池详情)
                             {
+                                while (加骰)
+                                {
+                                    加骰结果 += "+(";
+                                    if (加骰结果.Length > 5000)
+                                    {
+                                        return $"错误：{参数1}A{参数2}结果太长：{加骰结果}……{Environment.NewLine}" +
+                                            $"≈{骰池成功数(Convert.ToDecimal(参数1), Convert.ToDecimal(骰池面), Convert.ToDecimal(参数2), Convert.ToDecimal(成功值))}";
+                                    }
+                                    加骰 = false;
+                                    if (加骰数 > 临时参数1)
+                                    {
+                                        临时参数1 = 加骰数 - 临时参数1;
+                                    }
+                                    else if (加骰数 != 0)
+                                    {
+                                        临时参数1 = 加骰数;
+                                    }
+                                    for (int i = 0; i < 临时参数1; i++)
+                                    {
+                                        int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(骰池面)) + 1;
+                                        加骰结果 += rd.ToString() + ",";
+                                        if (rd >= 参数2)
+                                        {
+                                            加骰数++;
+                                            加骰 = true;
+                                        }
+                                        if (rd >= Convert.ToDecimal(成功值))
+                                        {
+                                            成功数++;
+                                        }
+                                    }
+                                    加骰结果 += ")";
+                                    加骰结果 = 加骰结果.Remove(加骰结果.Length - 2, 1);
+                                }
+                                加骰结果 = 加骰结果.Remove(2, 1);
+                                返回结果 = 成功数.ToString();
+
                                 计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                     [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
                                     Replace($"{参数1}A{参数2}", $"{加骰结果} }}").
@@ -434,6 +439,40 @@ namespace Native.Csharp.App.Event.Event_Me
                             }
                             else
                             {
+                                #region 注释
+                                //while (加骰)
+                                //{
+                                //    加骰 = false;
+                                //    if (加骰数 > 临时参数1)
+                                //    {
+                                //        临时参数1 = 加骰数 - 临时参数1;
+                                //    }
+                                //    else if (加骰数 != 0)
+                                //    {
+                                //        临时参数1 = 加骰数;
+                                //    }
+                                //    for (int i = 0; i < 临时参数1; i++)
+                                //    {
+                                //        if (加骰数 > 999999)
+                                //        {
+                                //            return $"错误：一个不可名状的内容。";
+                                //        }
+                                //        int rd = new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(骰池面)) + 1;
+                                //        if (rd >= 参数2)
+                                //        {
+                                //            加骰数++;
+                                //            加骰 = true;
+                                //        }
+                                //        if (rd >= Convert.ToDecimal(加骰值))
+                                //        {
+                                //            成功数++;
+                                //        }
+                                //    }
+                                //}
+                                #endregion
+
+                                返回结果 = 骰池成功数(Convert.ToDecimal(参数1), Convert.ToDecimal(骰池面), Convert.ToDecimal(参数2), Convert.ToDecimal(成功值));
+
                                 计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                     [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
                                     Replace($"{参数1}A{参数2}", 返回结果).
@@ -465,7 +504,7 @@ namespace Native.Csharp.App.Event.Event_Me
                             }
                             取骰池.Sort();
                             取骰池.RemoveRange(0, Convert.ToInt32(取骰池.Count - 参数2));
-                            返回结果 = new DataTable().Compute(string.Join("+", 取骰池),"").ToString();
+                            返回结果 = new DataTable().Compute(string.Join("+", 取骰池), "").ToString();
 
                             计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                     [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
@@ -483,11 +522,11 @@ namespace Native.Csharp.App.Event.Event_Me
                             string 骰池 = "";
                             for (int i = 0; i < 参数2; i++)
                             {
-                                骰池 += new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(10)) + " ";
+                                骰池 += new Random(Guid.NewGuid().GetHashCode()).Next(0, 10) + " ";
                             }
                             List<string> 骰池表 = new List<string>(骰池.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
                             string 待替换 = (参数1 % 100).ToString();
-                            string 个位数 = (待替换.Length == 1) ? 待替换 : 待替换.Substring(1,1);
+                            string 个位数 = (待替换.Length == 1) ? 待替换 : 待替换.Substring(1, 1);
                             骰池表.Add(待替换.Substring(0, 1));//先加进来排序，一会儿处理完删掉
                             List<string> 骰池表排序 = new List<string>(骰池表);
                             骰池表排序.Sort();//0124458
@@ -499,7 +538,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                     Replace($"{参数1}B{参数2}", $"{参数1}[奖励骰:{string.Join(" ", 骰池表)}]")
                                     + "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                     [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
-                                    Replace($"{参数1}B{参数2}", 骰池表排序[0]+个位数);
+                                    Replace($"{参数1}B{参数2}", 骰池表排序[0] + 个位数);
                             }
                             else
                             {
@@ -695,7 +734,14 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     if (遍历位置 == 0)
                     {
-                        临时修改中继表达式.Insert(0, "1");
+                        if (元素 == "D")
+                        {
+                            临时修改中继表达式.Insert(0, "1");
+                        }
+                        else
+                        {
+                            临时修改中继表达式.Insert(0, "10");
+                        }
                         遍历位置++;
                     }
                     else if (!是纯数(临时修改中继表达式[遍历位置 - 1]) || "+-".Contains(临时修改中继表达式[遍历位置 - 1]))
@@ -809,6 +855,55 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        ///  投掷【20】枚【10】面骰子，其中大于【9】的加骰，计算骰池中大于等于【8】的值
+        /// </summary>
+        /// <param name="枚数"></param>
+        /// <param name="面数"></param>
+        /// <param name="加骰值"></param>
+        /// <param name="成功值"></param>
+        /// <returns></returns>
+        static string 骰池成功数(decimal 枚数, decimal 面数, decimal 加骰值, decimal 成功值)
+        {
+            decimal 成功率 = 1 - ((成功值 - 1) / 面数);
+            if (成功率 == 0)
+            {
+                return "0";
+            }
+
+            decimal 触发率 = 1 - ((加骰值 - 1) / 面数);
+            if (触发率 == 1)
+            {
+                return "∞";
+            }
+            if (触发率 == 0)
+            {
+                return 枚数.ToString();
+            }
+
+            decimal 触发率偏移 = Convert.ToDecimal(Math.Sin(new Random(Guid.NewGuid().GetHashCode()).Next(0, 900) / 100d) + 0.1d);//sin(0.00~0.89)+0.1
+            decimal 偏移修正 = Convert.ToDecimal(Math.Pow(new Random(Guid.NewGuid().GetHashCode()).Next(90, 200) / 100d, 1.5d));//(0.80~1.99)^1.5
+            触发率 *= 触发率偏移 / 偏移修正;
+
+            decimal 骰池大概数量 = 枚数;
+            骰池大概数量 += Math.Floor(骰池大概数量 * 触发率);
+            if (成功率 > 0.99m)
+            {
+                return 骰池大概数量.ToString();
+            }
+            成功率 += new Random(Guid.NewGuid().GetHashCode()).Next(-10, 16) / 100m;//-0.10~+0.15
+            if (成功率 > 0.99m)
+            {
+                return 骰池大概数量.ToString();
+            }
+            if (成功率 < 0.02m)
+            {
+                return "0";
+            }
+            int 最后修正 = new Random(Guid.NewGuid().GetHashCode()).Next(-1, 3);//-1~+2
+            return (Math.Floor(骰池大概数量 * 成功率) + 最后修正).ToString();
         }
 
         //public static void 等式运算(string 算式)

@@ -51,6 +51,33 @@ namespace Native.Csharp.App.Event.Event_Me
                     }
                     return;
                 }
+                if (用户输入.StartsWith("退群"))
+                {
+                    if (用户输入.Length == 2)
+                    {
+                        if (数据.娶群友(数据.私聊目标.FromQQ).PermitType == Sdk.Cqp.Enum.PermitType.None)
+                        {
+                            Common.CqApi.SendGroupMessage(数据.群聊目标.FromGroup, 数据.报错+"需要黄帽或绿帽！");
+                        }
+                        else
+                        {
+                            Common.CqApi.SetGroupExit(数据.群聊目标.FromGroup);
+                        }
+                    }
+                    else if (用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString() ||
+                        用户输入.Substring(2).Trim() == Common.CqApi.GetLoginQQ().ToString().Substring(Common.CqApi.GetLoginQQ().ToString().Length - 4, 4))
+                    {
+                        if (数据.娶群友(数据.私聊目标.FromQQ).PermitType == Sdk.Cqp.Enum.PermitType.None)
+                        {
+                            Common.CqApi.SendGroupMessage(数据.群聊目标.FromGroup, 数据.报错 + "需要黄帽或绿帽！");
+                        }
+                        else
+                        {
+                            Common.CqApi.SetGroupExit(数据.群聊目标.FromGroup);
+                        }
+                    }
+                    return;
+                }
             }
 
             if (!数据.私聊 && 操作.机器人开关.Contains(数据.群聊目标.FromGroup))

@@ -52,27 +52,31 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     "我懵了。", "哎？", "不对……", "怎么回事？", "什么情况？",
                     "奇怪的错误……", "搞错了吧？" , "……", "又来了……" , "¿",
-                    "菜", "算了吧……" , "唔。", "瞎输啥啊……" , "[CQ:face,id=14]" , "[CQ:face,id=39]"
+                    "菜", "算了吧……" , "唔。", "瞎输啥啊……" , "[CQ:face,id=14]" , "[CQ:face,id=39]",
+                    "麻烦看一下帮助文档https://shimo.im/docs/dqcWQvHjk38QtRq3"
                 }
-                [new Random(Guid.NewGuid().GetHashCode()).Next(0, 16)];
+                [new Random(Guid.NewGuid().GetHashCode()).Next(0, 17)];
             }
         }
 
         public const string 帮助 =
-            @"桌游姬方若茗V0.1.0229
-帮助文档：https://shimo.im/docs/dqcWQvHjk38QtRq3/
+            @"桌游姬方若茗V0.1.0309
 <部分指令>(*号表示必填参数)
 .rd [掷骰表达式*] [原因]			普通掷骰
-.nn [名称]					设置/删除昵称
-.w/ww XaY						骰池
-.set [1-99999之间的整数]			设置默认骰
-.dnd [个数]					DND人物作成
-.coc7/6 [个数]					COC7/6人物作成
+.nn [名称]                设置/删除昵称
+.w/ww XaY               骰池
+.set [1-99999之间的整数]     设置默认骰
+.dnd [个数]	                DND人物作成
+.coc7/6 [个数]            COC7/6人物作成
 .coc7/6d					详细版COC7/6人物作成
-.ti/li					疯狂发作-临时/总结症状
-.jrrp [on/off]				今日人品检定
+.dnd查询 [名称]             查询DND法术、专长、物品
+.ti/li                  疯狂发作-临时/总结症状
+.jrrp       			今日人品检定
 .help						显示帮助
-.开启/关闭 [机器人QQ号/QQ号后4位]		机器人开启或关闭";
+.开启/关闭 [机器人QQ号/QQ号后4位]		机器人开启或关闭
+.退群 [机器人QQ号/QQ号后4位]		机器人退群（群管权限）
+
+完整指令看这里：https://shimo.im/docs/dqcWQvHjk38QtRq3/";
 
         public static string 临时空间
         {
