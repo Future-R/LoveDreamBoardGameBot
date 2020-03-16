@@ -23,10 +23,9 @@ namespace Native.Csharp.App.Event.Event_Me
         {
             Event_Variable.isGroup = true;
             string input = e.Message.Replace("&#91;", "[").Replace("&#93;", "]");
-            Event_Variable.QQQ = e.FromQQ;
             Event_Variable.varDelay = false;
             Event_Variable.varNeedExp = true;
-            Event_Variable.idNum = e.FromGroup;
+            
 
             input = new Regex("[\\s]+").Replace(input, " ");//合并复数空格
             input = input.Trim();//去除前后空格
@@ -211,7 +210,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                     vvc++;
                                 }
                             }
-                            Event_OriginalCommand.CommandIn(temp, e.FromGroup, true);
+                            Event_OriginalCommand.CommandIn(temp, e.FromGroup, true, e.FromQQ, e.FromGroup);
                             e.Handler = Event_Variable.cutDown;
                         }
                     }
@@ -234,7 +233,7 @@ namespace Native.Csharp.App.Event.Event_Me
                             vvc++;
                         }
                     }
-                    Event_OriginalCommand.CommandIn(input, e.FromGroup, true);//查一下是不是固有指令
+                    Event_OriginalCommand.CommandIn(input, e.FromGroup, true, e.FromQQ, e.FromGroup);//查一下是不是固有指令
                     e.Handler = Event_Variable.cutDown;
                 }
             }

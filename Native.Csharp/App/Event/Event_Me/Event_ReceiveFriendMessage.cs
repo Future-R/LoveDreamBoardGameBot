@@ -16,10 +16,8 @@ namespace Native.Csharp.App.Event.Event_Me
         {
             Event_Variable.isGroup = false;
             string input = e.Message.Replace("&#91;", "[").Replace("&#93;", "]");
-            Event_Variable.QQQ = e.FromQQ;
             Event_Variable.varDelay = false;
             Event_Variable.varNeedExp = true;
-            Event_Variable.idNum = e.FromQQ;
             try
             {
                 //检查是否启用变量延迟解释
@@ -136,7 +134,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                     vvc++;
                                 }
                             }
-                            Event_OriginalCommand.CommandIn(temp, e.FromQQ);
+                            Event_OriginalCommand.CommandIn(temp, e.FromQQ, e.FromQQ, e.FromQQ);
                             e.Handler = Event_Variable.cutDown;
                         }
                     }
@@ -159,7 +157,7 @@ namespace Native.Csharp.App.Event.Event_Me
                             vvc++;
                         }
                     }
-                    Event_OriginalCommand.CommandIn(input, e.FromQQ);//查一下是不是固有指令
+                    Event_OriginalCommand.CommandIn(input, e.FromQQ, e.FromQQ, e.FromQQ);//查一下是不是固有指令
                     e.Handler = Event_Variable.cutDown;
                 }
             }

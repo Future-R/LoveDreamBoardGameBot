@@ -119,7 +119,7 @@ namespace Native.Csharp.App.Event.Event_Me
         /// <summary>
         /// 帮助描述
         /// </summary>
-        public static string helpDescription = $@"恋梦桌游姬V1.2.0 By未来菌
+        public static string helpDescription = $@"恋梦桌游姬V1.2.1 By未来菌
 输入'.帮助 [指令名]'查看对应指令的详细解释
 方括号内为参数，带*的为选填参数,带!的为自动补全参数：
 .计算 [算式]
@@ -165,6 +165,8 @@ namespace Native.Csharp.App.Event.Event_Me
         /// 更新日志描述
         /// </summary>
         public static string updateLogDescription = @"更新日志：
+Ver1.2.1：
+修复多人同时使用可能导致的BUG。
 Ver1.2.0（究极史诗黄金豪华嘉年华最终典藏版Plus）：
 骰子指令全面升级；新增环境变量时点、缓存；'如果'指令现在支持包含判断；现在回复时会标注对象昵称，优先从玩家属性中获取；修复'如果'的子指令回复无法被屏蔽的BUG；一定程度兼容了'.r'和'.w'，但是最好使用'.骰子'来获得最佳体验。";
     }

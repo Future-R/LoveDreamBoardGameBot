@@ -16,22 +16,22 @@ namespace Native.Csharp.App.Event.Event_Me
         /// </summary>
         /// <param name="input">输入内容</param>
         /// <param name="id">传递消息的编号</param>
-        public static void CommandIn(string input, long id)
+        public static void CommandIn(string input, long id, long QQ, long Object)
         {
             Event_Variable.cutDown = true;
             input = input.Trim();
             if (input.EndsWith(";") || input.EndsWith("；"))//分号结尾，屏蔽回显
             {
-                Event_Variable.idNum = 0;
+                Object = 0;
                 input = input.Remove(input.Length - 1, 1);//去掉结尾
             }
             else
             {
-                Event_Variable.idNum = id;
+                Object = id;
             }
             if (Event_Variable.varNeedExp)
             {
-                input = input.Replace("QQ", Event_Variable.QQQ.ToString());
+                input = input.Replace("QQ", QQ.ToString());
                 input = input.Substring(0, 3) + input.Substring(3).Replace("骰点", $"{Event_Variable.Number}")
                                                                  .Replace("清点", $"{Event_Variable.CountValue}")
                                                                  .Replace("时点",$"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0,8).Replace(":" , "" )}")
@@ -71,47 +71,47 @@ namespace Native.Csharp.App.Event.Event_Me
             {
 
                 case "计算":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Calc(input));
+                    Common.CqApi.SendPrivateMessage(Object, Calc(input));
                     return;
 
                 case "骰子":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Dices(input));
+                    Common.CqApi.SendPrivateMessage(Object, Dices(input ,QQ));
                     return;
 
                 case "创建":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Crea(input));
+                    Common.CqApi.SendPrivateMessage(Object, Crea(input));
                     return;
 
                 case "销毁":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Boom(input, out string leave1) + Environment.NewLine + leave1);
+                    Common.CqApi.SendPrivateMessage(Object, Boom(input, out string leave1, QQ) + Environment.NewLine + leave1);
                     return;
 
                 case "清空":
-                    Boom(input, out string leave2);
+                    Boom(input, out string leave2, QQ);
                     if (leave2.Length > 1)
                     {
-                        Common.CqApi.SendPrivateMessage(Event_Variable.idNum, leave2);
+                        Common.CqApi.SendPrivateMessage(Object, leave2);
                     }
                     Crea(input);
                     return;
 
 
                 case "添加":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Add(input));
+                    Common.CqApi.SendPrivateMessage(Object, Add(input, QQ));
                     return;
 
                 case "删除":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{DelInfos(input, out string trueNameList)}");
-                    if (trueNameList.Length >= 1) Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{trueNameList.Trim()}离开了区域！");
+                    Common.CqApi.SendPrivateMessage(Object, $@"{DelInfos(input, out string trueNameList, QQ)}");
+                    if (trueNameList.Length >= 1) Common.CqApi.SendPrivateMessage(Object, $@"{trueNameList.Trim()}离开了区域！");
                     return;
 
                 case "出牌":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Move(input, out string fakeName));
-                    if (fakeName.Length >= 1) Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{fakeName.Trim()}离开了区域！");
+                    Common.CqApi.SendPrivateMessage(Object, Move(input, out string fakeName, QQ));
+                    if (fakeName.Length >= 1) Common.CqApi.SendPrivateMessage(Object, $@"{fakeName.Trim()}离开了区域！");
                     return;
 
                 case "抽牌":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Draw(input));
+                    Common.CqApi.SendPrivateMessage(Object, Draw(input, QQ));
                     return;
 
                 case "查看":
@@ -126,11 +126,11 @@ namespace Native.Csharp.App.Event.Event_Me
                         }
                         catch (Exception)
                         {
-                            Common.CqApi.SendPrivateMessage(Event_Variable.idNum,$@"错误：{lookInputs[lookInputs.Length - 1]}不是数字！");
+                            Common.CqApi.SendPrivateMessage(Object,$@"错误：{lookInputs[lookInputs.Length - 1]}不是数字！");
                             return;
                         }
                     }
-                    GetInfo(input, out string looname, out string looret, out string loofak);
+                    GetInfo(input, out string looname, out string looret, out string loofak, QQ);
                     List<string> fakerList = new List<string>( loofak.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) );
                     if (lookCons > 0)
                     {
@@ -142,75 +142,75 @@ namespace Native.Csharp.App.Event.Event_Me
                         }
                         loofak = string.Join(" ", fakerList.ToArray());
                     }
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{looname}:
+                    Common.CqApi.SendPrivateMessage(Object, $@"{looname}:
  {loofak}");
                     return;
 
                 case "清数":
-                    CountNum(input, out string num);
+                    CountNum(input, out string num, QQ);
                     Event_Variable.CountValue = int.Parse(num);
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"{input.Substring(3).Trim()}有{num}张牌");
+                    Common.CqApi.SendPrivateMessage(Object, $@"{input.Substring(3).Trim()}有{num}张牌");
                     return;
 
                 case "检索":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Search(input));
+                    Common.CqApi.SendPrivateMessage(Object, Search(input));
                     return;
 
                 case "移除":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, RemovePos(input));
+                    Common.CqApi.SendPrivateMessage(Object, RemovePos(input));
                     return;
 
                 case "导入":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, CopyIn(input));
+                    Common.CqApi.SendPrivateMessage(Object, CopyIn(input));
                     return;
 
                 case "发现":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, DisCover(input));
+                    Common.CqApi.SendPrivateMessage(Object, DisCover(input));
                     return;
 
                 case "复制":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, CopyTo(input));
+                    Common.CqApi.SendPrivateMessage(Object, CopyTo(input));
                     return;
 
                 case "洗牌":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Shuffle(input));
+                    Common.CqApi.SendPrivateMessage(Object, Shuffle(input, QQ));
                     return;
 
                 case "排序":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, SortShffle(input));
+                    Common.CqApi.SendPrivateMessage(Object, SortShffle(input));
                     return;
 
                 case "插入":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Inser(input));
+                    Common.CqApi.SendPrivateMessage(Object, Inser(input));
                     return;
 
                 case "翻转":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Reverse(input));
+                    Common.CqApi.SendPrivateMessage(Object, Reverse(input));
                     return;
 
                 case "定义":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Command(input));
+                    Common.CqApi.SendPrivateMessage(Object, Command(input));
                     return;
 
                 case "属性":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Attributes(input));
+                    Common.CqApi.SendPrivateMessage(Object, Attributes(input, QQ));
                     return;
 
                 case "去重":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, DelSame(input));
+                    Common.CqApi.SendPrivateMessage(Object, DelSame(input));
                     return;
 
                 case "转化":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Variety(input));
+                    Common.CqApi.SendPrivateMessage(Object, Variety(input, QQ));
                     return;
 
                 case "变量":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Variable(input));
+                    Common.CqApi.SendPrivateMessage(Object, Variable(input));
                     return;
 
                 case "开始":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, GameStart(input));
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, "设定完毕！");
+                    Common.CqApi.SendPrivateMessage(Object, GameStart(input, QQ));
+                    Common.CqApi.SendPrivateMessage(Object, "设定完毕！");
                     return;
 
                 case "棋盘":
@@ -219,16 +219,16 @@ namespace Native.Csharp.App.Event.Event_Me
                         string[] tables = { "GHhvRqDCJ9JJdk3R/" , "Vw8vwjRDrH9YWwTG/", "jJ3qyHpyrxtqGwWw/",
                         "dDwgDJg9g99KT63h/" , "GQcHhVWd9DkY6KTR/" , "gdKYVKkCg8qKVjGk/" , "K3QyPhxY6rhrQJtx/" ,
                         "HG8wPtjdwkyCGdrT/" , "t3qk6T3dyyxDddkG/" , "kYKCw8jcWCVkJgRj/" };
-                        Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"https://shimo.im/sheets/" + $@"{tables[int.Parse(input.Substring(3).Trim())]} 可复制链接后用石墨文档 App 或小程序打开");
+                        Common.CqApi.SendPrivateMessage(Object, $@"https://shimo.im/sheets/" + $@"{tables[int.Parse(input.Substring(3).Trim())]} 可复制链接后用石墨文档 App 或小程序打开");
                     }
                     else
                     {
-                        Common.CqApi.SendPrivateMessage(Event_Variable.idNum, "房间号有误！");
+                        Common.CqApi.SendPrivateMessage(Object, "房间号有误！");
                     }
                     return;
 
                 case "日志":
-                    Common.CqApi.SendPrivateMessage(Event_Variable.idNum, Event_Variable.updateLogDescription);
+                    Common.CqApi.SendPrivateMessage(Object, Event_Variable.updateLogDescription);
                     return;
 
                 case "如果"://.如果 [表达式] [>/</=/!] [指定值]?[指令 A B]
@@ -257,14 +257,14 @@ namespace Native.Csharp.App.Event.Event_Me
                             case ">":
                                 if ((int)new DataTable().Compute(expression, "") > int.Parse(value))
                                 {
-                                    SonCommand(sharpInput, Event_Variable.idNum);
+                                    SonCommand(sharpInput, Object, QQ, Object);
                                 }
                                 break;
 
                             case "<":
                                 if ((int)new DataTable().Compute(expression, "") < int.Parse(value))
                                 {
-                                    SonCommand(sharpInput, Event_Variable.idNum);
+                                    SonCommand(sharpInput, Object, QQ, Object);
                                 }
                                 break;
 
@@ -274,14 +274,14 @@ namespace Native.Csharp.App.Event.Event_Me
                                     object type = new DataTable().Compute(expression, "");
                                     if (type.ToString() == value)
                                     {
-                                        SonCommand(sharpInput, Event_Variable.idNum);
+                                        SonCommand(sharpInput, Object, QQ, Object);
                                     }
                                 }
                                 catch (Exception)//如果失败，说明是字符串，直接判断是否相等
                                 {
                                     if (expression == value)
                                     {
-                                        SonCommand(sharpInput, Event_Variable.idNum);
+                                        SonCommand(sharpInput, Object, QQ, Object);
                                     }
                                 }
                                 break;
@@ -292,14 +292,14 @@ namespace Native.Csharp.App.Event.Event_Me
                                     object type = new DataTable().Compute(expression, "");
                                     if (type.ToString() != value)
                                     {
-                                        SonCommand(sharpInput, Event_Variable.idNum);
+                                        SonCommand(sharpInput, Object, QQ, Object);
                                     }
                                 }
                                 catch (Exception)//如果失败，说明是字符串，直接判断是否相等
                                 {
                                     if (expression != value)
                                     {
-                                        SonCommand(sharpInput, Event_Variable.idNum);
+                                        SonCommand(sharpInput, Object, QQ, Object);
                                     }
                                 }
                                 break;
@@ -307,18 +307,18 @@ namespace Native.Csharp.App.Event.Event_Me
                             case "C":
                                 if (expression.Contains(value))
                                 {
-                                    SonCommand(sharpInput, Event_Variable.idNum);
+                                    SonCommand(sharpInput, Object, QQ, Object);
                                 }
                                 break;
 
                             default:
-                                Common.CqApi.SendPrivateMessage(Event_Variable.idNum, "找不到比较符！");
+                                Common.CqApi.SendPrivateMessage(Object, "找不到比较符！");
                                 break;
                         }
                     }
                     catch (Exception)
                     {
-                        Common.CqApi.SendPrivateMessage(Event_Variable.idNum, "抛出异常！");
+                        Common.CqApi.SendPrivateMessage(Object, "抛出异常！");
                     }
                     return;
 
@@ -333,18 +333,18 @@ namespace Native.Csharp.App.Event.Event_Me
         /// </summary>
         /// <param name="input">输入内容</param>
         /// <param name="id">传递消息的编号</param>
-        public static void CommandIn(string input, long id, bool isGroup)
+        public static void CommandIn(string input, long id, bool isGroup, long QQ, long Object)
         {
             Event_Variable.groupId = id;
-            Event_Variable.member = Common.CqApi.GetMemberInfo(Event_Variable.groupId, Event_Variable.QQQ, true);//获取群成员
+            Event_Variable.member = Common.CqApi.GetMemberInfo(Event_Variable.groupId, QQ, true);//获取群成员
             string niceName = Convert.ToString(Event_Variable.member.Card) + " ";
             if (niceName.Length == 1)
             {
                 niceName = Convert.ToString(Event_Variable.member.Nick) + " ";
             }
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))
+            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini"))
             {
-                string load = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini").Trim();
+                string load = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini").Trim();
                 foreach (var item in load.Split(' '))
                 {
                     if (item.StartsWith("昵称:"))
@@ -357,16 +357,16 @@ namespace Native.Csharp.App.Event.Event_Me
             input = input.Trim();
             if (input.EndsWith(";") || input.EndsWith("；"))//分号结尾，屏蔽回显
             {
-                Event_Variable.idNum = 0;
+                Object = 0;
                 input = input.Remove(input.Length - 1, 1);//去掉结尾
             }
             else
             {
-                Event_Variable.idNum = id;
+                Object = id;
             }
             if (Event_Variable.varNeedExp)
             {
-                input = input.Replace("QQ", Event_Variable.QQQ.ToString());
+                input = input.Replace("QQ", QQ.ToString());
                 input = input.Substring(0, 3) + input.Substring(3).Replace("骰点", $"{Event_Variable.Number}")
                                                                   .Replace("清点", $"{Event_Variable.CountValue}")
                                                                   .Replace("时点", $"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0, 8).Replace(":", "")}")
@@ -405,47 +405,47 @@ namespace Native.Csharp.App.Event.Event_Me
             {
 
                 case "计算":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Calc(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Calc(input));
                     return;
 
                 case "骰子":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Dices(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Dices(input, QQ));
                     return;
 
                 case "创建":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Crea(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Crea(input));
                     return;
 
                 case "销毁":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Boom(input, out string leave1) + Environment.NewLine + leave1);
+                    Common.CqApi.SendGroupMessage(Object, niceName + Boom(input, out string leave1, QQ) + Environment.NewLine + leave1);
                     return;
 
                 case "清空":
-                    Boom(input, out string leave2);
+                    Boom(input, out string leave2, QQ);
                     if (leave2.Length > 6)
                     {
-                        Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + leave2);
+                        Common.CqApi.SendGroupMessage(Object, niceName + leave2);
                     }
                     Crea(input);
                     return;
 
 
                 case "添加":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Add(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Add(input, QQ));
                     return;
 
                 case "删除":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + $@"{DelInfos(input, out string trueNameList)}");
-                    if (trueNameList.Length >= 1) Common.CqApi.SendGroupMessage(Event_Variable.idNum, $@"{trueNameList.Trim()}离开了区域！");
+                    Common.CqApi.SendGroupMessage(Object, niceName + $@"{DelInfos(input, out string trueNameList, QQ)}");
+                    if (trueNameList.Length >= 1) Common.CqApi.SendGroupMessage(Object, $@"{trueNameList.Trim()}离开了区域！");
                     return;
 
                 case "出牌":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Move(input, out string fakeName));
-                    if (fakeName.Length >= 1) Common.CqApi.SendGroupMessage(Event_Variable.idNum, $@"{fakeName.Trim()}离开了区域！");
+                    Common.CqApi.SendGroupMessage(Object, niceName + Move(input, out string fakeName, QQ));
+                    if (fakeName.Length >= 1) Common.CqApi.SendGroupMessage(Object, $@"{fakeName.Trim()}离开了区域！");
                     return;
 
                 case "抽牌":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Draw(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Draw(input, QQ));
                     return;
 
                 case "查看":
@@ -460,11 +460,11 @@ namespace Native.Csharp.App.Event.Event_Me
                         }
                         catch (Exception)
                         {
-                            Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + $@"错误：{lookInputs[lookInputs.Length - 1]}不是数字！");
+                            Common.CqApi.SendGroupMessage(Object, niceName + $@"错误：{lookInputs[lookInputs.Length - 1]}不是数字！");
                             return;
                         }
                     }
-                    GetInfo(input, out string looname, out string looret, out string loofak);
+                    GetInfo(input, out string looname, out string looret, out string loofak, QQ);
                     List<string> fakerList = new List<string>(loofak.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
                     if (lookCons > 0)
                     {
@@ -476,91 +476,91 @@ namespace Native.Csharp.App.Event.Event_Me
                         }
                         loofak = string.Join(" ", fakerList.ToArray());
                     }
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + $@"{looname}:
+                    Common.CqApi.SendGroupMessage(Object, niceName + $@"{looname}:
  {loofak}");
                     return;
 
                 case "清数":
-                    CountNum(input, out string num);
+                    CountNum(input, out string num, QQ);
                     Event_Variable.CountValue = int.Parse(num);
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + $@"{input.Substring(3).Trim()}有{num}张牌");
+                    Common.CqApi.SendGroupMessage(Object, niceName + $@"{input.Substring(3).Trim()}有{num}张牌");
                     return;
 
                 case "检索":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Search(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Search(input));
                     return;
 
                 case "移除":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + RemovePos(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + RemovePos(input));
                     return;
 
                 case "导入":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + CopyIn(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + CopyIn(input));
                     return;
 
                 case "发现":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + DisCover(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + DisCover(input));
                     return;
 
                 case "复制":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + CopyTo(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + CopyTo(input));
                     return;
 
                 case "洗牌":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Shuffle(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Shuffle(input, QQ));
                     return;
 
                 case "排序":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + SortShffle(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + SortShffle(input));
                     return;
 
                 case "插入":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Inser(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Inser(input));
                     return;
 
                 case "翻转":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Reverse(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Reverse(input));
                     return;
 
                 case "定义":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Command(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Command(input));
                     return;
 
                 case "属性":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Attributes(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Attributes(input, QQ));
                     return;
 
                 case "去重":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + DelSame(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + DelSame(input));
                     return;
 
                 case "转化":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Variety(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Variety(input, QQ));
                     return;
 
                 case "变量":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + Variable(input));
+                    Common.CqApi.SendGroupMessage(Object, niceName + Variable(input));
                     return;
 
                 case "开始":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + GameStart(input));
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, "设定完毕！");
+                    Common.CqApi.SendGroupMessage(Object, niceName + GameStart(input, QQ));
+                    Common.CqApi.SendGroupMessage(Object, "设定完毕！");
                     return;
 
                 case "退群":
                     Event_Variable.groupId = id;
-                    Event_Variable.member = Common.CqApi.GetMemberInfo(Event_Variable.groupId, Event_Variable.QQQ, true);//获取群成员
+                    Event_Variable.member = Common.CqApi.GetMemberInfo(Event_Variable.groupId, QQ, true);//获取群成员
                     Event_Variable.PT = Convert.ToString(Event_Variable.member.PermitType);//获取权限：Holder群主，Manage管理，None群员
                     if (Event_Variable.PT == "None")//屁民瞎发啥指令
                     {
-                        Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + "权限不足！");
+                        Common.CqApi.SendGroupMessage(Object, niceName + "权限不足！");
                         return;
                     }
                     if (input.Length > 8)//有参数
                     {
                         if (input.Substring(3).Trim() == Convert.ToString(Common.CqApi.GetLoginQQ()))//膝盖中了一箭
                         {
-                            Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + "感谢你的支持，再见！");
+                            Common.CqApi.SendGroupMessage(Object, niceName + "感谢你的支持，再见！");
                             Common.CqApi.SetGroupExit(id, false);
                             return;
                         }
@@ -568,7 +568,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     }
                     else//没参数，意思全退呗
                     {
-                        Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + "感谢你的支持，再见！");
+                        Common.CqApi.SendGroupMessage(Object, niceName + "感谢你的支持，再见！");
                         Common.CqApi.SetGroupExit(id, false);
                         return;
                     }
@@ -580,11 +580,11 @@ namespace Native.Csharp.App.Event.Event_Me
                         return;
                     }
                     Event_Variable.groupId = id;
-                    Event_Variable.member = Common.CqApi.GetMemberInfo(Event_Variable.groupId, Event_Variable.QQQ, true);//获取群成员
+                    Event_Variable.member = Common.CqApi.GetMemberInfo(Event_Variable.groupId, QQ, true);//获取群成员
                     Event_Variable.PT = Convert.ToString(Event_Variable.member.PermitType);//获取权限：Holder群主，Manage管理，None群员
                     if (Event_Variable.PT != "Holder")
                     {
-                        Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + "权限不足！");
+                        Common.CqApi.SendGroupMessage(Object, niceName + "权限不足！");
                         return;
                     }
                     try
@@ -595,14 +595,14 @@ namespace Native.Csharp.App.Event.Event_Me
                     }
                     catch (Exception)
                     {
-                        Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + "抛出错误！");
+                        Common.CqApi.SendGroupMessage(Object, niceName + "抛出错误！");
                         return;
                     }
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + "清理完成！");
+                    Common.CqApi.SendGroupMessage(Object, niceName + "清理完成！");
                     return;
 
                 case "日志":
-                    Common.CqApi.SendGroupMessage(Event_Variable.idNum, Event_Variable.updateLogDescription);
+                    Common.CqApi.SendGroupMessage(Object, Event_Variable.updateLogDescription);
                     return;
 
                 case "如果"://.如果 [表达式] [>/</=/!] [指定值]?[指令 A B]
@@ -631,46 +631,46 @@ namespace Native.Csharp.App.Event.Event_Me
                             case ">":
                                 if ((int)new DataTable().Compute(expression, "") > int.Parse(value))
                                 {
-                                    SonCommand(sharpInput, Event_Variable.idNum);
+                                    SonCommand(sharpInput, Object, QQ, Object);
                                 }
                                 break;
 
                             case "<":
                                 if ((int)new DataTable().Compute(expression, "") < int.Parse(value))
                                 {
-                                    SonCommand(sharpInput, Event_Variable.idNum);
+                                    SonCommand(sharpInput, Object, QQ, Object);
                                 }
                                 break;
 
                             case "=":
                                 if ((int)new DataTable().Compute(expression, "") == int.Parse(value))
                                 {
-                                    SonCommand(sharpInput, Event_Variable.idNum);
+                                    SonCommand(sharpInput, Object, QQ, Object);
                                 }
                                 break;
 
                             case "!":
                                 if ((int)new DataTable().Compute(expression, "") != int.Parse(value))
                                 {
-                                    SonCommand(sharpInput, Event_Variable.idNum);
+                                    SonCommand(sharpInput, Object, QQ, Object);
                                 }
                                 break;
 
                             case "C":
                                 if (expression.Contains(value))
                                 {
-                                    SonCommand(sharpInput, Event_Variable.idNum);
+                                    SonCommand(sharpInput, Object, QQ, Object);
                                 }
                                 break;
 
                             default:
-                                Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + "找不到比较符！");
+                                Common.CqApi.SendGroupMessage(Object, niceName + "找不到比较符！");
                                 break;
                         }
                     }
                     catch (Exception)
                     {
-                        Common.CqApi.SendGroupMessage(Event_Variable.idNum, niceName + "抛出异常！");
+                        Common.CqApi.SendGroupMessage(Object, niceName + "抛出异常！");
                     }
                     return;
                 default:
@@ -704,7 +704,7 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //骰子
-        public static string Dices(string 输入表达式)
+        public static string Dices(string 输入表达式, long QQ)
         {
             try
             {
@@ -718,9 +718,9 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 string 骰子面 = "100"; string 骰池样式 = "10";string 加骰成功值 = "8";//提供默认值
 
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//导入用户设置
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini"))//导入用户设置
                 {
-                    string 文本整体 = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini").Trim();
+                    string 文本整体 = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini").Trim();
                     foreach (var 一行文本 in 文本整体.Split(' '))
                     {
                         if (一行文本.StartsWith("骰子:"))//如果设置了默认骰
@@ -1091,14 +1091,14 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //销毁
-        public static string Boom(string input, out string leave)
+        public static string Boom(string input, out string leave, long QQ)
         {
             leave = "";
             string reValue = "";
             string[] paramInput = input.Substring(3).Trim().Split(' ');
             for (int i = 0; i < paramInput.Length; i++)
             {
-                GetInfo(".查看" + paramInput[i], out string name, out string reture, out string refake);
+                GetInfo(".查看" + paramInput[i], out string name, out string reture, out string refake, QQ);
                 List<string> tempInput = new List<string>(reture.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
                 List<string> fromListFake = new List<string>();
 
@@ -1127,14 +1127,14 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //添加
-        public static string Add(string input)//.删除 区域 AA BB CC
+        public static string Add(string input, long QQ)//.删除 区域 AA BB CC
         {
             input = input.Substring(3).Trim();
             if (Event_Variable.Defa == true)
             {
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini"))//如果属性文件存在
                 {
-                    string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
+                    string att = LoadInfo(@"Att\" + QQ);
                     string hand = "";
                     foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                     {
@@ -1194,13 +1194,13 @@ namespace Native.Csharp.App.Event.Event_Me
         /// <param name="name">区域</param>
         /// <param name="reture">全称列表</param>
         /// <param name="refake">假名列表</param>
-        public static void GetInfo(string input, out string name, out string reture, out string refake)
+        public static void GetInfo(string input, out string name, out string reture, out string refake, long QQ)
         {
             if (Event_Variable.Defa == true)
             {
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini"))//如果属性文件存在
                 {
-                    string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
+                    string att = LoadInfo(@"Att\" + QQ);
                     string hand = "";
                     foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                     {
@@ -1230,14 +1230,14 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //删除
-        public static string DelInfos(string input, out string trueName)//.删除 区域 AA BB CC
+        public static string DelInfos(string input, out string trueName, long QQ)//.删除 区域 AA BB CC
         {
             trueName = "";
             if (Event_Variable.Defa == true)
             {
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini"))//如果属性文件存在
                 {
-                    string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
+                    string att = LoadInfo(@"Att\" + QQ);
                     string hand = "";
                     foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                     {
@@ -1253,14 +1253,14 @@ namespace Native.Csharp.App.Event.Event_Me
                     return "请先使用'开始'指令绑定手牌";
                 }
             }
-            GetInfo(input, out string remname, out string truRet, out string fakRet);//获取区域内容
+            GetInfo(input, out string remname, out string truRet, out string fakRet, QQ);//获取区域内容
             List<string> tempInput = new List<string>(input.Substring(3).Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//区域 AA BB CC
             try
             {
                 if (File.Exists(System.AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\" + tempInput[0] + ".ini"))
                 {
                     List<string> delList = new List<string>(tempInput.GetRange(1, tempInput.Count - 1));//肃反名单
-                    GetInfo($@".查看 {tempInput[0]}", out string fromName, out string fromTList, out string fromFList);
+                    GetInfo($@".查看 {tempInput[0]}", out string fromName, out string fromTList, out string fromFList, QQ);
                     List<string> collection = new List<string>(fromFList.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//假名列表（AA BB CC DD）
                     List<string> collection2 = new List<string>(fromTList.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//真名列表（AA BB CC DD）
                     int find;
@@ -1295,16 +1295,16 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //洗牌
-        public static string Shuffle(string input)
+        public static string Shuffle(string input, long QQ)
         {
             try
             {
                 input = input.Substring(3).Trim();
                 if (Event_Variable.Defa == true)
                 {
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
+                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini"))//如果属性文件存在
                     {
-                        string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
+                        string att = LoadInfo(@"Att\" + QQ);
                         string deck = "";
                         foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                         {
@@ -1387,7 +1387,7 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //出牌
-        public static string Move(string input, out string trueName)//.出牌 区域A 区域B XXX YYY ZZZ
+        public static string Move(string input, out string trueName, long QQ)//.出牌 区域A 区域B XXX YYY ZZZ
         {
             trueName = "";
             try
@@ -1395,9 +1395,9 @@ namespace Native.Csharp.App.Event.Event_Me
                 input = input.Substring(3).Trim();
                 if (Event_Variable.Defa == true)
                 {
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
+                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini"))//如果属性文件存在
                     {
-                        string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
+                        string att = LoadInfo(@"Att\" + QQ);
                         string oldZone = "";
                         string newZone = "";
                         foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
@@ -1522,16 +1522,16 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //抽牌
-        public static string Draw(string input)//.抽牌 旧区域 新区域 数量
+        public static string Draw(string input, long QQ)//.抽牌 旧区域 新区域 数量
         {
             try
             {
                 input = input.Substring(3).Trim();
                 if (Event_Variable.Defa == true)
                 {
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
+                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini"))//如果属性文件存在
                     {
-                        string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
+                        string att = LoadInfo(@"Att\" + QQ);
                         string oldZone = "";
                         string newZone = "";
                         foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
@@ -1612,16 +1612,16 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //清数
-        public static void CountNum(string input, out string num)
+        public static void CountNum(string input, out string num, long QQ)
         {
             try
             {
                 input = input.Substring(3).Trim();
                 if (Event_Variable.Defa == true)
                 {
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
+                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini"))//如果属性文件存在
                     {
-                        string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
+                        string att = LoadInfo(@"Att\" + QQ);
                         string deck = "";
                         foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                         {
@@ -1950,7 +1950,7 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //属性
-        public static string Attributes(string input)//.属性 [人物] [值名:数值] [值名:数值*]
+        public static string Attributes(string input, long QQ)//.属性 [人物] [值名:数值] [值名:数值*]
         {
             try
             {
@@ -1958,7 +1958,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     .Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[人物] [值名: 数值] [值名: 数值*]
                 if (Event_Variable.Defa == true)
                 {
-                    tempInput.Insert(0, $"{Event_Variable.QQQ}");
+                    tempInput.Insert(0, $"{QQ}");
                 }
                 if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + tempInput[0] + ".ini"))//如果属性文件存在
                 {
@@ -2059,18 +2059,18 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //开始
-        public static string GameStart(string input)
+        public static string GameStart(string input, long QQ)
         {
             try
             {
                 input = input.Substring(3).Trim();
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
+                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini"))//如果属性文件存在
                 {
-                    List<string> orige = new List<string>(File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini")
+                    List<string> orige = new List<string>(File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini")
                         .Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
                     List<string> reValues = new List<string>();//接收返回值
                     int i = -1;
-                    List<string> newOrige = new List<string>(File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini")
+                    List<string> newOrige = new List<string>(File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini")
                         .Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
                     foreach (var item in newOrige)//匹配前缀替换
                     {
@@ -2082,8 +2082,8 @@ namespace Native.Csharp.App.Event.Event_Me
                                 reValues.Add($@"{item} → 私密{input}");
                                 break;
                             case "手牌:":
-                                orige[i] = $@"手牌:{Event_Variable.QQQ}的{input}";
-                                reValues.Add($@"{item} → {Event_Variable.QQQ}的{input}");
+                                orige[i] = $@"手牌:{QQ}的{input}";
+                                reValues.Add($@"{item} → {QQ}的{input}");
                                 break;
                             case "桌面:":
                                 orige[i] = $@"桌面:{input}的桌面";
@@ -2097,19 +2097,19 @@ namespace Native.Csharp.App.Event.Event_Me
                                 break;
                         }
                     }
-                    DelInfo(@"Att\" + Event_Variable.QQQ); CreateInfo(@"Att\" + Event_Variable.QQQ);
-                    WriteInfo(@"Att\" + Event_Variable.QQQ, string.Join(" ", orige.Distinct().ToArray()));
-                    return $@"{Event_Variable.QQQ}的属性修改:{Environment.NewLine}{string.Join(Environment.NewLine, reValues.ToArray()) }";
+                    DelInfo(@"Att\" + QQ); CreateInfo(@"Att\" + QQ);
+                    WriteInfo(@"Att\" + QQ, string.Join(" ", orige.Distinct().ToArray()));
+                    return $@"{QQ}的属性修改:{Environment.NewLine}{string.Join(Environment.NewLine, reValues.ToArray()) }";
 
                 }
                 else//没有旧信息的话就创建
                 {
-                    CreateInfo(@"Att\" + Event_Variable.QQQ);
-                    WriteInfo(@"Att\" + Event_Variable.QQQ, $@"牌堆:私密{input} 手牌:{Event_Variable.QQQ}的{input} 桌面:{input}的桌面 骰子:100");
+                    CreateInfo(@"Att\" + QQ);
+                    WriteInfo(@"Att\" + QQ, $@"牌堆:私密{input} 手牌:{QQ}的{input} 桌面:{input}的桌面 骰子:100");
                     CreateInfo(input); CreateInfo($@"{input}的桌面");
-                    return $@"{Event_Variable.QQQ}的属性为
+                    return $@"{QQ}的属性为
 牌堆:私密{input}
-手牌:{Event_Variable.QQQ}的{input}
+手牌:{QQ}的{input}
 桌面:{input}的桌面
 骰子:100";
 
@@ -2222,7 +2222,7 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         //转化
-        public static string Variety(string input)//.转化 [区域] [旧牌名] [新牌名] [所有*]
+        public static string Variety(string input, long QQ)//.转化 [区域] [旧牌名] [新牌名] [所有*]
         {
             try
             {
@@ -2230,9 +2230,9 @@ namespace Native.Csharp.App.Event.Event_Me
                     .Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[区域] [旧牌名] [新牌名] [所有*]
                 if (Event_Variable.Defa == true)
                 {
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//如果属性文件存在
+                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + QQ + ".ini"))//如果属性文件存在
                     {
-                        string att = LoadInfo(@"Att\" + Event_Variable.QQQ);
+                        string att = LoadInfo(@"Att\" + QQ);
                         string hand = "";
                         foreach (string item in new List<string>(att.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
                         {
@@ -2567,17 +2567,17 @@ namespace Native.Csharp.App.Event.Event_Me
             }
         }
 
-        public static void SonCommand(List<string> sharpInput, long id)
+        public static void SonCommand(List<string> sharpInput, long id, long QQ, long Object)
         {
             foreach (var item in sharpInput)
             {
                 if (Event_Variable.isGroup)
                 {
-                    CommandIn(item, id, Event_Variable.isGroup);
+                    CommandIn(item, id, Event_Variable.isGroup, QQ, Object);
                 }
                 else
                 {
-                    CommandIn(item, id);
+                    CommandIn(item, id, QQ, Object);
                 }
             }
         }
