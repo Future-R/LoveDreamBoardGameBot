@@ -58,7 +58,7 @@ namespace Native.Csharp.App.Core
 			// 请勿随意修改
 			// 
 			Common.AppName = "方若茗桌游姬";
-			Common.AppVersion = Version.Parse ("0.1.0");		
+			Common.AppVersion = Version.Parse ("0.1.2");		
 
 			//
 			// 当前项目名称: com.frm.top

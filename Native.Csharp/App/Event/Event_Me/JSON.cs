@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+//using System.Web.Script.Serialization;
 using System.Text;
 
 namespace Native.Csharp.App.Event.Event_Me
@@ -10,42 +11,51 @@ namespace Native.Csharp.App.Event.Event_Me
         public static string 获取(string 接口)
         {
             string 现在的时间 = $"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0, 8).Replace(":", "")}";
-            if (Convert.ToInt32(运算.计算(现在的时间 +"-"+ 数据.上次调用接口的时间)) < 30)//30秒内重复调用接口，返回空值
+            if (Convert.ToInt32(运算.计算(现在的时间 + "-" + 数据.上次调用接口的时间)) < 30)//30秒内重复调用接口，返回空值
             {
                 return "";
             }
             接口 = 转义.输出(接口);//取消转义
             接口 = System.Web.HttpUtility.UrlEncode(接口);
-            //接口 = System.Web.HttpUtility.UrlEncode(接口, Encoding.GetEncoding("GB2312"));//将简体汉字转换为Url编码
-            //接口 = System.Web.HttpUtility.UrlEncode(接口, Encoding.GetEncoding("BIG5"));//将繁体汉字转换为Url
             接口 = 接口.Replace("%3a", ":").Replace("%2f", "/").Replace("%3f", "?").Replace("%3d", "=").Replace("%26amp%3b", "&");
             GC.Collect();
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(接口);
-            request.Proxy = null;
-            request.KeepAlive = false;
-            request.Method = "GET";
-            request.ContentType = "application/json; charset=UTF-8";
-            request.AutomaticDecompression = DecompressionMethods.GZip;
+            HttpWebRequest 请求 = (HttpWebRequest)WebRequest.Create(接口);
+            请求.Proxy = null;
+            请求.KeepAlive = false;
+            请求.Method = "GET";
+            请求.ContentType = "application/json; charset=UTF-8";
+            请求.AutomaticDecompression = DecompressionMethods.GZip;
 
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Stream myResponseStream = response.GetResponseStream();
+            HttpWebResponse 应答 = (HttpWebResponse)请求.GetResponse();
+            Stream myResponseStream = 应答.GetResponseStream();
             StreamReader myStreamReader = new StreamReader(myResponseStream, Encoding.UTF8);
             string 返回值 = myStreamReader.ReadToEnd();
 
             myStreamReader.Close();
             myResponseStream.Close();
 
-            if (response != null)
+            if (应答 != null)
             {
-                response.Close();
+                应答.Close();
             }
-            if (request != null)
+            if (请求 != null)
             {
-                request.Abort();
+                请求.Abort();
             }
 
             数据.上次调用接口的时间 = $"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0, 8).Replace(":", "")}";
             return 返回值;
         }
+
+        //public static object 反序列化<T>(string 输入)
+        //{
+        //    JavaScriptSerializer JSON = new JavaScriptSerializer();
+        //    return JSON.Deserialize<T>(输入);
+        //}
+        //public static string 序列化(object 对象)
+        //{
+        //    JavaScriptSerializer JSON = new JavaScriptSerializer();
+        //    return JSON.Serialize(对象);
+        //}
     }
 }

@@ -52,32 +52,39 @@ namespace Native.Csharp.App.Event.Event_Me
                 数据.写入实体("COC", "恐惧症", 转义.内部输入(人物卡.恐惧症));
                 数据.写入实体("COC", "狂躁症", 转义.内部输入(人物卡.狂躁症));
             }
-            if (数据.DND核心法术 == null)//初始化DND核心法术
+            if (!数据.实体.ContainsKey("DND3R"))
             {
-                List<string> 核心法术表 = new List<string>(人物卡.核心法术.Split(new[] { '#' }, StringSplitOptions.RemoveEmptyEntries));
-                数据.DND核心法术 = new Dictionary<string, string>();string 英文键 = ""; string 中文键 = "";
-                foreach (var item in 核心法术表)
-                {
-                    英文键 = 数值.取中间(item, "（", "）").ToLower();
-                    中文键 = item.Substring(0, item.IndexOf("（"));
-                    if (数据.DND核心法术.ContainsKey(英文键))
-                    {
-                        数据.DND核心法术[英文键] += Environment.NewLine + item;
-                    }
-                    else
-                    {
-                        数据.DND核心法术.Add(英文键, item);
-                    }
-                    if (数据.DND核心法术.ContainsKey(中文键))
-                    {
-                        数据.DND核心法术[英文键] += Environment.NewLine + item;
-                    }
-                    else
-                    {
-                        数据.DND核心法术.Add(中文键, item);
-                    }
-                }
+                数据.实体.Add("DND3R", new Dictionary<string, string>());
+                MySql.DND3R字典();
             }
+            #region 注释
+            //if (数据.DND核心法术 == null)//初始化DND核心法术
+            //{
+            //    List<string> 核心法术表 = new List<string>(人物卡.核心法术.Split(new[] { '#' }, StringSplitOptions.RemoveEmptyEntries));
+            //    数据.DND核心法术 = new Dictionary<string, string>(); string 英文键 = ""; string 中文键 = "";
+            //    foreach (var item in 核心法术表)
+            //    {
+            //        英文键 = 数值.取中间(item, "（", "）").ToLower();
+            //        中文键 = item.Substring(0, item.IndexOf("（"));
+            //        if (数据.DND核心法术.ContainsKey(英文键))
+            //        {
+            //            数据.DND核心法术[英文键] += Environment.NewLine + item;
+            //        }
+            //        else
+            //        {
+            //            数据.DND核心法术.Add(英文键, item);
+            //        }
+            //        if (数据.DND核心法术.ContainsKey(中文键))
+            //        {
+            //            数据.DND核心法术[英文键] += Environment.NewLine + item;
+            //        }
+            //        else
+            //        {
+            //            数据.DND核心法术.Add(中文键, item);
+            //        }
+            //    }
+            //}
+            #endregion
         }
     }
 }

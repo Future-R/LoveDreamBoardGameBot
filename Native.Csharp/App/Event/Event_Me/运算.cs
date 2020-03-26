@@ -129,12 +129,8 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static string 计算(string 算式)
         {
-            运算.骰子(算式);
-            return 数据.读取组件("上次的骰点");
-            //算式 = 算式.Replace("×", "*").Replace("x", "*").Replace("X", "*")
-            //    .Replace("（", "(").Replace("）", ")").Replace("÷", "/");
-            ////此处应替换为波兰逆运算
-            //return new DataTable().Compute(算式.Trim(), "").ToString();
+            string[] 数组 = 骰子(算式).Split(new[] { '=' });
+            return 数组[数组.Length - 1];
         }
 
         public static string 骰子(string 表达式)
@@ -145,11 +141,24 @@ namespace Native.Csharp.App.Event.Event_Me
             }
             string 描述 = "";
             bool 展示详情 = true;
-            if (表达式.Contains(" "))
+            //if (表达式.Contains(" "))
+            //{
+            //    描述 = 表达式.Substring(表达式.IndexOf(" "));
+            //    表达式 = 表达式.Substring(0, 表达式.IndexOf(" "));
+            //}
+            //检查合法性
+            int 分界处 = 1;
+            foreach (var 字 in 表达式.Substring(1).ToUpper())//d5你好
             {
-                描述 = 表达式.Substring(表达式.IndexOf(" "));
-                表达式 = 表达式.Substring(0, 表达式.IndexOf(" "));
+                if (!是数字(字) && !是符号(字) && 字 != ' ')//不是数字和符号，那就是描述
+                {
+                    break;
+                }
+                分界处++;
             }
+            描述 = 表达式.Substring(分界处);
+            表达式 = 表达式.Substring(0, 分界处).Replace(" ","");
+
             string 返回值 = 描述;
             表达式 = 表达式.ToUpper().Replace("×", "*").Replace("X", "*")
                 .Replace("（", "(").Replace("）", ")").Replace("÷", "/");
@@ -393,7 +402,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                     if (加骰结果.Length > 5000)
                                     {
                                         return $"错误：{参数1}A{参数2}结果太长：{加骰结果}……{Environment.NewLine}" +
-                                            $"≈{骰池成功数(Convert.ToDecimal(参数1), Convert.ToDecimal(骰池面), Convert.ToDecimal(参数2), Convert.ToDecimal(成功值))}";
+                                            $"={骰池成功数(Convert.ToDecimal(参数1), Convert.ToDecimal(骰池面), Convert.ToDecimal(参数2), Convert.ToDecimal(成功值))}";
                                     }
                                     加骰 = false;
                                     if (加骰数 > 临时参数1)

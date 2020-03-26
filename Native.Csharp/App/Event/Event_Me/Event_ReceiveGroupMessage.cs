@@ -19,17 +19,20 @@ namespace Native.Csharp.App.Event.Event_Me
         {
             try
             {
-                string 用户输入 = 消息预处理.处理(e.Message);
-                if (!用户输入.StartsWith(".") || 用户输入.Length < 2 || 用户输入.StartsWith("..") || 用户输入.StartsWith(".。"))//防误触
+                lock (数据.实体)
                 {
-                    return;
+                    string 用户输入 = 消息预处理.处理(e.Message);
+                    if (!用户输入.StartsWith(".") || 用户输入.Length < 2 || 用户输入.StartsWith("..") || 用户输入.StartsWith(".。"))//防误触
+                    {
+                        return;
+                    }
+                    数据.私聊 = false;
+                    数据.群聊目标 = e;
+                    数据.私聊目标 = e;
+                    数据.讨论组目标 = null;
+                    消息预处理.环境初始化();
+                    解释.语法分析(用户输入.Substring(1));
                 }
-                数据.私聊 = false;
-                数据.群聊目标 = e;
-                数据.私聊目标 = e;
-                数据.讨论组目标 = null;
-                消息预处理.环境初始化();
-                解释.语法分析(用户输入.Substring(1));
             }
             catch (Exception ex)
             {

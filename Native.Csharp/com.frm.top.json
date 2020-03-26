@@ -5,7 +5,7 @@
     "ret": 1,                                           // 返回码，固定为1
     "apiver": 9,                                        // Api版本，本SDK为9
     "name": "方若茗桌游姬",                        // 应用名称
-    "version": "0.1.1",                                 // 应用版本
+    "version": "0.1.2",                                 // 应用版本
     "version_id": 2,                                    // 应用顺序版本（每次发布时至少+1）
     "author": "未来菌",                                  // 应用作者
     "description": "发牌、掷骰子、下棋、记录信息。",
@@ -146,7 +146,7 @@
         //150, //置好友添加请求		setFriendAddRequest
         //151, //置群添加请求		setGroupAddRequest
         //160, //取群成员列表		getGroupMemberList
-        161, //取群列表			getGroupList
+        161 //取群列表			getGroupList
         //180 //撤回消息			deleteMsg
     ]
 }

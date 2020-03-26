@@ -57,7 +57,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         if (数据.娶群友(数据.私聊目标.FromQQ).PermitType == Sdk.Cqp.Enum.PermitType.None)
                         {
-                            Common.CqApi.SendGroupMessage(数据.群聊目标.FromGroup, 数据.报错+"需要黄帽或绿帽！");
+                            Common.CqApi.SendGroupMessage(数据.群聊目标.FromGroup, 数据.报错 + "需要黄帽或绿帽！");
                         }
                         else
                         {
@@ -97,31 +97,56 @@ namespace Native.Csharp.App.Event.Event_Me
                 数据.转义 = true;
             }
             数据.写入实体("输入", "段落", 用户输入);
-
-            foreach (var 语句 in 语句集)
+            List<string> 临时语句集 = new List<string>();
+            语句集.ForEach( (语句) =>
             {
-
-                //Task.Factory.StartNew(线程.新任务, 线程.取消资源请求.Token);
-                string 执行结果 = 执行(语句.Trim());
-                if (执行结果 != "")
+                临时语句集.Add(语句.Trim());
+            });
+            语句集 = 临时语句集;
+            for (int 序号 = 0; 序号 < 语句集.Count; 序号++)
+            {
+                string 语句 = 语句集[序号];
+                if (!语句.StartsWith("页码："))
                 {
-                    数据.发送次数++;
-                    if (数据.发送次数 > 9)
+                    string 执行结果 = 执行(语句);
+                    if (执行结果.StartsWith("跳转到页码") && 执行结果.Length > 5)
                     {
-                        Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, "不干了！");
-                        return;
+                        string 页码 = 执行结果.Substring(5);
+                        if (语句集.Contains("页码：" + 页码))
+                        {
+                            int 坐标 = 语句集.FindIndex((string 匹配) => 匹配.Equals("页码：" + 页码));
+                            if (坐标 == 语句集.Count - 1)
+                            {
+                                return;
+                            }
+                            序号 = 坐标;
+                        }
+                        else
+                        {
+                            Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, $"{数据.报错}{Environment.NewLine}找不到页码{页码}！");
+                            return;
+                        }
                     }
-                    if (数据.群聊目标 == null)//只有讨论组方法将群聊设为null
+                    else if (执行结果 != "")
                     {
-                        Common.CqApi.SendDiscussMessage(数据.讨论组目标.FromDiscuss, 转义.输出(执行结果));
-                    }
-                    else if (数据.私聊)
-                    {
-                        Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 转义.输出(执行结果));
-                    }
-                    else
-                    {
-                        Common.CqApi.SendGroupMessage(数据.群聊目标.FromGroup, 转义.输出(执行结果));
+                        数据.发送次数++;
+                        if (数据.发送次数 > 9)
+                        {
+                            Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, "不干了！");
+                            return;
+                        }
+                        if (数据.群聊目标 == null)//只有讨论组方法将群聊设为null
+                        {
+                            Common.CqApi.SendDiscussMessage(数据.讨论组目标.FromDiscuss, 转义.输出(执行结果));
+                        }
+                        else if (数据.私聊)
+                        {
+                            Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 转义.输出(执行结果));
+                        }
+                        else
+                        {
+                            Common.CqApi.SendGroupMessage(数据.群聊目标.FromGroup, 转义.输出(执行结果));
+                        }
                     }
                 }
             }
@@ -142,6 +167,10 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 数据.循环次数++;
                 //关键字打头
+                if (语句.StartsWith("翻开") && 语句.Length > 2)
+                {
+                    return $"跳转到页码{语句.Substring(2)}";
+                }
                 if (语句.StartsWith("设"))
                 {
                     if (语句.Contains("为"))
@@ -159,7 +188,6 @@ namespace Native.Csharp.App.Event.Event_Me
                         {
                             数据.写入实体(语句.Substring(0, 语句.IndexOf("的")), 数值.取中间(语句, "的", "为"), 语句.Substring(语句.IndexOf("为") + 1));
                         }
-
                         return "";
                     }
                 }
@@ -338,13 +366,37 @@ namespace Native.Csharp.App.Event.Event_Me
                 #region 获取
                 if (语句.StartsWith("获取"))
                 {
-                    if (语句.Length != 2)
+                    var 结果 = 操作.超时检测(2000, () =>
                     {
-                        数据.写入实体("获取", "结果", 转义.内部输入(JSON.获取(语句.Substring(2))));
-                        return "";
-                    }
-                    数据.写入实体("获取", "结果", 转义.内部输入(JSON.获取(数据.接口)));
+                        return 转义.内部输入(JSON.获取(语句.Substring(2)));
+                    });
+                    数据.写入实体("获取", "结果", 结果);
                     return "";
+                }
+                #endregion
+                #region 连接
+                if (语句.StartsWith("连接"))
+                {
+                    try
+                    {
+                        if (语句.Length > 16 && 语句.Contains("操作"))
+                        {
+                            string 连接 = 数值.取中间(语句, "连接", "操作").Trim();
+                            string 操作 = 语句.Replace("连接" + 连接, "").Trim().Substring(2);
+                            return MySql.查(连接, 操作);
+                        }
+                        else
+                        {
+                            //Host=localhost;User ID=root;Password=;Port = 3306;DataBase=animals;Charset=utf8;
+                            //"select *from student where name='kobe'"
+                            return "格式：“。连接Host=[IP地址(必填)];User ID=[用户名];Password=[密码];Port=[端口];DataBase=[数据库名(必填)];Charset=[字符集];”(顺序不限定)操作[一条操作语句]";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Event_CheckError.CheckError(ex);
+                    }
+
                 }
                 #endregion
                 #region 骰子
@@ -384,13 +436,13 @@ namespace Native.Csharp.App.Event.Event_Me
                 if (语句.ToLower().StartsWith("dnd查询") && 语句.ToLower() != "dnd查询")
                 {
                     string 参数 = 语句.Substring(5).Trim().ToLower();
-                    if (数据.DND核心法术.ContainsKey(参数))
+                    if (数据.实体["DND3R"].ContainsKey(参数))
                     {
-                        return 数据.DND核心法术[参数];
+                        return 数据.实体["DND3R"][参数];
                     }
                     else
                     {
-                        return $"找不到名为{参数}的DND3R核心法术！";
+                        return $"找不到名为{参数}的DND3R法术/专长/物品！";
                     }
                 }
                 if (语句.ToLower().StartsWith("nn"))
@@ -750,7 +802,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static string 变量解释(string 语句)
         {
-            if (语句.Length > 4096)
+            if (语句.Length > 4096 || (语句.Length > 100 && 语句.Contains("【输入的语句】")))
             {
                 return "";
             }
@@ -789,6 +841,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
                                 string 替换内容 = "";
                                 List<string> 参数 = new List<string>(栈内容.Split(new[] { '的' }, StringSplitOptions.RemoveEmptyEntries));
+
                                 if (参数[0] == "我")
                                 {
                                     参数[0] = 数据.私聊目标.FromQQ.ToString();
@@ -804,6 +857,17 @@ namespace Native.Csharp.App.Event.Event_Me
                                         替换内容 = 数据.实体[参数[0]][参数[1]];
                                     }
 
+                                    符号栈.Pop();
+                                    参数.RemoveRange(0, 1);
+                                    while (参数.Count > 0)
+                                    {
+                                        替换内容 = 数值.的(替换内容, 参数[0]);
+                                        参数.RemoveAt(0);
+                                    }
+                                }
+                                else if (参数[0].StartsWith("“") && 参数[0].EndsWith("”"))//求返回值
+                                {
+                                    替换内容 = 执行(参数[0].Substring(1, 参数[0].Length - 2));
                                     符号栈.Pop();
                                     参数.RemoveRange(0, 1);
                                     while (参数.Count > 0)
