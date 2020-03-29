@@ -53,9 +53,10 @@ namespace Native.Csharp.App.Event.Event_Me
                     "我懵了。", "哎？", "不对……", "怎么回事？", "什么情况？",
                     "奇怪的错误……", "搞错了吧？" , "……", "又来了……" , "¿",
                     "菜", "算了吧……" , "唔。", "瞎输啥啊……" , "[CQ:face,id=14]" , "[CQ:face,id=39]",
+                    $"……1万年……1400亿年过去了……{Environment.NewLine}“42”{Environment.NewLine}这是最后发出的消息。",
                     "麻烦看一下帮助文档https://shimo.im/docs/dqcWQvHjk38QtRq3"
                 }
-                [new Random(Guid.NewGuid().GetHashCode()).Next(0, 17)];
+                [new Random(Guid.NewGuid().GetHashCode()).Next(0, 18)];
             }
         }
 

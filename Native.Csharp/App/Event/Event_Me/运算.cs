@@ -148,7 +148,8 @@ namespace Native.Csharp.App.Event.Event_Me
             //}
             //检查合法性
             int 分界处 = 1;
-            foreach (var 字 in 表达式.Substring(1).ToUpper())//d5你好
+            foreach (var 字 in 表达式.Substring(1).ToUpper().Replace("×", "*").Replace("X", "*")
+                .Replace("（", "(").Replace("）", ")").Replace("÷", "/"))//d5你好
             {
                 if (!是数字(字) && !是符号(字) && 字 != ' ')//不是数字和符号，那就是描述
                 {
@@ -821,6 +822,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 case '*':
                 case '/':
                 case '^':
+                case '%':
                 case 'D':
                 case 'A':
                 case 'B':

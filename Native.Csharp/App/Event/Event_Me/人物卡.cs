@@ -372,7 +372,7 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 次数 = 1;
             }
-            string 返回值 = 获取昵称() + "COC7人物作成：";
+            string 返回值 = 获取昵称() + "COC7版人物作成：";
             for (int i = 0; i < 次数; i++)
             {
                 int 力量STR = 骰点("3D6*5");
@@ -400,7 +400,7 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 次数 = 1;
             }
-            string 返回值 = 获取昵称() + "COC6人物作成：";
+            string 返回值 = 获取昵称() + "COC6版人物作成：";
             for (int i = 0; i < 次数; i++)
             {
                 int 力量STR = 骰点("3D6");
@@ -427,7 +427,7 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 次数 = 1;
             }
-            if (表达式.Length < 5)
+            if (表达式.Length < 2)
             {
                 表达式 = "R4D6K3";
             }

@@ -33,11 +33,11 @@ namespace Native.Csharp.App.Event.Event_Me
                 input = input.Replace("QQ", Event_Variable.QQQ.ToString());
                 input = input.Substring(0, 3) + input.Substring(3).Replace("骰点", $"{Event_Variable.Number}")
                                                                  .Replace("清点", $"{Event_Variable.CountValue}")
-                                                                 .Replace("时点",$"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0,8).Replace(":" , "" )}")
+                                                                 .Replace("时点", $"{DateTime.Now.DayOfYear.ToString()}{DateTime.Now.TimeOfDay.ToString().Substring(0, 8).Replace(":", "")}")
                                                                  .Replace("结果", $"{Event_Variable.ComputeValue}")
                                                                  .Replace("缓存", $"{Event_Variable.TempZone}");
             }
-            
+
             if (input.Length < 2)//降低错误触发
             {
                 return;
@@ -125,19 +125,19 @@ namespace Native.Csharp.App.Event.Event_Me
                         }
                         catch (Exception)
                         {
-                            Common.CqApi.SendPrivateMessage(Event_Variable.idNum,$@"错误：{lookInputs[lookInputs.Length - 1]}不是数字！");
+                            Common.CqApi.SendPrivateMessage(Event_Variable.idNum, $@"错误：{lookInputs[lookInputs.Length - 1]}不是数字！");
                             return;
                         }
                     }
                     GetInfo(input, out string looname, out string looret, out string loofak);
-                    List<string> fakerList = new List<string>( loofak.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) );
+                    List<string> fakerList = new List<string>(loofak.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
                     if (lookCons > 0)
                     {
                         int fakerCount = fakerList.Count;
-                        for (int i = lookCons; i < fakerCount + 1; i+= lookCons + 1)
+                        for (int i = lookCons; i < fakerCount + 1; i += lookCons + 1)
                         {
                             fakerCount = fakerList.Count;
-                            fakerList.Insert(i,Environment.NewLine);
+                            fakerList.Insert(i, Environment.NewLine);
                         }
                         loofak = string.Join(" ", fakerList.ToArray());
                     }
@@ -707,7 +707,7 @@ namespace Native.Csharp.App.Event.Event_Me
         {
             try
             {
-                输入表达式 = 输入表达式.Substring(3).Trim().Replace("A",">").Replace("a", ">");//输入的表达式去除开头结尾的空格 A识别为大于
+                输入表达式 = 输入表达式.Substring(3).Trim().Replace("A", ">").Replace("a", ">");//输入的表达式去除开头结尾的空格 A识别为大于
                 char[] 掷骰原因 = null;
                 if (输入表达式.Split(' ').Length > 1)
                 {
@@ -715,7 +715,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 }
                 输入表达式 = 输入表达式.TrimEnd(掷骰原因).ToUpper();//去除尾部原因，转化为大写
 
-                string 骰子面 = "100"; string 骰池样式 = "10";string 加骰成功值 = "8";//提供默认值
+                string 骰子面 = "100"; string 骰池样式 = "10"; string 加骰成功值 = "8";//提供默认值
 
                 if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\" + Event_Variable.QQQ + ".ini"))//导入用户设置
                 {
@@ -856,7 +856,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                 {
                                     break;
                                 }
-                                
+
                             }
                             符号栈.Push(元素);
                         }
@@ -989,7 +989,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                         }
                                         if (元素 == "<" && rd < 参数2)
                                         {
-                                            i--; 加骰数++; 
+                                            i--; 加骰数++;
                                         }
                                         if (rd >= Convert.ToInt32(临时加骰成功值))
                                         {
@@ -1340,7 +1340,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     }
                     else
                     {
-                        reValue += $"{inputs[i]}为空或不存在！；" ;
+                        reValue += $"{inputs[i]}为空或不存在！；";
                     }
                 }
                 return reValue;
@@ -1708,7 +1708,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         return string.Join(Environment.NewLine, toList.ToArray());//换行
                     }
                 }
-                string tempZone = toList[new Random(Guid.NewGuid().GetHashCode()).Next(0, Convert.ToInt32(toList.Count - 1))];
+                string tempZone = toList[new Random(Guid.NewGuid().GetHashCode()).Next(0, toList.Count - 1)];
                 Event_Variable.TempZone = tempZone;
                 return tempZone;
             }
@@ -1800,7 +1800,7 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 input = input.Substring(3).Trim();
                 List<string> list = new List<string>(input.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//[区域] [序号*]
-                string reValue = "";int count;
+                string reValue = ""; int count;
                 for (int i = 1; i < list.Count; i++)
                 {
                     string zone = LoadInfo(list[0]);
@@ -1966,7 +1966,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     if (tempInput.Count < 2)//只有角色参数，直接显示属性
                     {
                         return $@"{tempInput[0]}的属性为:
-{orige.Trim().Replace(" ",Environment.NewLine)}";
+{orige.Trim().Replace(" ", Environment.NewLine)}";
                     }
                     Dictionary<string, string> Orige = new Dictionary<string, string>();//来源字典
                     foreach (string item in new List<string>(orige.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)))
@@ -1977,11 +1977,11 @@ namespace Native.Csharp.App.Event.Event_Me
                             return $@"{tempInput[0]}存在坏档现象，请重新创建或手动修复！
 “{item}”缺少键名或键值";
                         }
-                        Orige.Add(item.Substring(0, indexer - 1 ).TrimStart(),item.Substring(indexer).Trim());
+                        Orige.Add(item.Substring(0, indexer - 1).TrimStart(), item.Substring(indexer).Trim());
                     }
                     int doIndex = -1; string doString = "";
                     //开始修改键值
-                    foreach (var item in tempInput.GetRange(1,tempInput.Count - 1))
+                    foreach (var item in tempInput.GetRange(1, tempInput.Count - 1))
                     {
                         foreach (var item2 in new string[] { ":", "*", "/", "+", "-", "%" })//遍历查找该行是否存在五种操作符之一
                         {
@@ -2039,7 +2039,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         newInfo += " " + item.Key + ":" + item.Value;
                     }
                     DelInfo(@"Att\" + tempInput[0]); CreateInfo(@"Att\" + tempInput[0]);
-                    WriteInfo( @"Att\" + tempInput[0], newInfo.Trim() );
+                    WriteInfo(@"Att\" + tempInput[0], newInfo.Trim());
                     return $@"{tempInput[0]}的属性为:
 { newInfo.Trim().Replace(" ", Environment.NewLine) }";
                 }
@@ -2316,7 +2316,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         return $"修改变量[{tempInput[0]}] = {vv}";
                     }
                 }
-                if ((tempInput[1].Substring(0, 1) == "(" || tempInput[1].Substring(0, 1) == "（") && 
+                if ((tempInput[1].Substring(0, 1) == "(" || tempInput[1].Substring(0, 1) == "（") &&
                     (tempInput[1].Substring(tempInput[1].Length - 1, 1) == ")" || tempInput[1].Substring(tempInput[1].Length - 1, 1) == "）"))//是属性
                 {
                     tempInput[1] = tempInput[1].Replace("（", "").Replace("）", "").Replace("(", "").Replace(")", "").Replace("：", ":");//角色:属性
@@ -2549,7 +2549,7 @@ namespace Native.Csharp.App.Event.Event_Me
         /// </summary>
         /// <param name="list"></param>
         /// <param name="listAllName"></param>
-        public static void CutTrueName(List<string> list,out List<string> listFakeName)
+        public static void CutTrueName(List<string> list, out List<string> listFakeName)
         {
             listFakeName = new List<string>();
             foreach (var item in list)

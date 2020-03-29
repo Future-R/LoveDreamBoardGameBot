@@ -8,6 +8,7 @@ namespace Native.Csharp.App.Event.Event_Me
     class 操作
     {
         public static List<long> 机器人开关 = new List<long>();
+
         public static void 开关(long 群号, bool 关闭)
         {
             if (关闭)
@@ -45,6 +46,30 @@ namespace Native.Csharp.App.Event.Event_Me
             else
             {
                 return default(T);
+            }
+        }
+
+        public static void 发送(string 消息)
+        {
+            if (消息 != "")
+            {
+                数据.发送次数++;
+                if (数据.发送次数 > 9)
+                {
+                    Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 转义.输出("不干了！"));
+                }
+                if (数据.群聊目标 == null)
+                {
+                    Common.CqApi.SendDiscussMessage(数据.讨论组目标.FromDiscuss, 转义.输出(消息));
+                }
+                else if (数据.私聊)
+                {
+                    Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 转义.输出(消息));
+                }
+                else
+                {
+                    Common.CqApi.SendGroupMessage(数据.群聊目标.FromGroup, 转义.输出(消息));
+                }
             }
         }
     }

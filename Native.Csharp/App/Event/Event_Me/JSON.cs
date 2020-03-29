@@ -27,12 +27,12 @@ namespace Native.Csharp.App.Event.Event_Me
             请求.AutomaticDecompression = DecompressionMethods.GZip;
 
             HttpWebResponse 应答 = (HttpWebResponse)请求.GetResponse();
-            Stream myResponseStream = 应答.GetResponseStream();
-            StreamReader myStreamReader = new StreamReader(myResponseStream, Encoding.UTF8);
-            string 返回值 = myStreamReader.ReadToEnd();
+            Stream 应答流 = 应答.GetResponseStream();
+            StreamReader 读取流 = new StreamReader(应答流, Encoding.UTF8);
+            string 返回值 = 读取流.ReadToEnd();
 
-            myStreamReader.Close();
-            myResponseStream.Close();
+            读取流.Close();
+            应答流.Close();
 
             if (应答 != null)
             {

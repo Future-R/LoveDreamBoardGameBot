@@ -54,7 +54,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         集合排序.Sort();
                         return string.Join("、", 集合排序.ToArray());
                     }
-                    
+
 
                 case "频率":
                     Dictionary<string, int> 集合频率 = new Dictionary<string, int>();
@@ -147,15 +147,42 @@ namespace Native.Csharp.App.Event.Event_Me
             }
             else if (参数.StartsWith("左对齐"))
             {
+
                 return 目标文本.PadRight(Convert.ToInt32(参数.Substring(3))).ToString();
             }
             else if (参数.StartsWith("右对齐"))
             {
                 return 目标文本.PadLeft(Convert.ToInt32(参数.Substring(3))).ToString();
             }
-            else if (参数.StartsWith("正则"))
+            else if (参数.StartsWith("正则") || 参数.StartsWith("反向正则") || 参数.StartsWith("多行正则") || 参数.StartsWith("单行正则") || 参数.StartsWith("忽略大小写正则"))
             {
-                return Regex.Match(目标文本, 参数.Substring(2), RegexOptions.None, TimeSpan.FromSeconds(2)).Value;
+                var 模式 = RegexOptions.None;
+                var 模式判断 = 参数.Trim().Substring(0, 参数.IndexOf('则') + 1);
+                switch (模式判断)
+                {
+                    case "忽略大小写正则":
+                        模式 = RegexOptions.IgnoreCase;
+                        break;
+                    case "单行正则":
+                        模式 = RegexOptions.Singleline;
+                        break;
+                    case "多行正则":
+                        模式 = RegexOptions.Multiline;
+                        break;
+                    case "反向正则":
+                        模式 = RegexOptions.RightToLeft;
+                        break;
+                    default:
+                        break;
+                }
+                MatchCollection 匹配集合 = Regex.Matches(目标文本, 参数.Substring(参数.IndexOf('则') + 1), 模式, TimeSpan.FromSeconds(2));
+                string 返回值 = "";
+                foreach (var item in 匹配集合)
+                {
+                    返回值 += item + "、";
+                }
+                return 返回值.TrimEnd('、');
+                //return Regex.Match(目标文本, 参数.Substring(2), RegexOptions.None, TimeSpan.FromSeconds(2)).Value;
             }
             else if (参数.StartsWith("移除"))
             {
@@ -215,13 +242,35 @@ namespace Native.Csharp.App.Event.Event_Me
                 }
                 else
                 {
-                    目标 = 参数.Split(new[] { '为' }, StringSplitOptions.RemoveEmptyEntries);
+                    目标 = 参数.Split(new[] { '为' }, StringSplitOptions.None);
                 }
                 if (目标.Length != 2)
                 {
                     return 目标文本;
                 }
-                return 目标文本.Replace(目标[0], 目标[1]).Replace("“换行”", Environment.NewLine);
+                string 返回值 = 目标文本;
+                if (目标[1].Contains("”、“"))//是多对多替换
+                {
+                    MatchCollection 匹配左 = Regex.Matches($"“{目标[0]}”", @"(?<=“).*?(?=”)", RegexOptions.None, TimeSpan.FromSeconds(2));
+                    MatchCollection 匹配右 = Regex.Matches($"“{目标[1]}”", @"(?<=“).*?(?=”)", RegexOptions.None, TimeSpan.FromSeconds(2));
+                    for (int i = 0; i < 匹配左.Count; i++)
+                    {
+                        返回值 = 返回值.Replace(匹配左[i].Value, 匹配右[i].Value);
+                    }
+                }
+                else if (目标[0].Contains("”、“"))//是多对一替换
+                {
+                    MatchCollection 匹配集合 = Regex.Matches($"“{目标[0]}”", @"(?<=“).*?(?=”)", RegexOptions.None, TimeSpan.FromSeconds(2));
+                    foreach (var item in 匹配集合)
+                    {
+                        返回值 = 返回值.Replace(item.ToString(), 目标[1]);
+                    }
+                }
+                else//是一对一替换
+                {
+                    return 返回值.Replace(目标[0], 目标[1]).Replace("“换行”", Environment.NewLine);
+                }
+                return 返回值.Replace("“换行”", Environment.NewLine);
             }
             else if (参数.StartsWith("从"))
             {
