@@ -58,7 +58,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 转义.输出("不干了！"));
                 }
-                if (数据.群聊目标 == null)
+                else if (数据.群聊目标 == null)
                 {
                     Common.CqApi.SendDiscussMessage(数据.讨论组目标.FromDiscuss, 转义.输出(消息));
                 }

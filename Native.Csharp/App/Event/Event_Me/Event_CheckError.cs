@@ -18,6 +18,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 str += "\n"
                 + 数据.实体["输入"]["语句"] + "\n"
                 + ex.ToString().
+                    Replace("System.ArgumentOutOfRangeException: ", "").
                     Replace("Native.Csharp.App.Event.Event_Me.", "").
                     Replace("String ", "").Replace("Char ", "").Replace("Int ", "").Replace("Bool ", "").
                     Replace("System.Data.SyntaxErrorException: ", "").

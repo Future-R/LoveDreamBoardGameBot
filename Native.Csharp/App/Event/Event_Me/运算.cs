@@ -102,14 +102,15 @@ namespace Native.Csharp.App.Event.Event_Me
                 }
                 if (模式 == "相反")
                 {
-                    int 位置 = 数据.反义词典.IndexOf(数据.实体[分词[0]][分词[1]]);
+                    List<string> 反义词典 = 集合.静态集合生成(数据.实体["反义词典"]["列表"]);
+                    int 位置 = 反义词典.IndexOf(数据.实体[分词[0]][分词[1]]);
                     if (位置 % 2 == 0)
                     {
-                        数据.实体[分词[0]][分词[1]] = 数据.反义词典[位置 + 1];
+                        数据.实体[分词[0]][分词[1]] = 反义词典[位置 + 1];
                     }
                     else
                     {
-                        数据.实体[分词[0]][分词[1]] = 数据.反义词典[位置 - 1];
+                        数据.实体[分词[0]][分词[1]] = 反义词典[位置 - 1];
                     }
                 }
             }
@@ -151,7 +152,7 @@ namespace Native.Csharp.App.Event.Event_Me
             foreach (var 字 in 表达式.Substring(1).ToUpper().Replace("×", "*").Replace("X", "*")
                 .Replace("（", "(").Replace("）", ")").Replace("÷", "/"))//d5你好
             {
-                if (!是数字(字) && !是符号(字) && 字 != ' ')//不是数字和符号，那就是描述
+                if (!是数字(字) && !是符号(字) && 字 != ' ' && 字 != 'w' && 字 != 'W' && 字 != 'h' && 字 != 'H')//不是数字和符号，那就是描述
                 {
                     break;
                 }
@@ -913,7 +914,7 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 return "0";
             }
-            int 最后修正 = new Random(Guid.NewGuid().GetHashCode()).Next(-1, 3);//-1~+2
+            int 最后修正 = new Random(Guid.NewGuid().GetHashCode()).Next(1, 111) / 100;//0~+1
             return (Math.Floor(骰池大概数量 * 成功率) + 最后修正).ToString();
         }
 

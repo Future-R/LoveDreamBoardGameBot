@@ -160,7 +160,9 @@
     <Compile Include="App\Event\Event_Me\比较.cs" />
     <Compile Include="App\Event\Event_Me\消息预处理.cs" />
     <Compile Include="App\Event\Event_Me\数据.cs" />
+    <Compile Include="App\Event\Event_Me\生命游戏.cs" />
     <Compile Include="App\Event\Event_Me\解释.cs" />
+    <Compile Include="App\Event\Event_Me\请问.cs" />
     <Compile Include="App\Event\Event_Me\转义.cs" />
     <Compile Include="App\Event\Event_Me\运算.cs" />
     <Compile Include="App\Event\Event_Me\集合.cs" />

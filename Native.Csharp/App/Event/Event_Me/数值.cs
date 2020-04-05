@@ -132,6 +132,9 @@ namespace Native.Csharp.App.Event.Event_Me
                     方的平均数2 /= 方差集合2.Count;
                     return Math.Sqrt(Convert.ToDouble(方的平均数2 - 平均数的方2)).ToString();
 
+                case "逐字":
+                    return string.Join("、", 目标文本.ToCharArray().ToList());
+
                 default:
                     break;
             }

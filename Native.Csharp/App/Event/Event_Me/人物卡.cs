@@ -457,6 +457,21 @@ namespace Native.Csharp.App.Event.Event_Me
             return $"{昵称}疯狂发作-总结症状:\n{总结症状[rd]}";
         }
 
+        //public static string 成功检定(string 语句)
+        //{
+        //    if (string.IsNullOrEmpty(语句))
+        //    {
+        //        return "正确格式：“.ra [行动] [难度]”";
+        //    }
+        //    string[] 切分 = 语句.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        //    string 行动 = 切分[0];
+        //    string 难度 = "";
+        //    if (切分.Length == 1)//读取玩家设置
+        //    {
+
+        //    }
+        //}
+
         public static string 今日人品()
         {
             string 昵称 = 获取昵称();

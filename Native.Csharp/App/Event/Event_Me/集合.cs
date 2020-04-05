@@ -14,6 +14,29 @@ namespace Native.Csharp.App.Event.Event_Me
             return 静态集合;
         }
 
+        public static string[][] 二维数组生成(string 分析文本, string 分隔符 = " ")
+        {
+            分析文本 = 分析文本.Replace("\r\n", "");
+            if (分析文本.Length > 625)
+            {
+                return null;
+            }
+            string[] 数组 = 分析文本.Split(分隔符.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            string[][] 二维数组 = new string[数组.Count()][];
+            try
+            {
+                for (int i = 0; i < 数组.Count(); i++)
+                {
+                    二维数组[i] = Array.ConvertAll(数组[i].ToCharArray(), s => s.ToString());
+                }
+                return 二维数组;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public static string 随机(List<string> 目标集合, int 次数 = 1)
         {
             string 返回值 = "";

@@ -129,7 +129,7 @@ namespace Native.Csharp.App.Event.Event_Me
                         }
                         执行结果 = "";
                     }
-                    else 操作.发送(执行结果);
+                    else if (数据.发送次数 < 10) 操作.发送(执行结果);
                 }
             }
         }
@@ -160,7 +160,14 @@ namespace Native.Csharp.App.Event.Event_Me
                         语句 = 语句.Substring(1);
                         if (!语句.Contains("的")) //在"为"之前补全"的值"
                         {
-                            语句 = 语句.Insert(语句.IndexOf("为"), "的值");
+                            if (语句.Contains("分别为"))
+                            {
+                                语句 = 语句.Insert(语句.IndexOf("分别为"), "的值");
+                            }
+                            else
+                            {
+                                语句 = 语句.Insert(语句.IndexOf("为"), "的值");
+                            }
                         }
                         //十的级别、百的级别、千的级别、万的级别、亿的级别分别是1、2、3、4、8。
                         //十、百、千、万、亿的级别分别是1、2、3、4、8。
@@ -250,7 +257,33 @@ namespace Native.Csharp.App.Event.Event_Me
                 #region 获取组件值
                 if (语句.StartsWith("求") || 语句.StartsWith("问"))
                 {
-                    string 获取语句 = 语句.Substring(1);
+                    string 获取语句 = 语句.Substring(1).Replace("我的", 数据.私聊目标.FromQQ.ToString() + "的");
+                    string 属性补全 = "值";
+                    if (获取语句.Contains("、"))
+                    {
+                        List<string> 获取集合 = 获取语句.Split('、').ToList();
+                        if (获取集合[获取集合.Count - 1].Contains("的"))
+                        {
+                            属性补全 = 获取集合[获取集合.Count - 1].Substring(获取集合[获取集合.Count - 1].IndexOf("的") + 1);
+                        }
+                        string 获取返回值 = "";
+                        foreach (var item in 获取集合)
+                        {
+                            if (!item.Contains("的"))
+                            {
+                                获取返回值 += 数据.读取组件(item + "的" + 属性补全) + "、";
+                            }
+                            else
+                            {
+                                获取返回值 += 数据.读取组件(item) + "、";
+                            }
+                        }
+                        return 获取返回值.TrimEnd('、');
+                    }
+                    if (!获取语句.Contains("的"))
+                    {
+                        获取语句 += "的值";
+                    }
                     return 数据.读取组件(获取语句);
                 }
                 #endregion
@@ -326,25 +359,9 @@ namespace Native.Csharp.App.Event.Event_Me
                         foreach (var 子语句 in 语句集)
                         {
                             string 执行结果 = 执行(子语句.Trim());
-                            if (执行结果 != "")
+                            if (!执行结果.StartsWith("跳转到页码"))
                             {
-                                数据.发送次数++;
-                                if (数据.发送次数 > 9)
-                                {
-                                    return "不干了！";
-                                }
-                                if (数据.群聊目标 == null)
-                                {
-                                    Common.CqApi.SendDiscussMessage(数据.讨论组目标.FromDiscuss, 转义.输出(执行结果));
-                                }
-                                else if (数据.私聊)
-                                {
-                                    Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 转义.输出(执行结果));
-                                }
-                                else
-                                {
-                                    Common.CqApi.SendGroupMessage(数据.群聊目标.FromGroup, 转义.输出(执行结果));
-                                }
+                                if (数据.发送次数 < 10) 操作.发送(执行结果);
                             }
                         }
                     }
@@ -379,7 +396,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                     数据.写入实体("元素", "值", 元素);
                                     for (int i = 0; i < debug.Count; i++)
                                     {
-                                        操作.发送(执行(debug[i].Trim()));
+                                        if (数据.发送次数 < 10) 操作.发送(执行(debug[i].Trim()));
                                     }
                                 }
                             }
@@ -407,24 +424,35 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         foreach (var 子语句 in 语句集)
                         {
-                            操作.发送(执行(子语句.Trim()));
+                            if (数据.发送次数 < 10) 操作.发送(执行(子语句.Trim()));
                         }
                     }
                     return "";
                 }
                 #endregion
                 #region 对于
-                //if (语句.StartsWith("对于"))
-                //{
-                //    List<string> 对于语句 = new List<string>(语句.Substring(2).Split(new[] { '，' }, StringSplitOptions.RemoveEmptyEntries));
-                //    if (对于语句.Count > 1)
-                //    {
-                //        if (对于语句[1].StartsWith("若") && 对于语句[2].StartsWith("则"))
-                //        {
-                //            //此处是规则写入
-                //        }
-                //    }
-                //}
+                if (语句.StartsWith("对于"))//对于甲、乙，若甲的孩子是乙且甲的性别是女，则乙的妈妈是甲。
+                {
+                    List<string> 对于语句 = new List<string>(语句.Substring(2).Split(new[] { '，' }, StringSplitOptions.RemoveEmptyEntries));
+                    if (对于语句.Count == 3)
+                    {
+                        if (对于语句[1].StartsWith("若") && 对于语句[2].StartsWith("则"))
+                        {
+                            //此处是规则写入
+                            string[] 参数 = 对于语句[0].Split(new[] { '、' }, StringSplitOptions.RemoveEmptyEntries);//甲、乙
+                            string 命题 = 对于语句[2].Substring(1).Trim();
+                            string 条件 = 对于语句[1].Substring(1).Trim();
+                            for (int i = 0; i < 参数.Length; i++)
+                            {
+                                命题 = 命题.Replace(参数[i], $"参数{i}");
+                                条件 = 条件.Replace(参数[i], $"参数{i}");
+                            }
+                            数据.写入实体(命题, "条件", 条件);
+                            return 数据.好的;
+                        }
+                    }
+                    return "正确格式为：对于……，若……，则……，详见帮助文档shimo.im/docs/dqcWQvHjk38QtRq3";
+                }
                 #endregion
                 #region 回复
                 if (语句.StartsWith("回复"))
@@ -469,6 +497,10 @@ namespace Native.Csharp.App.Event.Event_Me
                 }
                 #endregion
                 #region 骰子
+                //if (语句.ToLower().StartsWith("ra") || 语句.ToLower().StartsWith("rc"))
+                //{
+                //    return 人物卡.成功检定(语句.Substring(2).Trim());
+                //}
                 if (语句.StartsWith("骰子"))
                 {
                     语句 = "r" + 语句.Substring(2);
@@ -607,50 +639,96 @@ namespace Native.Csharp.App.Event.Event_Me
                 }
 
                 #endregion
+                #region 生命游戏
+                if (语句.StartsWith("生命游戏"))
+                {
+                    语句 = 语句.Substring(4).Trim();
+                    if (string.IsNullOrEmpty(语句))
+                    {
+                        string 棋盘 = @"〇红〇〇〇〇〇〇〇〇〇〇 
+〇〇红〇〇〇〇〇〇〇〇〇 
+红红红〇〇〇〇〇〇〇〇〇 
+〇〇〇〇〇〇〇〇〇〇〇〇 
+〇〇〇〇〇〇〇〇〇〇〇〇 
+〇〇〇〇〇〇〇〇〇〇〇〇 
+〇〇〇〇〇〇〇〇〇〇〇〇 
+〇〇〇〇〇〇〇〇〇〇〇〇 
+〇〇〇〇〇〇〇〇〇〇〇〇 
+〇〇〇〇〇〇〇〇〇蓝蓝蓝 
+〇〇〇〇〇〇〇〇〇蓝〇〇 
+〇〇〇〇〇〇〇〇〇〇蓝〇";
+                        数据.写入实体("生命游戏", "棋盘", 棋盘);
+                        return "创建了新的默认生命游戏：" + Environment.NewLine + 棋盘;
+                    }
+                    if (语句 == "继续")
+                    {
+                        string[][] 二维数组 = 集合.二维数组生成(数据.实体["生命游戏"]["棋盘"]);
+                        if (二维数组 == null)
+                        {
+                            return "错误！请输入格式规范的棋盘！";
+                        }
+                        string 打印棋盘 = 生命游戏.游戏(二维数组);
+                        数据.写入实体("生命游戏", "棋盘", 打印棋盘.Replace("\r\n", " "));
+                        return 打印棋盘;
+                    }
+                    if (语句.Length > 9)
+                    {
+                        数据.写入实体("生命游戏", "棋盘", 语句);
+                        return "";
+                    }
+                    return "指令不存在！请输入“生命游戏”或“生命游戏继续”或\n“生命游戏\n〇〇红〇\n红红红〇\n〇〇〇〇”";
+                }
+                #endregion
 
                 //关键字包含
                 #region 赋值
                 if (语句.Contains("分别是"))
                 {
-                    语句 = 语句.Substring(1);
                     if (!语句.Contains("的")) //在"为"之前补全"的值"
                     {
-                        语句 = 语句.Insert(语句.IndexOf("是"), "的值");
+                        if (语句.Contains("分别是"))
+                        {
+                            语句 = 语句.Insert(语句.IndexOf("分别是"), "的值");
+                        }
+                        else
+                        {
+                            语句 = 语句.Insert(语句.IndexOf("是"), "的值");
+                        }
                     }
                     //十的级别、百的级别、千的级别、万的级别、亿的级别分别是1、2、3、4、8。
                     //十、百、千、万、亿的级别分别是1、2、3、4、8。
-                    string 左侧 = 语句.Substring(0, 语句.IndexOf("分别是"));
-                    string 右侧 = 语句.Substring(语句.IndexOf("分别是") + 3);
-                    string 推测属性 = "值";
-                    List<string> 左侧集合 = 左侧.Split('、').ToList();
-                    List<string> 右侧集合 = 右侧.Split('、').ToList();
-                    if (左侧集合.Count > 右侧集合.Count)
+                    string 前面 = 语句.Substring(0, 语句.IndexOf("分别是"));
+                    string 后面 = 语句.Substring(语句.IndexOf("分别是") + 3);
+                    string 属性推测 = "值";
+                    List<string> 前面集合 = 前面.Split('、').ToList();
+                    List<string> 后面集合 = 后面.Split('、').ToList();
+                    if (前面集合.Count > 后面集合.Count)
                     {
-                        return $"怎么把{右侧集合.Count}个糖果平均分给{左侧集合.Count}个小朋友？";
+                        return $"怎么把{后面集合.Count}个糖果平均分给{前面集合.Count}个小朋友？";
                     }
-                    if (左侧集合[左侧集合.Count - 1].Contains("的"))
+                    if (前面集合[前面集合.Count - 1].Contains("的"))
                     {
-                        推测属性 = 左侧集合[左侧集合.Count - 1].Substring(左侧集合[左侧集合.Count - 1].IndexOf("的") + 1);
+                        属性推测 = 前面集合[前面集合.Count - 1].Substring(前面集合[前面集合.Count - 1].IndexOf("的") + 1);
                     }
                     try
                     {
-                        for (int i = 0; i < 左侧集合.Count; i++)
+                        for (int i = 0; i < 前面集合.Count; i++)
                         {
-                            if (!左侧集合[i].Contains("的"))
+                            if (!前面集合[i].Contains("的"))
                             {
-                                if (左侧集合[i] == "我")
+                                if (前面集合[i] == "我")
                                 {
-                                    左侧集合[i] = 数据.私聊目标.FromQQ.ToString();
+                                    前面集合[i] = 数据.私聊目标.FromQQ.ToString();
                                 }
-                                数据.写入实体(左侧集合[i], 推测属性, 右侧集合[i]);
+                                数据.写入实体(前面集合[i], 属性推测, 后面集合[i]);
                             }
                             else
                             {
-                                if (左侧集合[i].Substring(0, 左侧集合[i].IndexOf("的")) == "我")
+                                if (前面集合[i].Substring(0, 前面集合[i].IndexOf("的")) == "我")
                                 {
-                                    左侧集合[i] = 数据.私聊目标.FromQQ.ToString() + "的" + 左侧集合[i].Substring(左侧集合[i].IndexOf("的") + 1);
+                                    前面集合[i] = 数据.私聊目标.FromQQ.ToString() + "的" + 前面集合[i].Substring(前面集合[i].IndexOf("的") + 1);
                                 }
-                                数据.写入实体(左侧集合[i].Substring(0, 左侧集合[i].IndexOf("的")), 左侧集合[i].Substring(左侧集合[i].IndexOf("的") + 1), 右侧集合[i]);
+                                数据.写入实体(前面集合[i].Substring(0, 前面集合[i].IndexOf("的")), 前面集合[i].Substring(前面集合[i].IndexOf("的") + 1), 后面集合[i]);
                             }
                         }
                     }
@@ -687,6 +765,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 }
                 #endregion
                 #region 加减乘除
+                //迟早重构
                 if (语句.Contains("+"))
                 {
                     List<string> 内容 = new List<string>();
