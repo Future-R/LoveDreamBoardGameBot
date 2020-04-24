@@ -135,6 +135,12 @@ namespace Native.Csharp.App.Event.Event_Me
                 case "逐字":
                     return string.Join("、", 目标文本.ToCharArray().ToList());
 
+                case "大写":
+                    return 目标文本.ToUpper();
+
+                case "小写":
+                    return 目标文本.ToLower();
+
                 default:
                     break;
             }
@@ -185,7 +191,6 @@ namespace Native.Csharp.App.Event.Event_Me
                     返回值 += item + "、";
                 }
                 return 返回值.TrimEnd('、');
-                //return Regex.Match(目标文本, 参数.Substring(2), RegexOptions.None, TimeSpan.FromSeconds(2)).Value;
             }
             else if (参数.StartsWith("移除"))
             {
@@ -237,7 +242,7 @@ namespace Native.Csharp.App.Event.Event_Me
             }
             else if (参数.StartsWith("替换"))
             {
-                参数 = 参数.Substring(2);
+                参数 = 参数.Substring(2).Trim();
                 string[] 目标;
                 if (参数.Contains("“") && 参数.Contains("”"))
                 {

@@ -153,6 +153,10 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     return $"跳转到页码{语句.Substring(2)}";
                 }
+                if (语句.StartsWith("注释："))
+                {
+                    return "";
+                }
                 if (语句.StartsWith("设"))
                 {
                     if (语句.Contains("分别为"))
@@ -258,33 +262,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 if (语句.StartsWith("求") || 语句.StartsWith("问"))
                 {
                     string 获取语句 = 语句.Substring(1).Replace("我的", 数据.私聊目标.FromQQ.ToString() + "的");
-                    string 属性补全 = "值";
-                    if (获取语句.Contains("、"))
-                    {
-                        List<string> 获取集合 = 获取语句.Split('、').ToList();
-                        if (获取集合[获取集合.Count - 1].Contains("的"))
-                        {
-                            属性补全 = 获取集合[获取集合.Count - 1].Substring(获取集合[获取集合.Count - 1].IndexOf("的") + 1);
-                        }
-                        string 获取返回值 = "";
-                        foreach (var item in 获取集合)
-                        {
-                            if (!item.Contains("的"))
-                            {
-                                获取返回值 += 数据.读取组件(item + "的" + 属性补全) + "、";
-                            }
-                            else
-                            {
-                                获取返回值 += 数据.读取组件(item) + "、";
-                            }
-                        }
-                        return 获取返回值.TrimEnd('、');
-                    }
-                    if (!获取语句.Contains("的"))
-                    {
-                        获取语句 += "的值";
-                    }
-                    return 数据.读取组件(获取语句);
+                    return 数据.读取(获取语句);
                 }
                 #endregion
                 #region 查询实体
@@ -463,7 +441,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 #region 获取
                 if (语句.StartsWith("获取"))
                 {
-                    var 结果 = 操作.超时检测(2000, () =>
+                    var 结果 = 操作.超时检测(3000, () =>
                     {
                         return 转义.内部输入(JSON.获取(语句.Substring(2)));
                     });
@@ -638,6 +616,16 @@ namespace Native.Csharp.App.Event.Event_Me
                     return 人物卡.今日人品();
                 }
 
+                #endregion
+                #region 卡牌
+                if (语句.EndsWith("！"))
+                {
+                    string 行动返回值 = 卡牌.行动分析(语句.TrimEnd('！'));
+                    if (行动返回值 != "")
+                    {
+                        return 行动返回值;
+                    }
+                }
                 #endregion
                 #region 生命游戏
                 if (语句.StartsWith("生命游戏"))
@@ -1008,7 +996,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static string 变量解释(string 语句)
         {
-            if (语句.Length > 4096 || (语句.Length > 100 && 语句.Contains("【输入的语句】")))
+            if (语句.Length > 65535 || (语句.Length > 100 && 语句.Contains("【输入的语句】")))
             {
                 return "";
             }
@@ -1149,7 +1137,7 @@ namespace Native.Csharp.App.Event.Event_Me
             if (判别式.Contains("有"))
             {
                 模式 = "有";
-                委托 = new 数据.布尔委托(比较.有);
+                委托 = new 数据.布尔委托(比较.存在);
             }
             else if (判别式.Contains("等于"))
             {
@@ -1170,6 +1158,11 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 模式 = "包含";
                 委托 = new 数据.布尔委托(比较.包含);
+            }
+            else if (判别式.Contains("存在"))
+            {
+                模式 = "存在";
+                委托 = new 数据.布尔委托(比较.存在);
             }
             else if (判别式.Contains("开头是"))
             {

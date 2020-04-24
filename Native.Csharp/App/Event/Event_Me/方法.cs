@@ -13,14 +13,24 @@ namespace Native.Csharp.App.Event.Event_Me
             List<string> 待处理列表 = new List<string>(); List<string> 触发语句列表 = new List<string>();
             foreach (var 键值对 in 数据.实体)
             {
+                bool 在范围内 = true;
                 if (键值对.Value.ContainsKey("触发") && 键值对.Value.ContainsKey("语句"))
                 {
-                    if (解释.判定(解释.变量解释(键值对.Value["触发"])))
+                    string QQ = 数据.私聊目标.FromQQ.ToString();
+                    if (键值对.Value.ContainsKey("范围") && 数据.实体[QQ].ContainsKey("位置"))
+                    {
+                        if (!数据.实体[QQ]["位置"].StartsWith(键值对.Value["范围"]))
+                        {
+                            在范围内 = false;
+                        }
+                    }
+                    if (解释.判定(解释.变量解释(键值对.Value["触发"])) && 在范围内)
                     {
                         待处理列表.Add(键值对.Value["语句"]);
                         触发语句列表.Add(语句);
                     }
                 }
+                
             }
             for (int 序号 = 0; 序号 < 待处理列表.Count; 序号++)
             {

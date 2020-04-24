@@ -154,6 +154,7 @@
     <Compile Include="App\Event\Event_Me\JSON.cs" />
     <Compile Include="App\Event\Event_Me\MySql.cs" />
     <Compile Include="App\Event\Event_Me\人物卡.cs" />
+    <Compile Include="App\Event\Event_Me\卡牌.cs" />
     <Compile Include="App\Event\Event_Me\操作.cs" />
     <Compile Include="App\Event\Event_Me\数值.cs" />
     <Compile Include="App\Event\Event_Me\方法.cs" />
