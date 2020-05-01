@@ -83,7 +83,11 @@ namespace Native.Csharp.App.Event.Event_Me
 
             List<string> 分词 = new List<string>(算式.Split(new string[] { "和", "与", "的", 模式 }, StringSplitOptions.RemoveEmptyEntries));
 
-            if (算式.IndexOf("的") == 算式.LastIndexOf("的"))//如果只有一个"的"
+            if (!算式.Contains("的"))
+            {
+                数据.实体[分词[0]] = 数据.实体[分词[1]];
+            }
+            else if (算式.IndexOf("的") == 算式.LastIndexOf("的"))//如果只有一个"的"
             {
                 if (插二(算式, "和")) 分词.Insert(1, 分词[2]);
                 else 分词.Insert(3, 分词[1]);
@@ -143,11 +147,6 @@ namespace Native.Csharp.App.Event.Event_Me
             }
             string 描述 = "";
             bool 展示详情 = true;
-            //if (表达式.Contains(" "))
-            //{
-            //    描述 = 表达式.Substring(表达式.IndexOf(" "));
-            //    表达式 = 表达式.Substring(0, 表达式.IndexOf(" "));
-            //}
             //检查合法性
             int 分界处 = 1;
             foreach (var 字 in 表达式.Substring(1).ToUpper().Replace("×", "*").Replace("X", "*")
@@ -494,34 +493,64 @@ namespace Native.Csharp.App.Event.Event_Me
                             }
                             break;
 
-                        case "K":
-                            参数2 = Convert.ToDecimal(计算结果.Pop());
-                            参数1 = Convert.ToDecimal(计算结果.Pop());
-                            if (参数2 < 1)
-                            {
-                                return $"错误：{元素}{参数2}非法！";
-                            }
-                            string 展开前 = 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
-                                [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 2];
-                            展开前 = 数值.取中间(展开前, "(", ")");//(2+3+1+3)K3=>2+3+1+3
-                            List<string> 中转骰池 = new List<string>(展开前.Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries));
-                            List<int> 取骰池 = new List<int>();
-                            foreach (var 骰 in 中转骰池)
-                            {
-                                取骰池.Add(Convert.ToInt32(骰));
-                            }
-                            if (参数2 > 取骰池.Count)
-                            {
-                                return "错误：取不出这么多骰子！";
-                            }
-                            取骰池.Sort();
-                            取骰池.RemoveRange(0, Convert.ToInt32(取骰池.Count - 参数2));
-                            返回结果 = new DataTable().Compute(string.Join("+", 取骰池), "").ToString();
+                        //case "K":
+                        //    参数2 = Convert.ToDecimal(计算结果.Pop());
+                        //    参数1 = Convert.ToDecimal(计算结果.Pop());
+                        //    if (参数2 < 1)
+                        //    {
+                        //        return $"错误：{元素}{参数2}非法！";
+                        //    }
+                        //    string 展开前 = 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
+                        //        [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 2];
+                        //    展开前 = 数值.取中间(展开前, "(", ")");//(2+3+1+3)K3=>2+3+1+3
+                        //    List<string> 中转骰池 = new List<string>(展开前.Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries));
+                        //    List<int> 取骰池 = new List<int>();
+                        //    foreach (var 骰 in 中转骰池)
+                        //    {
+                        //        取骰池.Add(Convert.ToInt32(骰));
+                        //    }
+                        //    if (参数2 > 取骰池.Count)
+                        //    {
+                        //        return "错误：取不出这么多骰子！";
+                        //    }
+                        //    取骰池.Sort();
+                        //    取骰池.RemoveRange(0, Convert.ToInt32(取骰池.Count - 参数2));
+                        //    返回结果 = new DataTable().Compute(string.Join("+", 取骰池), "").ToString();
 
-                            计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
-                                    [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
-                                    Replace($"{参数1}K{参数2}", 返回结果);
-                            break;
+                        //    计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
+                        //            [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
+                        //            Replace($"{参数1}K{参数2}", 返回结果);
+                        //    break;
+
+                        //case "Q":
+                        //    参数2 = Convert.ToDecimal(计算结果.Pop());
+                        //    参数1 = Convert.ToDecimal(计算结果.Pop());
+                        //    if (参数2 < 1)
+                        //    {
+                        //        return $"错误：{元素}{参数2}非法！";
+                        //    }
+                        //    string 展开前2 = 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
+                        //        [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 2];
+                        //    展开前2 = 数值.取中间(展开前2, "(", ")");//(2+3+1+3)K3=>2+3+1+3
+                        //    List<string> 中转骰池2 = new List<string>(展开前2.Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries));
+                        //    List<int> 取骰池2 = new List<int>();
+                        //    foreach (var 骰 in 中转骰池2)
+                        //    {
+                        //        取骰池2.Add(Convert.ToInt32(骰));
+                        //    }
+                        //    if (参数2 > 取骰池2.Count)
+                        //    {
+                        //        return "错误：取不出这么多骰子！";
+                        //    }
+                        //    取骰池2.Sort();
+                        //    取骰池2.Reverse();
+                        //    取骰池2.RemoveRange(0, Convert.ToInt32(取骰池2.Count - 参数2));
+                        //    返回结果 = new DataTable().Compute(string.Join("+", 取骰池2), "").ToString();
+
+                        //    计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
+                        //            [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
+                        //            Replace($"{参数1}Q{参数2}", 返回结果);
+                        //    break;
 
                         case "B":
                         case "P":
@@ -547,7 +576,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                 骰池表.RemoveAt(骰池表.Count - 1);//删掉加进来的这个
                                 计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                     [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
-                                    Replace($"{参数1}B{参数2}", $"{参数1}[奖励骰:{string.Join(" ", 骰池表)}]")
+                                    Replace($"{参数1}B{参数2}", $"{参数1}[奖励骰:{string.Join(",", 骰池表)}]")
                                     + "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                     [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
                                     Replace($"{参数1}B{参数2}", 骰池表排序[0] + 个位数);
@@ -558,7 +587,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                 骰池表排序.Reverse();//翻转
                                 计算过程 += "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                     [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
-                                    Replace($"{参数1}P{参数2}", $"{参数1}[惩罚骰:{string.Join(" ", 骰池表)}]")
+                                    Replace($"{参数1}P{参数2}", $"{参数1}[惩罚骰:{string.Join(",", 骰池表)}]")
                                     + "=" + 计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)
                                     [计算过程.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Length - 1].
                                     Replace($"{参数1}P{参数2}", 骰池表排序[0] + 个位数);
@@ -597,6 +626,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 case "B":
                 case "P":
                 case "K":
+                case "Q":
                     优先级 = 3;
                     break;
 
@@ -684,6 +714,36 @@ namespace Native.Csharp.App.Event.Event_Me
 
         static List<string> 中缀分词补全(string 输入表达式, string 骰子面)
         {
+            //提前转换KQ
+            var KQ = Regex.Matches(输入表达式, @"[0-9]+[D][0-9]+[KQ][0-9]+").Cast<Match>().Select(m => m.Value).ToList();
+            try
+            {
+                if (KQ.Count > 0)
+                {
+                    foreach (var item in KQ)
+                    {
+                        string[] 切分 = item.Split(new[] { "D", "K", "Q" }, StringSplitOptions.None);
+                        List<int> 骰池 = new List<int>();
+                        for (int i = 0; i < int.Parse(切分[0]); i++)
+                        {
+                            骰池.Add(new Random(Guid.NewGuid().GetHashCode()).Next(1, Convert.ToInt32(切分[1]) + 1));
+                        }
+                        骰池.Sort();
+                        if (item.Contains("Q"))
+                        {
+                            骰池.Reverse();
+                        }
+                        骰池.RemoveRange(0, 骰池.Count - int.Parse(切分[2]));
+                        string 结果 = string.Join("+", 骰池);
+                        输入表达式 = 输入表达式.Replace(item, "(" + 结果 + ")");
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
             char 文字类型 = '数'; string 预处理结果 = "";
             foreach (var 字符 in 输入表达式)
             {
@@ -732,14 +792,14 @@ namespace Native.Csharp.App.Event.Event_Me
                         临时修改中继表达式.Insert(0, "0");
                         遍历位置++;
                     }
-                    else if (!是纯数(临时修改中继表达式[遍历位置 - 1]) || "+-".Contains(临时修改中继表达式[遍历位置 - 1]))
-                    {
-                        if (!"()".Contains(临时修改中继表达式[遍历位置 - 1]))
-                        {
-                            临时修改中继表达式.Insert(遍历位置, "0");
-                            遍历位置++;
-                        }
-                    }
+                    //else if (!是纯数(临时修改中继表达式[遍历位置 - 1]) || "+-".Contains(临时修改中继表达式[遍历位置 - 1]))
+                    //{
+                    //    if (!"()".Contains(临时修改中继表达式[遍历位置 - 1]))
+                    //    {
+                    //        临时修改中继表达式.Insert(遍历位置, "0");
+                    //        遍历位置++;
+                    //    }
+                    //}
                 }
 
                 if ("DA".Contains(元素))
@@ -763,8 +823,7 @@ namespace Native.Csharp.App.Event.Event_Me
                             临时修改中继表达式.Insert(遍历位置, "1");
                             遍历位置++;
                         }
-                        临时修改中继表达式.Insert(遍历位置, "1");
-                        遍历位置++;
+                        //临时修改中继表达式.Insert(遍历位置, "1");
                     }
                     if (元素 == "D")
                     {
@@ -780,7 +839,7 @@ namespace Native.Csharp.App.Event.Event_Me
                                 临时修改中继表达式.Insert(遍历位置 + 1, 骰子面);
                                 遍历位置++;
                             }
-                            遍历位置++;
+                            //遍历位置++;
                         }
                     }
                 }
@@ -798,8 +857,8 @@ namespace Native.Csharp.App.Event.Event_Me
                             临时修改中继表达式.Insert(遍历位置 + 1, "1");
                             遍历位置++;
                         }
-                        临时修改中继表达式.Insert(遍历位置 + 1, "1");
-                        遍历位置++;
+                        //临时修改中继表达式.Insert(遍历位置 + 1, "1");
+                        //遍历位置++;
                     }
                 }
             }
@@ -830,6 +889,7 @@ namespace Native.Csharp.App.Event.Event_Me
                 case 'B':
                 case 'P':
                 case 'K':
+                case 'Q':
                 case '(':
                 case ')':
                 case '.':
@@ -924,7 +984,7 @@ namespace Native.Csharp.App.Event.Event_Me
             List<string> 数字组 = 字符串.Split(new[] { "加", "减", "乘", "除", "的平方", "的立方", "的根", "的开方" }, StringSplitOptions.RemoveEmptyEntries).ToList();
             foreach (var 数字 in 数字组)
             {
-                string 阿拉伯数字 = 数字;
+                string 阿拉伯数字 = "(" + 数字 + ")";
                 if (阿拉伯数字.StartsWith("十"))
                 {
                     阿拉伯数字 = "1" + 阿拉伯数字;
@@ -936,11 +996,11 @@ namespace Native.Csharp.App.Event.Event_Me
                 字符串 = 字符串.Replace(数字, 阿拉伯数字);
             }
             字符串 = 字符串.Replace("加", "+").Replace("减", "-").Replace("乘", "*").Replace("除", "/")
-                .Replace("的平方","^2").Replace("的立方", "^3").Replace("的根", "^(1/2)").Replace("的开方", "^(1/2)");
+                .Replace("的平方", "^2").Replace("的立方", "^3").Replace("的根", "^(1/2)").Replace("的开方", "^(1/2)");
             int i = 0;
             while (i < 字符串.Length)
             {
-                if ("0123456789+-*/^%.()（）DABPKdabpk".Contains(字符串[i]))
+                if ("0123456789+-*/^%.()（）DABPKQdabpkq".Contains(字符串[i]))
                 {
                     i++;
                 }

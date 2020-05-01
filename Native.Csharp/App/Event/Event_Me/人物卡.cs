@@ -2,6 +2,9 @@
 using static Native.Csharp.App.Event.Event_Me.集合;
 using static Native.Csharp.App.Event.Event_Me.数据;
 using System.Data;
+using System.Text.RegularExpressions;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Native.Csharp.App.Event.Event_Me
 {
@@ -237,6 +240,65 @@ namespace Native.Csharp.App.Event.Event_Me
     "嗜外狂（Xenomania）：痴迷于异国的事物。" + "#" +
     "喜兽癖（Zoomania）：对待动物的态度近乎疯狂地友好。";
         #endregion
+        #region COC同义词
+        const string COC同义词 = @"
+    str 力量
+	dex 敏捷
+	pow 意志
+	siz 体型
+	app 外貌
+	luck 幸运
+	luk 幸运
+	con 体质
+	int 智力/灵感
+	智力 智力/灵感
+	灵感 智力/灵感
+	idea 智力/灵感
+	edu 教育
+	mov 移动力
+	san 理智
+	hp 体力
+	mp 魔法
+	侦察 侦查
+	计算机 计算机使用
+	电脑 计算机使用
+	电脑使用 计算机使用
+	信誉 信用评级
+	信誉度 信用评级
+	信用度 信用评级
+	信用 信用评级
+	驾驶 汽车驾驶
+	驾驶汽车 汽车驾驶
+	驾驶(汽车) 汽车驾驶
+	驾驶:汽车 汽车驾驶
+	快速交谈 话术
+	步枪 步枪/霰弹枪
+	霰弹枪 步枪/霰弹枪
+	散弹枪 步枪/霰弹枪
+	步霰 步枪/霰弹枪
+	步/霰 步枪/霰弹枪
+	步散 步枪/霰弹枪
+	步/散 步枪/霰弹枪
+	图书馆 图书馆使用
+	机修 机械维修
+	电器维修 电气维修
+	cm 克苏鲁神话
+	克苏鲁 克苏鲁神话
+	唱歌 歌唱
+	做画 作画
+	耕做 耕作
+	机枪 机关枪
+	导航 领航
+	船 船驾驶
+	驾驶船 船驾驶
+	驾驶(船) 船驾驶
+	驾驶:船 船驾驶
+	飞行器 飞行器驾驶
+	驾驶飞行器 飞行器驾驶
+	驾驶:飞行器 飞行器驾驶
+	驾驶(飞行器) 飞行器驾驶";
+        static List<string> 属性名替换 = COC同义词.Split(new[] { " ", "\r\n\t" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+        #endregion
 
         public static string COC7D()
         {
@@ -457,20 +519,250 @@ namespace Native.Csharp.App.Event.Event_Me
             return $"{昵称}疯狂发作-总结症状:\n{总结症状[rd]}";
         }
 
-        //public static string 成功检定(string 语句)
-        //{
-        //    if (string.IsNullOrEmpty(语句))
-        //    {
-        //        return "正确格式：“.ra [行动] [难度]”";
-        //    }
-        //    string[] 切分 = 语句.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-        //    string 行动 = 切分[0];
-        //    string 难度 = "";
-        //    if (切分.Length == 1)//读取玩家设置
-        //    {
+        public static string 设置(string 语句)
+        {
+            string 人物卡名称 = Regex.Match(语句, @"^(.+?)(?=--(.+))").Value;
+            if (string.IsNullOrWhiteSpace(人物卡名称))
+            {
+                人物卡名称 = 私聊目标.FromQQ.ToString();
+            }
 
-        //    }
-        //}
+            if (语句.StartsWith("switch"))
+            {
+                string 返回值 = "";
+                string 要导入的人物卡 = 语句.Substring(6).Trim();
+                人物卡名称 = 人物卡名称.Substring(6).Trim();
+                if (!实体.ContainsKey(要导入的人物卡))
+                {
+                    实体.Add(要导入的人物卡, new Dictionary<string, string>());
+                }
+                if (实体[人物卡名称].ContainsKey("名称"))
+                {
+                    实体[实体[人物卡名称]["名称"]] = 实体[人物卡名称];
+                    返回值 = $"当前人物卡的数据已覆盖到{实体[人物卡名称]["名称"]}！{Environment.NewLine}";
+                }
+                实体[人物卡名称] = 实体[要导入的人物卡];
+                return 返回值 + $"{要导入的人物卡}数据读取完毕！";
+            }
+            else if (语句.StartsWith("clr"))
+            {
+                string 要清除的人物卡 = 语句.Substring(3).Trim();
+                if (!实体.ContainsKey(要清除的人物卡))
+                {
+                    return $"找不到你说的“{要清除的人物卡}”！";
+                }
+                实体.Remove(要清除的人物卡);
+                return $"{要清除的人物卡}数据已清除！";
+            }
+            else if (语句.StartsWith("show"))
+            {
+                string 要show的内容 = 语句.Substring(4).Trim();
+                人物卡名称 = 人物卡名称.Substring(4).Trim();
+                var show名 = Regex.Matches(要show的内容, @"[^(\-|\+|\s|\:|\：)?\d]+").Cast<Match>().Select(m => ST同义词转换(m.Value)).ToList();
+                if (show名.Count == 0)
+                {
+                    return "不知道你要查看什么。";
+                }
+                else if (show名[0] == 人物卡名称)
+                {
+                    show名.RemoveAt(0);
+                    if (show名.Count == 0)
+                    {
+                        return "不知道你要查看什么。";
+                    }
+                }
+                var 返回值 = $"{人物卡名称}：";
+                try
+                {
+                    foreach (var item in show名)
+                    {
+                        返回值 += $"{Environment.NewLine}{item}：{实体[人物卡名称][item]}";
+                    }
+                    return 返回值;
+                }
+                catch (Exception)
+                {
+                    return $"对于{人物卡名称}，必然存在{{{string.Join(" , ", show名)}}}的至少一条数据为空，使得数据读取失败！";
+                }
+            }
+            else if (语句.StartsWith("del"))
+            {
+                string 要del的内容 = 语句.Substring(3).Trim();
+                人物卡名称 = 人物卡名称.Substring(3).Trim();
+                var del名 = Regex.Matches(要del的内容, @"[^(\-|\+|\s|\:|\：)?\d]+").Cast<Match>().Select(m => ST同义词转换(m.Value)).ToList();
+                if (del名.Count == 0)
+                {
+                    return "不知道你要移除什么。";
+                }
+                else if (del名[0] == 人物卡名称)
+                {
+                    del名.RemoveAt(0);
+                    if (del名.Count == 0)
+                    {
+                        return "不知道你要移除什么。";
+                    }
+                }
+                try
+                {
+                    foreach (var item in del名)
+                    {
+                        实体[人物卡名称].Remove(item);
+                    }
+                    return $"对{要del的内容}的{string.Join("、", del名)}移除完毕！";
+                }
+                catch (Exception)
+                {
+                    return $"对于{人物卡名称}，必然存在{{{string.Join(" , ", del名)}}}的至少一条数据为空，使得数据移除失败！";
+                }
+            }
+            //以下是st无模式设置
+            var 属性名 = Regex.Matches(语句, @"[^(\-|\+|\s|\:|\：)?\d]+").Cast<Match>().Select(m => ST同义词转换(m.Value)).ToList();
+            var 属性值 = Regex.Matches(语句, @"(\-|\+|\.)?\d+").Cast<Match>().Select(m => m.Value).ToList();
+            if (属性名.Count > 0)
+            {
+                if (属性名[0] == 人物卡名称)
+                {
+                    属性名.RemoveAt(0);
+                }
+            }
+            try
+            {
+                for (int i = 0; i < 属性名.Count; i++)
+                {
+                    string 旧属性 = 读取组件(人物卡名称 + "的" + 属性名[i]);
+                    if (旧属性 == 人物卡名称 + "的" + 属性名[i])
+                    {
+                        旧属性 = "0";
+                    }
+                    写入实体(人物卡名称, 属性名[i], (decimal.Parse(属性值[i]) + decimal.Parse(旧属性)).ToString());
+                }
+                if (人物卡名称 != 私聊目标.FromQQ.ToString())
+                {
+                    写入实体(人物卡名称, "名称", 人物卡名称);
+                }
+            }
+            catch (Exception)
+            {
+                return "格式错误！";
+            }
+            return $"已导入到{人物卡名称}！";
+        }
+
+        public static string 成功检定(string 语句)
+        {
+            if (string.IsNullOrEmpty(语句))
+            {
+                return "正确格式：“.ra/rc[h][p/b数字] [属性] [属性值] [掷骰原因]”";
+            }
+            语句 = 语句.Trim();
+            if (语句[0] == 'H' || 语句[0] == 'h')
+            {
+                语句 = 语句.Substring(1);
+                if (!私聊)
+                {
+                    私聊 = true;
+                    群聊目标 = 私聊目标;
+                }
+            }
+            int rd100 = new Random(Guid.NewGuid().GetHashCode()).Next(1, 101);
+            string 奖惩骰 = Regex.Match(语句, @"^([BbPp]+)(?:[123]?)").Value.ToUpper();
+            int 奖惩骰数 = 1;
+            if (!string.IsNullOrWhiteSpace(奖惩骰))
+            {
+                if ("123".Contains(奖惩骰[奖惩骰.Length - 1]))
+                {
+                    奖惩骰数 = Convert.ToInt32(语句[2]);
+                    语句 = 语句.Substring(2);
+                }
+                else
+                {
+                    语句 = 语句.Substring(1);
+                }
+                #region BP运算
+                int 参数2 = 奖惩骰数;
+                int 参数1 = rd100;
+                string 骰池 = "";
+                for (int i = 0; i < 参数2; i++)
+                {
+                    骰池 += new Random(Guid.NewGuid().GetHashCode()).Next(0, 10) + " ";
+                }
+                List<string> 骰池表 = new List<string>(骰池.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));
+                string 待替换 = (参数1 % 100).ToString();
+                string 个位数 = (待替换.Length == 1) ? 待替换 : 待替换.Substring(1, 1);
+                骰池表.Add(待替换.Substring(0, 1));//先加进来排序，一会儿处理完删掉
+                List<string> 骰池表排序 = new List<string>(骰池表);
+                骰池表排序.Sort();//0124458
+                char 元素 = 奖惩骰[0];
+                if (元素 == 'P')
+                {
+                    骰池表排序.Reverse();//翻转
+                }
+                rd100 = Convert.ToInt32(骰池表排序[0]) * 10 + Convert.ToInt32(个位数);
+                #endregion
+            }
+
+            var 属性与值 = Regex.Match(语句, @"^([^\d]+)(\d+)").Value;
+            string 属性 = "";
+            string 值 = "";
+            if (string.IsNullOrWhiteSpace(属性与值))
+            {
+                值 = Regex.Match(语句, @"^\d+").Value;
+            }
+            else
+            {
+                属性 = Regex.Match(属性与值, @"^([^(\s|\:|\：)?\d]+)").Value;
+                值 = Regex.Match(属性与值, @"\d+$").Value;
+            }
+            if (string.IsNullOrWhiteSpace(值))
+            {
+                属性 = Regex.Match(语句, @"^([^(\s|\:|\：)?\d]+)").Value;
+                if (string.IsNullOrWhiteSpace(属性))
+                {
+                    return "正确格式：“.ra/rc[h][p/b数字] [属性] [属性值] [掷骰原因]”";
+                }
+                try
+                {
+                    值 = 实体[私聊目标.FromQQ.ToString()][ST同义词转换(属性)];
+                }
+                catch (Exception)
+                {
+                    return $"你是不是没有{ST同义词转换(属性)}这项属性？";
+                }
+                
+            }
+            if (string.IsNullOrWhiteSpace(属性) && string.IsNullOrWhiteSpace(值))
+            {
+                return "正确格式：“.ra/rc[h][p/b数字] [属性] [属性值] [掷骰原因]”";
+            }
+            var 返回值 = $"{获取昵称().TrimEnd('的')}进行{ST同义词转换(属性)}检定：D100={rd100}/{值} ";
+            if (rd100 <= 5) 返回值 += "大成功";
+            else if (rd100 <= int.Parse(值) / 5) 返回值 += "极难成功";
+            else if (rd100 <= int.Parse(值) / 2) 返回值 += "困难成功";
+            else if (rd100 <= int.Parse(值)) 返回值 += "成功";
+            else if (rd100 <= 95) 返回值 += "失败";
+            else 返回值 += "大失败";
+            string 原因 = string.IsNullOrWhiteSpace(属性与值)
+                ? 语句.Replace(属性 + 值, "") : 语句.Replace(属性与值, "");
+            if (原因.Replace(" ", "").Replace(":", "").Replace("：", "") == 属性)
+            {
+                原因 = "";
+            }
+            if (!string.IsNullOrWhiteSpace(原因))
+            {
+                返回值 = $"由于{原因}：{返回值}";
+            }
+            return 返回值;
+        }
+
+        static string ST同义词转换(string 属性)
+        {
+            var 坐标 = 属性名替换.FindIndex((string 匹配) => 匹配.Equals(属性.ToLower().Replace("（","(").Replace("）", ")")));
+            if (坐标 % 2 == 1)
+            {
+                属性 = 属性名替换[坐标 + 1];
+            }
+            return 属性;
+        }
 
         public static string 今日人品()
         {

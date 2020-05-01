@@ -10,7 +10,7 @@ namespace Native.Csharp.App.Event.Event_Me
 {
     public class 数据
     {
-        public static bool 开发模式 = false;
+        public static List<long> 开发者 = new List<long>();
 
         public static bool 私聊
         {
@@ -1871,7 +1871,7 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         public const string 帮助 =
-            @"桌游姬方若茗V0.2.0423
+            @"桌游姬方若茗V0.2.0428
 <部分指令>(*号表示必填参数)
 .rd [掷骰表达式*] [原因]
 .nn [名称]
@@ -1880,13 +1880,14 @@ namespace Native.Csharp.App.Event.Event_Me
 .dnd [个数]
 .coc6 / .coc [个数]
 .coc6d / .coc7d
-.dnd查询 [名称]
+.dnd查询 [名称*]
 .ti / li
 .jrrp
 .help
 .开启 / 关闭 [机器人QQ号/QQ号后4位]
 .退群 [机器人QQ号/QQ号后4位]（需要群管权限）
-完整指令看这里：https://shimo.im/docs/dqcWQvHjk38QtRq3/";
+完整指令看这里：https://shimo.im/docs/dqcWQvHjk38QtRq3
+意见反馈通道：https://shimo.im/forms/9YwhGy6pykhVptXy/fill";
 
         public static string 临时空间
         {

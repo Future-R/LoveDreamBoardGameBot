@@ -13,7 +13,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
             //str += ex.Message + "\n";//异常消息
             //str += ex.StackTrace + "\n";//提示出错位置，不会定位到方法内部去
-            if (数据.开发模式)
+            if (数据.开发者.Contains(数据.私聊目标.FromQQ))
             {
                 str += "\n"
                 + 数据.实体["输入"]["语句"] + "\n"

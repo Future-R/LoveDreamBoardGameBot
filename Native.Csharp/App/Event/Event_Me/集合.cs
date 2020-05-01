@@ -147,5 +147,19 @@ namespace Native.Csharp.App.Event.Event_Me
             }
             return 新矩阵;
         }
+
+        public static string 矩阵转字符串(string[][] 矩阵)
+        {
+            var 返回值 = "";
+            foreach (var item in 矩阵)
+            {
+                foreach (var items in item)
+                {
+                    返回值 += items;
+                }
+                返回值 += " " + Environment.NewLine;
+            }
+            return 返回值.Remove(返回值.Length - 3);
+        }
     }
 }

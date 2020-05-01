@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Native.Csharp.App.Event.Event_Me
 {
@@ -9,19 +10,30 @@ namespace Native.Csharp.App.Event.Event_Me
     {
         public static void 语法分析(string 用户输入)
         {
-            if (用户输入 == "帮助" || 用户输入.ToLower() == "help")
-            {
-                Common.CqApi.SendPrivateMessage(数据.私聊目标.FromQQ, 数据.帮助);
-                return;
-            }
             if (用户输入 == "开发模式")
             {
-                数据.开发模式 = true;
+                if (!数据.开发者.Contains(数据.私聊目标.FromQQ))
+                {
+                    数据.开发者.Add(数据.私聊目标.FromQQ);
+                    操作.发送("你现在的身份是：开发者");
+                }
+                else
+                {
+                    操作.发送("你已经认证为开发者了！");
+                }
                 return;
             }
             if (用户输入 == "用户模式")
             {
-                数据.开发模式 = false;
+                if (数据.开发者.Contains(数据.私聊目标.FromQQ))
+                {
+                    数据.开发者.Remove(数据.私聊目标.FromQQ);
+                    操作.发送("你现在的身份是：用户");
+                }
+                else
+                {
+                    操作.发送("你已经认证为用户了！");
+                }
                 return;
             }
             if (!数据.私聊)
@@ -80,6 +92,11 @@ namespace Native.Csharp.App.Event.Event_Me
                     return;
                 }
             }
+            if (用户输入 == "帮助" || 用户输入.ToLower() == "help")
+            {
+                操作.发送(数据.帮助);
+                return;
+            }
 
             if (!数据.私聊 && 操作.机器人开关.Contains(数据.群聊目标.FromGroup))
             {
@@ -136,6 +153,11 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static string 执行(string 语句)
         {
+            var 需要转义的emoji = Regex.Matches(语句, @"(?<=\[CQ:emoji,id=)(\d+)(?=\])").Cast<Match>().Select(m => int.Parse(m.Value)).ToList();
+            foreach (var item in 需要转义的emoji)
+            {
+                语句.Replace($@"[CQ:emoji,id={item}]", char.ConvertFromUtf32(item));
+            }
             数据.临时空间 = string.Empty;
             数据.写入实体("输入", "语句", 语句);
 
@@ -222,7 +244,8 @@ namespace Native.Csharp.App.Event.Event_Me
                         {
                             数据.写入实体(语句.Substring(0, 语句.IndexOf("的")), 数值.取中间(语句, "的", "为"), 语句.Substring(语句.IndexOf("为") + 1));
                         }
-                        return "";
+                        if (数据.开发者.Contains(数据.私聊目标.FromQQ)) return "";
+                        return 数据.好的;
                     }
                     else if (语句.Contains("为"))
                     {
@@ -239,7 +262,8 @@ namespace Native.Csharp.App.Event.Event_Me
                         {
                             数据.写入实体(语句.Substring(0, 语句.IndexOf("的")), 数值.取中间(语句, "的", "为"), 语句.Substring(语句.IndexOf("为") + 1));
                         }
-                        return "";
+                        if (数据.开发者.Contains(数据.私聊目标.FromQQ)) return "";
+                        return 数据.好的;
                     }
                 }
                 #region 关系式
@@ -341,6 +365,10 @@ namespace Native.Csharp.App.Event.Event_Me
                             {
                                 if (数据.发送次数 < 10) 操作.发送(执行结果);
                             }
+                            else
+                            {
+                                return 执行结果;
+                            }
                         }
                     }
                     return "";
@@ -381,7 +409,7 @@ namespace Native.Csharp.App.Event.Event_Me
                             数据.实体.Remove("元素");
                             return "";
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             数据.实体.Remove("元素");
                             return "遍历出错！";
@@ -475,17 +503,37 @@ namespace Native.Csharp.App.Event.Event_Me
                 }
                 #endregion
                 #region 骰子
-                //if (语句.ToLower().StartsWith("ra") || 语句.ToLower().StartsWith("rc"))
-                //{
-                //    return 人物卡.成功检定(语句.Substring(2).Trim());
-                //}
+                if (语句.ToLower().StartsWith("st"))
+                {
+                    return 人物卡.设置(语句.Substring(2).Trim());
+                }
+                if (语句.ToLower().StartsWith("ra") || 语句.ToLower().StartsWith("rc"))
+                {
+                    return 人物卡.成功检定(语句.Substring(2).Trim());
+                }
                 if (语句.StartsWith("骰子"))
                 {
                     语句 = "r" + 语句.Substring(2);
                 }
                 if (语句.ToLower().StartsWith("r") || 语句.ToLower().StartsWith("w"))
                 {
-                    return 运算.骰子(语句);
+                    int 次数 = 1;
+                    if (!string.IsNullOrWhiteSpace(Regex.Match(语句.ToLower(), @"^r[123456789]{1}#.+").Value))
+                    {
+                        次数 = int.Parse(Regex.Match(语句.ToLower(), @"(?<=^r)([123456789]{1})(?=#)").Value);
+                        语句 = 语句.Remove(1, 2);
+                    }
+                    List<string> 返回值 = new List<string>();
+                    for (int i = 0; i < 次数; i++)
+                    {
+                        var 临时返回值 = 运算.骰子(语句);
+                        返回值.Add(临时返回值);
+                        if (临时返回值.StartsWith("错误"))
+                        {
+                            break;
+                        }
+                    }
+                    return string.Join(Environment.NewLine, 返回值);
                 }
 
                 if (语句.ToLower().StartsWith("set"))
@@ -732,7 +780,8 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         数据.写入实体(语句.Substring(0, 语句.IndexOf("的")), 数值.取中间(语句, "的", "为"), 语句.Substring(语句.IndexOf("是") + 1));
                     }
-                    return "";
+                    if (数据.开发者.Contains(数据.私聊目标.FromQQ)) return "";
+                    return 数据.好的;
                 }
                 else if (语句.Contains("是"))
                 {
@@ -748,8 +797,8 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         数据.写入实体(语句.Substring(0, 语句.IndexOf("的")), 数值.取中间(语句, "的", "是"), 语句.Substring(语句.IndexOf("是") + 1));
                     }
-
-                    return "";
+                    if (数据.开发者.Contains(数据.私聊目标.FromQQ)) return "";
+                    return 数据.好的;
                 }
                 #endregion
                 #region 加减乘除
@@ -794,7 +843,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         内容[0] = 数据.获取昵称().TrimEnd('的');
                     }
-                    if (数据.开发模式)
+                    if (数据.开发者.Contains(数据.私聊目标.FromQQ))
                     {
                         return "";
                     }
@@ -840,7 +889,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         内容[0] = 数据.获取昵称().TrimEnd('的');
                     }
-                    if (数据.开发模式)
+                    if (数据.开发者.Contains(数据.私聊目标.FromQQ))
                     {
                         return "";
                     }
@@ -886,7 +935,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         内容[0] = 数据.获取昵称().TrimEnd('的');
                     }
-                    if (数据.开发模式)
+                    if (数据.开发者.Contains(数据.私聊目标.FromQQ))
                     {
                         return "";
                     }
@@ -932,7 +981,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         内容[0] = 数据.获取昵称().TrimEnd('的');
                     }
-                    if (数据.开发模式)
+                    if (数据.开发者.Contains(数据.私聊目标.FromQQ))
                     {
                         return "";
                     }
@@ -978,7 +1027,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         内容[0] = 数据.获取昵称().TrimEnd('的');
                     }
-                    if (数据.开发模式)
+                    if (数据.开发者.Contains(数据.私聊目标.FromQQ))
                     {
                         return "";
                     }
@@ -1061,7 +1110,9 @@ namespace Native.Csharp.App.Event.Event_Me
                                 }
                                 else if (参数[0].StartsWith("“") && 参数[0].EndsWith("”"))//求返回值
                                 {
+                                    var 临时空间 = 数据.临时空间;
                                     替换内容 = 执行(参数[0].Substring(1, 参数[0].Length - 2));
+                                    数据.临时空间 = 临时空间;
                                     符号栈.Pop();
                                     参数.RemoveRange(0, 1);
                                     while (参数.Count > 0)

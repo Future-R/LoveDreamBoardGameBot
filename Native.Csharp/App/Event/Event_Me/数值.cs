@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -141,6 +142,27 @@ namespace Native.Csharp.App.Event.Event_Me
                 case "小写":
                     return 目标文本.ToLower();
 
+                case "转置":
+                    return 集合.矩阵转字符串(集合.转置(集合.二维数组生成(目标文本)));
+
+                case "垂直翻转":
+                case "上下翻转":
+                case "垂直反转":
+                case "上下反转":
+                    return 集合.矩阵转字符串(集合.垂直翻转(集合.二维数组生成(目标文本)));
+
+                case "水平翻转":
+                case "左右翻转":
+                case "水平反转":
+                case "左右反转":
+                    return 集合.矩阵转字符串(集合.水平翻转(集合.二维数组生成(目标文本)));
+
+                case "顺时针旋转":
+                    return 集合.矩阵转字符串(集合.转置(集合.垂直翻转(集合.二维数组生成(目标文本))));
+
+                case "逆时针旋转":
+                    return 集合.矩阵转字符串(集合.垂直翻转(集合.转置(集合.二维数组生成(目标文本))));
+
                 default:
                     break;
             }
@@ -184,13 +206,8 @@ namespace Native.Csharp.App.Event.Event_Me
                     default:
                         break;
                 }
-                MatchCollection 匹配集合 = Regex.Matches(目标文本, 参数.Substring(参数.IndexOf('则') + 1), 模式, TimeSpan.FromSeconds(2));
-                string 返回值 = "";
-                foreach (var item in 匹配集合)
-                {
-                    返回值 += item + "、";
-                }
-                return 返回值.TrimEnd('、');
+                var 匹配集合 = Regex.Matches(目标文本, 参数.Substring(参数.IndexOf('则') + 1), 模式, TimeSpan.FromSeconds(2)).Cast<Match>().Select(m => m.Value).ToArray();
+                return string.Join("、", 匹配集合);
             }
             else if (参数.StartsWith("移除"))
             {
@@ -384,6 +401,34 @@ namespace Native.Csharp.App.Event.Event_Me
                 参数 = 参数.Remove(参数.Length - 2);
                 string[] 子参数 = 参数.Split('和');
                 return 取中间(目标文本, 子参数[0], 子参数[1]);
+            }
+
+            //正则匹配
+            //马落子在1,3
+            if (!string.IsNullOrWhiteSpace(Regex.Match(参数, @"^(.+)落子(在|于)\d{1,2}(.){1}\d{1,2}$").Value))
+            {
+                var 棋子 = Regex.Match(参数, @"^(.+)(?=落子)");
+                var 横坐标 = Regex.Match(参数, @"\d{1,}$").Value;
+                var 临时参数 = 参数.Remove(参数.Length - 横坐标.Length - 1);
+                var 纵坐标 = Regex.Match(临时参数, @"\d{1,}$").Value;
+                var 棋盘 = 集合.二维数组生成(目标文本);
+                var 取子 = 棋盘[int.Parse(纵坐标) - 1][int.Parse(横坐标) - 1];
+                棋盘[int.Parse(纵坐标) - 1][int.Parse(横坐标) - 1] = 棋子.ToString();
+                return 集合.矩阵转字符串(棋盘) + Environment.NewLine + "移除了" + 取子;
+            }
+
+            //1,3移动到2,4
+            if (!string.IsNullOrWhiteSpace(Regex.Match(参数, @"^\d{1,2}(.){1}\d{1,2}移动到\d{1,2}(.){1}\d{1,2}$").Value))
+            {
+                int 旧纵坐标 = int.Parse(Regex.Match(参数, @"^\d{1,2}").Value) - 1;
+                int 旧横坐标 = int.Parse(Regex.Match(参数, @"(?<=.{1})\d{1,2}(?=移动到)").Value) - 1;
+                int 新纵坐标 = int.Parse(Regex.Match(参数, @"(?<=移动到)\d{1,2}(?=.{1})").Value) - 1;
+                int 新横坐标 = int.Parse(Regex.Match(参数, @"\d{1,2}$").Value) - 1;
+                var 棋盘 = 集合.二维数组生成(目标文本);
+                string 中转棋子 = 棋盘[新纵坐标][新横坐标];
+                棋盘[新纵坐标][新横坐标] = 棋盘[旧纵坐标][旧横坐标];
+                棋盘[旧纵坐标][旧横坐标] = 中转棋子;
+                return 集合.矩阵转字符串(棋盘);
             }
 
             return 目标文本;
