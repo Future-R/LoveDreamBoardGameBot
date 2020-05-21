@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JiebaNet.Segmenter;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -170,6 +171,15 @@ namespace Native.Csharp.App.Event.Event_Me
             if (数据.循环次数 <= 65536)
             {
                 数据.循环次数++;
+                //完全匹配
+                if (语句 == "存档")
+                {
+                    return 操作.存档();
+                }
+                if (语句 == "读档")
+                {
+                    return 操作.读档();
+                }
                 //关键字打头
                 if (语句.StartsWith("翻开") && 语句.Length > 2)
                 {
@@ -327,16 +337,33 @@ namespace Native.Csharp.App.Event.Event_Me
                     {
                         if (!对象.Contains("的"))//销毁主体
                         {
-                            数据.实体.Remove(对象);
+                            if (对象 == "我")
+                            {
+                                数据.实体.Remove(数据.私聊目标.FromQQ.ToString());
+                            }
+                            else
+                            {
+                                数据.实体.Remove(对象);
+                            }
                         }
                         else//销毁组件
                         {
-                            数据.实体
-                                [对象.Split(new[] { '的' }, StringSplitOptions.RemoveEmptyEntries)[0]].Remove
-                                (对象.Split(new[] { '的' }, StringSplitOptions.RemoveEmptyEntries)[1]);
+                            if (string.IsNullOrWhiteSpace(Regex.Match(对象, @"^我的(\S+)$").Value))
+                            {
+                                数据.实体
+                                    [数据.私聊目标.FromQQ.ToString()].Remove
+                                    (Regex.Match(对象, @"(?<=^我的)(\S+)$").Value);
+                            }
+                            else
+                            {
+                                数据.实体
+                                    [对象.Split(new[] { '的' }, StringSplitOptions.RemoveEmptyEntries)[0]].Remove
+                                    (对象.Split(new[] { '的' }, StringSplitOptions.RemoveEmptyEntries)[1]);
+                            }
                         }
                     }
-                    return "";
+                    if (数据.开发者.Contains(数据.私聊目标.FromQQ)) return "";
+                    return $"{string.Join("、", 销毁对象.ToArray())}销毁完毕！";
                 }
                 #endregion
                 #region 计算
@@ -713,6 +740,18 @@ namespace Native.Csharp.App.Event.Event_Me
                         return "";
                     }
                     return "指令不存在！请输入“生命游戏”或“生命游戏继续”或\n“生命游戏\n〇〇红〇\n红红红〇\n〇〇〇〇”";
+                }
+                #endregion
+                #region 学习和遗忘生词
+                if (语句.StartsWith("记住：") && 语句.TrimEnd('、').Length > 3)
+                {
+                    操作.写入词典(语句);
+                    return 数据.好的;
+                }
+                if (语句.StartsWith("忘掉：") && 语句.Length > 3)
+                {
+                    操作.写入词典(语句, false);
+                    return 数据.好的;
                 }
                 #endregion
 

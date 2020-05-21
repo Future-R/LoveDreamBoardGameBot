@@ -134,7 +134,7 @@ namespace Native.Csharp.App.Event.Event_Me
 
         public static string 计算(string 算式)
         {
-            算式 = 转阿拉伯数字(算式);
+            算式 = 转阿拉伯数字(算式, false);
             string[] 数组 = 骰子(算式).Split(new[] { '=' });
             return 数组[数组.Length - 1];
         }
@@ -317,9 +317,11 @@ namespace Native.Csharp.App.Event.Event_Me
                             break;
 
                         case ".":
-                            参数2 = Convert.ToDecimal(计算结果.Pop());
-                            参数1 = Convert.ToDecimal(计算结果.Pop());
-                            返回结果 = new DataTable().Compute($"{参数1}{元素}{参数2}", "").ToString();
+                            //参数2 = Convert.ToDecimal(计算结果.Pop());
+                            //参数1 = Convert.ToDecimal(计算结果.Pop());
+                            //返回结果 = new DataTable().Compute($"{参数1}{元素}{参数2}", "").ToString();
+                            返回结果 = 计算结果.Pop();
+                            返回结果 = 计算结果.Pop() + "." + 返回结果;
                             break;
 
                         case "^":
@@ -979,12 +981,12 @@ namespace Native.Csharp.App.Event.Event_Me
             return (Math.Floor(骰池大概数量 * 成功率) + 最后修正).ToString();
         }
 
-        public static string 转阿拉伯数字(string 字符串)
+        public static string 转阿拉伯数字(string 字符串, bool 去括号 = true)
         {
             List<string> 数字组 = 字符串.Split(new[] { "加", "减", "乘", "除", "的平方", "的立方", "的根", "的开方" }, StringSplitOptions.RemoveEmptyEntries).ToList();
             foreach (var 数字 in 数字组)
             {
-                string 阿拉伯数字 = "(" + 数字 + ")";
+                string 阿拉伯数字 = 数字;
                 if (阿拉伯数字.StartsWith("十"))
                 {
                     阿拉伯数字 = "1" + 阿拉伯数字;
@@ -993,7 +995,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     .Replace("四", "4").Replace("五", "5").Replace("六", "6").Replace("七", "7").Replace("八", "8").Replace("九", "9")
                     .Replace("十", "*10+").Replace("百", "*100+").Replace("千", "*1000+").Replace("万", "*10000+").Replace("亿", "*100000000+").Replace("点", "+0.");
                 阿拉伯数字 = 阿拉伯数字.Replace("+*", "*").Replace("++", "+").TrimEnd('+');
-                字符串 = 字符串.Replace(数字, 阿拉伯数字);
+                字符串 = 字符串.Replace(数字, "(" + 阿拉伯数字 + ")");
             }
             字符串 = 字符串.Replace("加", "+").Replace("减", "-").Replace("乘", "*").Replace("除", "/")
                 .Replace("的平方", "^2").Replace("的立方", "^3").Replace("的根", "^(1/2)").Replace("的开方", "^(1/2)");
@@ -1008,6 +1010,10 @@ namespace Native.Csharp.App.Event.Event_Me
                 {
                     字符串 = 字符串.Remove(i, 1);
                 }
+            }
+            if (去括号)
+            {
+                return 字符串.TrimStart('(').TrimEnd(')');
             }
             return 字符串;
         }

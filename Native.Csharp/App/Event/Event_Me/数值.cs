@@ -1,6 +1,8 @@
-﻿using System;
+﻿using JiebaNet.Segmenter;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -141,6 +143,16 @@ namespace Native.Csharp.App.Event.Event_Me
 
                 case "小写":
                     return 目标文本.ToLower();
+
+                case "分词":
+                    var 分词器 = new JiebaSegmenter();
+                    string 用户词典路径 = AppDomain.CurrentDomain.BaseDirectory + @"app\com.frm.top\UserDict.txt";
+                    if (File.Exists(用户词典路径))
+                    {
+                        分词器.LoadUserDict(用户词典路径);
+                    }
+                    var 分词结果 = 分词器.Cut(目标文本);
+                    return string.Join("、", 分词结果);
 
                 case "转置":
                     return 集合.矩阵转字符串(集合.转置(集合.二维数组生成(目标文本)));
@@ -429,6 +441,20 @@ namespace Native.Csharp.App.Event.Event_Me
                 棋盘[新纵坐标][新横坐标] = 棋盘[旧纵坐标][旧横坐标];
                 棋盘[旧纵坐标][旧横坐标] = 中转棋子;
                 return 集合.矩阵转字符串(棋盘);
+            }
+
+            //逐X字
+            if (!string.IsNullOrWhiteSpace(Regex.Match(参数, @"(?<=^逐)(\S+?)(?=字$)").Value))
+            {
+                string 每行字数 = 运算.转阿拉伯数字(Regex.Match(参数, @"(?<=^逐)(\S+?)(?=字$)").Value);
+                bool 是数字 = int.TryParse(每行字数, out int 字数);
+                if (!是数字)
+                {
+                    return "";
+                }
+                for (int i = 字数; i < 目标文本.Length; i += 字数 + 1)
+                    目标文本 = 目标文本.Insert(i, "、");
+                return 目标文本;
             }
 
             return 目标文本;

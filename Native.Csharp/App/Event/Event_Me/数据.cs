@@ -1871,7 +1871,7 @@ namespace Native.Csharp.App.Event.Event_Me
         }
 
         public const string 帮助 =
-            @"桌游姬方若茗V0.2.0428
+            @"桌游姬方若茗V0.2.0509
 <部分指令>(*号表示必填参数)
 .rd [掷骰表达式*] [原因]
 .nn [名称]
