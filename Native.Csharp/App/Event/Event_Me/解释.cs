@@ -748,7 +748,7 @@ namespace Native.Csharp.App.Event.Event_Me
                     操作.写入词典(语句);
                     return 数据.好的;
                 }
-                if (语句.StartsWith("忘掉：") && 语句.Length > 3)
+                if (语句.StartsWith("忘掉：") && 语句.TrimEnd('、').Length > 3)
                 {
                     操作.写入词典(语句, false);
                     return 数据.好的;
