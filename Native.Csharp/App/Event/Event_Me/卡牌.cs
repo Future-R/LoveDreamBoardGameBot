@@ -7,8 +7,28 @@ using System.Threading.Tasks;
 
 namespace Native.Csharp.App.Event.Event_Me
 {
+    public class 牌
+    {
+        public string 编号
+        {
+            get;set;
+        }
+        public Dictionary<string, string> 正面
+        {
+            get; set;
+        }
+        public Dictionary<string, string> 背面
+        {
+            get; set;
+        }
+    }
+
     class 卡牌
     {
+        public static string 印卡(Dictionary<string, string> 正面)
+        {
+
+        }
         /*【从【我的】牌组】【抽|摸】【3|三】张牌【到【我的】手牌】
 
         【从【我的】手牌】【打出 | 使用 | 检索 | 发动 | 移动】【[卡名]|第X张牌|倒数第X张牌】【到【我的】场上】
