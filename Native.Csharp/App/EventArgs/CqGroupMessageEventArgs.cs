@@ -75,5 +75,10 @@ namespace Native.Csharp.App.EventArgs
             this.FromAnonymous = anonymous;
             this.Message = msg;
         }
+
+        public static implicit operator CqGroupMessageEventArgs(CqPrivateMessageEventArgs v)
+        {
+            return new CqGroupMessageEventArgs(v.Id, v.MsgId, 0, v.FromQQ, null, "");
+        }
     }
 }

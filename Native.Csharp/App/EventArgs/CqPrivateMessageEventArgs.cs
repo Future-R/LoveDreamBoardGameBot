@@ -55,5 +55,10 @@ namespace Native.Csharp.App.EventArgs
 			this.FromQQ = fromQQ;
 			this.Message = msg;
 		}
-	}
+
+        public static implicit operator CqPrivateMessageEventArgs(CqGroupMessageEventArgs v)
+        {
+            return new CqPrivateMessageEventArgs(v.Id, v.MsgId, v.FromQQ, "");
+        }
+    }
 }
