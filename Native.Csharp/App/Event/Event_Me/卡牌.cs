@@ -25,10 +25,10 @@ namespace Native.Csharp.App.Event.Event_Me
 
     class 卡牌
     {
-        public static string 印卡(Dictionary<string, string> 正面)
-        {
+        //public static string 印卡(Dictionary<string, string> 正面)
+        //{
 
-        }
+        //}
         /*【从【我的】牌组】【抽|摸】【3|三】张牌【到【我的】手牌】
 
         【从【我的】手牌】【打出 | 使用 | 检索 | 发动 | 移动】【[卡名]|第X张牌|倒数第X张牌】【到【我的】场上】
