@@ -5,9 +5,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Drawing;
 
 namespace Native.Csharp.App.Event.Event_Me
 {
+    using static 数据;
+    using static Common;
     /// <summary>
     /// 群聊回复
     /// CqPrivateMessageEventArgs→CqGroupMessageEventArgs
@@ -17,220 +20,203 @@ namespace Native.Csharp.App.Event.Event_Me
     public class Event_ReceiveGroupMessage : IReceiveGroupMessage
     {
 
-        Event_ReceiveFriendMessage ReceiveFriendMessage = new Event_ReceiveFriendMessage();
+        //Event_ReceiveFriendMessage ReceiveFriendMessage = new Event_ReceiveFriendMessage();
 
         public void ReceiveGroupMessage(object sender, CqGroupMessageEventArgs e)
         {
-            Event_Variable.isGroup = true;
-            string input = e.Message;
-            Event_Variable.QQQ = e.FromQQ;
-            Event_Variable.varDelay = false;
-            try
+            string 信息 = e.Message;
+
+            // 匹配防误触符号
+            Match match = Regex.Match(信息, @"^(\.|。){1}[^\.。]{1}");
+            if (match.Success)
             {
-                //检查是否启用变量延迟解释
-                if (input.StartsWith("~"))
+                信息 = 信息.Substring(1);
+            }
+            if (信息 == "测试路径")
+            {
+                CqApi.SendGroupMessage(e.FromGroup, Common.AppDirectory);
+            }
+            // 开关的优先级最高
+            if (信息 == "开启日报统计")
+            {
+                if (正在统计的群.Contains(e.FromGroup))
                 {
-                    Event_Variable.varDelay = true;
-                    input = input.Substring(1);
+                    CqApi.SendGroupMessage(e.FromGroup, "请勿重复开启！");
+                }
+                else
+                {
+                    正在统计的群.Add(e.FromGroup);
+                    所有消息合集.Add(e.FromGroup, new List<消息记录>());
+                    CqApi.SendGroupMessage(e.FromGroup, "现在开始记录！");
+                }
+                return;
+            }
+            if (信息 == "关闭日报统计")
+            {
+                if (正在统计的群.Contains(e.FromGroup))
+                {
+                    正在统计的群.Remove(e.FromGroup);
+                    所有消息合集.Remove(e.FromGroup);
+                    string 储存目录 = $@"{Common.AppDirectory}{e.FromGroup}";
+                    if (Directory.Exists(储存目录))
+                    {
+                        DirectoryInfo 目录 = new DirectoryInfo(储存目录);
+                        目录.Delete(true);
+                    }
+                    CqApi.SendGroupMessage(e.FromGroup, "现在开始不再记录，并且清除历史信息……");
+                }
+                else
+                {
+                    CqApi.SendGroupMessage(e.FromGroup, "请勿重复关闭！");
+                }
+                return;
+            }
+
+            // 如果当前群开启统计
+            if (正在统计的群.Contains(e.FromGroup))
+            {
+                switch (信息)
+                {
+                    case "七日热词":
+                        保存信息();
+                        CqApi.SendGroupMessage(e.FromGroup, 发图(分析.热词统计报告(e.FromGroup, 7)));
+                        return;
+
+                    case "查询系统字体":
+                        List<string> 系统字体 = new List<string>();
+                        FontFamily[] fontFamilys = new System.Drawing.Text.InstalledFontCollection().Families;
+                        foreach (FontFamily font in fontFamilys)
+                        {
+                            系统字体.Add(font.Name);
+                        }
+                        CqApi.SendGroupMessage(e.FromGroup, 发图(string.Join("/", 系统字体)));
+                        return;
+
+                    case "日报":
+                    case "查询日报":
+                    case "今日日报":
+                        保存信息();
+                        CqApi.SendGroupMessage(e.FromGroup, 发图(分析.日报统计(e, DateTime.Today)));
+                        break;
+
+                    case "昨日日报":
+                        CqApi.SendGroupMessage(e.FromGroup, 发图(分析.日报统计(e, DateTime.Today.AddDays(-1))));
+                        break;
+
+                    case "热词":
+                        保存信息();
+                        CqApi.SendGroupMessage(e.FromGroup, 发图(分析.热词统计报告(e.FromGroup)));
+
+                        return;
+
+                    case "发言排行":
+                        保存信息();
+                        var 发言排行统计结果 = 分析.发言排行统计(e, DateTime.Today);
+                        string 发言排行统计报告 = $"今日水群排行：{Environment.NewLine}";
+                        if (发言排行统计结果.Count < 2)
+                        {
+                            CqApi.SendGroupMessage(e.FromGroup, "结果过少，不予统计……");
+                            return;
+                        }
+                        foreach (var item in 发言排行统计结果)
+                        {
+                            发言排行统计报告 += $"{item.Key}：{item.Value}{Environment.NewLine}";
+                        }
+                        发言排行统计报告 += $"——{DateTime.Now.ToShortTimeString()}";
+                        CqApi.SendGroupMessage(e.FromGroup, 发图(发言排行统计报告));
+
+                        return;
+
+                    case "七日发言":
+                        保存信息();
+                        var 七日发言排行统计结果 = 分析.发言排行统计(e, DateTime.Today, 7);
+                        string 七日发言排行统计报告 = $"7日水群排行：{Environment.NewLine}";
+                        if (七日发言排行统计结果.Count < 2)
+                        {
+                            CqApi.SendGroupMessage(e.FromGroup, "结果过少，不予统计……");
+                            return;
+                        }
+                        foreach (var item in 七日发言排行统计结果)
+                        {
+                            七日发言排行统计报告 += $"{item.Key}：{item.Value}{Environment.NewLine}";
+                        }
+                        七日发言排行统计报告 += $"——{DateTime.Now.ToShortDateString()}";
+                        CqApi.SendGroupMessage(e.FromGroup, 发图(七日发言排行统计报告));
+
+                        return;
+
+                    default:
+                        break;
                 }
 
-                //用户输入的前缀为连续扳机，去掉第1个并传递给群私聊类处理
-                if (input.StartsWith("..") || input.StartsWith("。。") || input.StartsWith("!!") || input.StartsWith("！！")){
-                    CqPrivateMessageEventArgs ee = new CqPrivateMessageEventArgs(e.Id, e.MsgId, e.FromQQ, input.Substring(1));
-                    ReceiveFriendMessage.ReceiveFriendMessage(sender, ee);
+                if (信息.StartsWith("分析语句："))
+                {
+                    CqApi.SendGroupMessage(e.FromGroup, 分析.语句分词(信息.Substring(5)));
                     return;
                 }
-            }
-            catch (Exception ex)
-            {
-                Common.CqApi.SendGroupMessage(e.FromGroup, Event_CheckError.CheckError(ex));
-            }
-
-
-            input = new Regex("[\\s]+").Replace(input, " ");//合并复数空格
-            input = input.Trim();//去除前后空格
-            //把用户输入的第一个中文句号替换为英文
-            if (input.StartsWith("。"))
-            {
-                input = "." + input.Remove(0, 1);//为什么不顺便把感叹号也替换了呢？因为感叹号是对应单条指令的。有的需要感叹号，有的不需要。
-            }
-            if ( !input.StartsWith( "." ) && !input.StartsWith( "!" )  && !input.StartsWith( "！" ) )//没有扳机就不触发
-            {
-                return;
-            }
-            if (input.Length < 2 || input == ".." || input == ".。" || input == "!!" || input == "！！")//两个字都没有！
-            {
-                return;
-            }
-
-            try//插件开关
-            {
-                if (input.StartsWith(".开启"))
+                if (信息.StartsWith("测试换行："))
                 {
-                    if (input.Length > 8)
+                    CqApi.SendGroupMessage(e.FromGroup, 发图(信息.Substring(5)));
+                    return;
+                }
+
+                // 如果跨天，自动清理缓存
+                if (DateTime.Today.Date != 上次保存时间.Date)
+                {
+                    if (保存信息())
                     {
-                        if (input.Substring(3).Trim() == Convert.ToString(Common.CqApi.GetLoginQQ()))
-                        {
-                            Event_Variable.botCloseList.Remove(e.FromGroup);
-                            Common.CqApi.SendGroupMessage(e.FromGroup, $"{Convert.ToString(Common.CqApi.GetLoginQQ())}已开启！");
-                        }
-                        else
-                        {
-                            return;
-                        }
+                        读取信息();
+                        //QMLog.CurrentApi.Info("每日自动存档完成！");
                     }
                     else
                     {
-                        Event_Variable.botCloseList.Remove(e.FromGroup);
-                        Common.CqApi.SendGroupMessage(e.FromGroup, "已开启！");
+                        //QMLog.CurrentApi.Error("每日自动存档失败！");
                     }
+                    上次保存时间 = DateTime.Now;
                 }
-                if (input.StartsWith(".关闭"))
+
+                // 记录消息
+                消息记录 当前消息记录 = new 消息记录
                 {
-                    if (input.Length > 8)
+                    时间戳 = DateTime.Now,
+                    QQ号 = e.FromQQ,
+                    消息 = e.Message
+                };
+                if (所有消息合集.ContainsKey(e.FromGroup))
+                {
+                    所有消息合集[e.FromGroup].Add(当前消息记录);
+                }
+                else
+                {
+                    所有消息合集.Add(e.FromGroup, new List<消息记录>());
+                    //QMLog.CurrentApi.Log(LogLevel.Warning, $"意外找不到{e.FromGroup}记录！");
+                }
+
+                // 60分钟自动保存
+                double 距离上次保存 = new TimeSpan(DateTime.Now.Ticks - 上次保存时间.Ticks).TotalMinutes;
+                if (距离上次保存 >= 60)
+                {
+                    上次保存时间 = DateTime.Now;
+                    if (保存信息())
                     {
-                        if (input.Substring(3).Trim() == Convert.ToString(Common.CqApi.GetLoginQQ()))
-                        {
-                            Event_Variable.botCloseList.Add(e.FromGroup);
-                            Event_Variable.botCloseList = Event_Variable.botCloseList.Distinct().ToList();
-                            Common.CqApi.SendGroupMessage(e.FromGroup, $"{Convert.ToString(Common.CqApi.GetLoginQQ())}已关闭！");
-                        }
-                        else
-                        {
-                            return;
-                        }
+                        //QMLog.CurrentApi.Log(LogLevel.Infomaction, "自动保存成功！");
                     }
                     else
                     {
-                        Event_Variable.botCloseList.Add(e.FromGroup);
-                        Event_Variable.botCloseList = Event_Variable.botCloseList.Distinct().ToList();
-                        Common.CqApi.SendGroupMessage(e.FromGroup, "已关闭！");
+                        //QMLog.CurrentApi.Log(LogLevel.Error, "自动保存失败！");
                     }
                 }
             }
-            catch (Exception)
-            {
-                Common.CqApi.SendGroupMessage(e.FromGroup, "意外的错误！");
-            }
 
-            if (input.StartsWith(".帮助"))//帮助指令
-            {
-                if (input.Length < 5)//无参帮助
-                {
-                    Common.CqApi.SendGroupMessage(e.FromGroup, Event_Variable.helpDescription);
-                }
-                else//含参帮助
-                {
-                    Common.CqApi.SendGroupMessage(e.FromGroup, Event_HelpDescription.helpDescription(input));
-                }
-                return;
-            }
-            
 
-            //用户输入指令
-            if (!Event_Variable.botCloseList.Exists((long f) => f == e.FromGroup))
-            {
-                if (!Event_Variable.varDelay)
-                {
-                    int vvc = 0;
-                    foreach (var item in Event_Variable.vValue)//变量解释器
-                    {
-                        input = input.Replace(Event_Variable.vKey[vvc], item);
-                        vvc++;
-                    }
-                }
+            return;
+        }
 
-                //判断路径是否存在
-                if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Command\"))
-                {
-                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Command\");//不存在就创建
-                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Att\");//属性功能初始化
-                }
-
-                try
-                {
-                    List<string> commandInput = new List<string>(input.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//切割用户输入的指令 .xx a b c
-                    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Command\" + //如果找到用户定义的指令
-                        "." +commandInput[0].TrimStart(Convert.ToChar(".")) + ".ini"))//复数点视为成单个点
-                    {
-                        var tempLoad = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"SaveDir\Command\" + commandInput[0] + ".ini").Trim();
-                        if (tempLoad.Substring(0,1) == "#")//如果自定义指令无参 添加一个nil作为参数
-                        {
-                            commandInput.Add("nil!");
-                            tempLoad = "nil!" + tempLoad;
-                        }
-                        List<string> loadCommandList = new List<string>(tempLoad.Split(new string[] { "#" }, StringSplitOptions.RemoveEmptyEntries));//A B C   .删除 A B   .插入 随机 C
-
-                        List<string> loadVarList = new List<string>(loadCommandList[0].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries));//A B C
-                        List<string> loadEndList = new List<string>();//替换后的列表
-                        string tempItem;
-                        foreach (var item in loadCommandList)
-                        {
-                            tempItem = item;
-                            for (int i = 0; i < loadVarList.Count; i++)
-                            {
-                                //将loadCommandList每一项中的 loadVarList第i项 替换为 commandInput第i+1项, 传入loadEndList
-                                tempItem = tempItem.Replace(loadVarList[i], commandInput[i + 1]);
-                            }
-                            loadEndList.Add(tempItem);
-                        }
-                        loadEndList.RemoveAt(0);//.删除 区域 牌名1   .插入 随机 牌名2
-                        string temp;
-                        foreach (var item in loadEndList)
-                        {
-                            temp = item;
-                            if (temp.StartsWith("！!") || temp.StartsWith("!！") || temp.StartsWith(".."))//复合指令中的连续扳机
-                            {
-                                CqPrivateMessageEventArgs ee = new CqPrivateMessageEventArgs(e.Id, e.MsgId, e.FromQQ, temp.Substring(1));
-                                ReceiveFriendMessage.ReceiveFriendMessage(sender, ee);
-                            }
-                            else
-                            {
-                                Event_Variable.Defa = false;
-                                if (temp.StartsWith("！") || temp.StartsWith("!"))//该指令是自动补全参数指令
-                                {
-                                    Event_Variable.Defa = true;
-                                    temp = "." + temp.Remove(0, 1);
-                                }
-                                if (Event_Variable.varDelay)
-                                {
-                                    int vvc = 0;
-                                    foreach (var itemx in Event_Variable.vValue)//变量解释器
-                                    {
-                                        temp = temp.Replace(Event_Variable.vKey[vvc], itemx);
-                                        vvc++;
-                                    }
-                                }
-                                Event_OriginalCommand.CommandIn(temp, e.FromGroup, true);
-                            }
-                        }
-
-                    }
-                    else
-                    {
-                        Event_Variable.Defa = false;
-                        if (input.StartsWith("！") || (input.StartsWith("!")))//该指令是自动补全参数指令
-                        {
-                            Event_Variable.Defa = true;
-                            input = "." + input.Remove(0, 1);
-                        }
-                        if (Event_Variable.varDelay)
-                        {
-                            int vvc = 0;
-                            foreach (var itemx in Event_Variable.vValue)//变量解释器
-                            {
-                                input = input.Replace(Event_Variable.vKey[vvc], itemx);
-                                vvc++;
-                            }
-                        }
-                        Event_OriginalCommand.CommandIn(input, e.FromGroup, true);//查一下是不是固有指令
-                    }
-                }
-                catch (Exception)
-                {
-                    Common.CqApi.SendGroupMessage(e.FromGroup, "指令输入错误！输入'.帮助'检查你的格式！");
-                }
-            }
+        string 发图(string 文本, int 宽度上限 = 1000)
+        {
+            Bitmap 图 = new 图片(文本).行宽高为(宽度上限, 48).开始生成();
+            图.Save($"{Common.AppDirectory}temp.jpg");
+            return $"[CQ:image,file={Common.AppDirectory}temp.jpg]";
         }
     }
 }

@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.ExceptionServices;
-using System.Text;
-using Unity;
+﻿using Native.Csharp.App.Event.Event_Me;
 using Native.Csharp.App.Interface;
-using Native.Csharp.App.EventArgs;
-using Native.Csharp.Sdk.Cqp;
-using Native.Csharp.App.Event.Event_Me;
+using Unity;
 
 namespace Native.Csharp.App.Event
 {
-	public static class Event_AppMain
+    public static class Event_AppMain
 	{
 		/// <summary>
 		/// 回调注册
@@ -45,7 +38,7 @@ namespace Native.Csharp.App.Event
             container.RegisterType<IReceiveGroupMessage, Event_ReceiveGroupMessage>("群消息处理");
 
             //注册【群私聊回复】
-            container.RegisterType<IReceiveGroupPrivateMessage, Event_ReceiveGroupPrivateMessage>("私聊消息处理");
+            container.RegisterType<IReceiveGroupPrivateMessage, Event_ReceiveFriendMessage>("私聊消息处理");
 
             ////注册【数据库仓储】
             //container.RegisterInstance<IRepository>(new SqlRepository(Config.Config.SQLConnectStr));

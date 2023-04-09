@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Native.Csharp.App.EventArgs;
 using Native.Csharp.App.Interface;
+using static Native.Csharp.App.EventArgs.数据;
 
 namespace Native.Csharp.App.Event
 {
@@ -28,6 +30,20 @@ namespace Native.Csharp.App.Event
 
             // 返回如：D:\CoolQ\data\app\com.example.demo\
             // 应用的所有数据、配置【必须】存放于此目录，避免给用户带来困扰。
+            try
+            {
+                JiebaNet.Segmenter.ConfigManager.ConfigFileBaseDir = $@"{Common.AppDirectory}Resources";
+                读取信息();
+                FileInfo log1 = new FileInfo($@"{Common.AppDirectory}log1.json");
+                上次保存时间 = log1.LastWriteTime;
+            }
+            catch (Exception)
+            {
+                上次保存时间 = DateTime.MinValue;
+                //QMLog.CurrentApi.Error("读取记录失败");
+            }
+
+            //QMLog.CurrentApi.Info("未来日记已上线！");
         }
     }
 }
