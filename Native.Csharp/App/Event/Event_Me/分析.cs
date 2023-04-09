@@ -129,7 +129,7 @@ namespace Native.Csharp.App.EventArgs
             {
                 返回值 += $"“{item.Key}({item.Value})”、";
             }
-            返回值 = $"{返回值[..^1]}是群友最热衷的话题。";
+            返回值 = $"{返回值.Substring(0, 返回值.Length - 1)}是群友最热衷的话题。";
             #endregion
 
             #region at统计
@@ -189,9 +189,9 @@ namespace Native.Csharp.App.EventArgs
             if (DateTime.Compare(本群消息列表[0].时间戳, 日期.AddHours(5)) < 0)
             {
                 // 如果最后一条比凌晨5点早，守夜冠军就是最后一人
-                if (DateTime.Compare(本群消息列表[^1].时间戳, 日期.AddHours(5)) < 0)
+                if (DateTime.Compare(本群消息列表[本群消息列表.Count - 1].时间戳, 日期.AddHours(5)) < 0)
                 {
-                    守夜冠军 = 本群消息列表[^1];
+                    守夜冠军 = 本群消息列表[本群消息列表.Count - 1];
                 }
                 // 否则逐条遍历，直到找到晚于凌晨5点的消息，然后取上一条
                 else

@@ -32,7 +32,10 @@ namespace Native.Csharp.App.Event.Event_Me
             {
                 信息 = 信息.Substring(1);
             }
-
+            if (信息 == "测试路径")
+            {
+                CqApi.SendGroupMessage(e.FromGroup, Common.AppDirectory);
+            }
             // 开关的优先级最高
             if (信息 == "开启日报统计")
             {
@@ -213,7 +216,7 @@ namespace Native.Csharp.App.Event.Event_Me
         {
             Bitmap 图 = new 图片(文本).行宽高为(宽度上限, 48).开始生成();
             图.Save($"{Common.AppDirectory}temp.jpg");
-            return $"[pic={Common.AppDirectory}temp.jpg]";
+            return $"[CQ:image,file={Common.AppDirectory}temp.jpg]";
         }
     }
 }

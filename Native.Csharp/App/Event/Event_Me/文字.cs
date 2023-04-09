@@ -53,9 +53,9 @@ namespace Native.Csharp.App.EventArgs
                             }
 
                             // 本行回退一个字，存为一行
-                            string 储存一行 = 当前文本[0..^1];
+                            string 储存一行 = 当前文本.Substring(0, 当前文本.Length - 1);
                             // 新行只保留最后一个字
-                            当前文本 = 当前文本[^1].ToString();
+                            当前文本 = 当前文本[当前文本.Length - 1].ToString();
 
                             // 数字&单词防切断：Todo
 
@@ -76,10 +76,10 @@ namespace Native.Csharp.App.EventArgs
                                     }
                                     else
                                     {
-                                        if (!避头点集合.Contains(储存一行[^1]))
+                                        if (!避头点集合.Contains(储存一行[储存一行.Length - 1]))
                                         {
-                                            当前文本 = $"{储存一行[^1]}{当前文本}";
-                                            储存一行 = 储存一行[0..^1];
+                                            当前文本 = 储存一行[储存一行.Length - 1] + 当前文本;
+                                            储存一行 = 储存一行.Substring(0, 储存一行.Length - 1);
                                         }
                                     }
                                 }
